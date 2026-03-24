@@ -10,6 +10,7 @@ function App() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -284,12 +285,38 @@ function App() {
       padding: "46px 38px 38px",
       boxShadow: "0 18px 45px rgba(0,0,0,0.45)",
     },
+      appName: {
+        textAlign: "center",
+        color: "#7fd4ff",
+        fontSize: "2rem",
+        fontWeight: 800,
+        letterSpacing: "0.05em",
+        textShadow: "0 0 14px rgba(67, 193, 255, 0.65)",
+        margin: "0 0 22px 0",
+      },
+        topHeader: {
+          position: "absolute",
+          top: "30px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "#7fd4ff",
+          fontSize: "2.5rem",
+          fontWeight: 800,
+          letterSpacing: "0.05em",
+          textShadow: "0 0 14px rgba(67, 193, 255, 0.65)",
+        },
+    subtitle: {
+     color: "#9fb3c8",
+     fontSize: "1.2rem",
+     marginBottom: "25px",
+     textAlign: "left",
+       },
     title: {
-      textAlign: "center",
+      textAlign: "left",
       color: "#ffffff",
       fontSize: "2.2rem",
       fontWeight: "500",
-      margin: "0 0 34px 0",
+      margin: "0 0 10px 0",
     },
     label: {
       display: "block",
@@ -425,24 +452,35 @@ function App() {
 
   return (
     <div style={styles.page}>
+      <h1 style={styles.topHeader}>VirtuFit3D Studio</h1>
       <div style={styles.card}>
-        <h1 style={styles.title}>
-          {view === "login"
-            ? "Log In"
-            : view === "signup"
-              ? "Sign Up"
-              : "Forgot Password"}
-        </h1>
+        {view === "signup" ? (
+          <>
+            <h1 style={styles.title}>Create Your Account</h1>
+            <p style={styles.subtitle}>
+              Join the future of 3D virtual try-on
+            </p>
+          </>
+        ) : view === "login" ? (
+          <>
+            <h1 style={styles.title}>Login to VirtuFit3D</h1>
+            <p style={styles.subtitle}>
+              Experience the future of 3D virtual try-on
+            </p>
+          </>
+        ) : (
+          <h1 style={styles.title}>Forgot Password</h1>
+        )}
 
         {view === "signup" && (
           <>
-            <label style={styles.label}>USERNAME</label>
+            <label style={styles.label}>FULL NAME</label>
             <input
               type="text"
               style={styles.input}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder="Enter your full name"
               autoComplete="username"
             />
           </>
@@ -514,14 +552,52 @@ function App() {
         {view === "signup" && (
           <>
             <label style={styles.label}>CONFIRM PASSWORD</label>
-            <input
-              type={showPassword ? "text" : "password"}
-              style={styles.input}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm password"
+            <div style={styles.passwordWrap}>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                style={{ ...styles.input, ...styles.passwordInput }}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repeat your password"
                 autoComplete="new-password"
-            />
+              />
+              <button
+                type="button"
+                style={styles.passwordToggle}
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 12C3.8 8.5 7.3 6 12 6C16.7 6 20.2 8.5 22 12C20.2 15.5 16.7 18 12 18C7.3 18 3.8 15.5 2 12Z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+                  {!showConfirmPassword && (
+                    <line
+                      x1="4"
+                      y1="20"
+                      x2="20"
+                      y2="4"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                  )}
+                </svg>
+              </button>
+            </div>
           </>
         )}
 
