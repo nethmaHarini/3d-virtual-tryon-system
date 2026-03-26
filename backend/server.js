@@ -197,15 +197,47 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/auth/google", async (req, res) => {
-  const { accessToken } = req.body;
+  const { code } = req.body;
 
-  if (!accessToken) {
+  if (!code) {
     return res.status(400).json({
-      message: "Google access token is required",
+      message: "Google authorization code is required",
     });
   }
 
   try {
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code: code,
+        grant_type: "authorization_code",
+        redirect_uri: `${process.env.FRONTEND_URL}`,
+      }),
+    });
+
+    if (!tokenResponse.ok) {
+      console.error("Token exchange failed:", await tokenResponse.text());
+      return res.status(401).json({
+        message: "Failed to exchange Google authorization code",
+      });
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    if (!accessToken) {
+      return res.status(401).json({
+        message: "No access token received from Google",
+      });
+    }
+
+    // Get user info using access token
     const googleResponse = await fetch(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       {

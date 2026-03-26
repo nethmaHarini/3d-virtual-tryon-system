@@ -23,20 +23,21 @@ function App() {
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const googleSignIn = useGoogleLogin({
-    flow: "implicit",
+    flow: "auth-code",
     scope: "openid email profile",
+    redirect_uri: `${window.location.origin}/`,
     prompt: "select_account",
-    onSuccess: async (tokenResponse) => {
+    onSuccess: async (codeResponse) => {
       setIsGoogleLoading(true);
       try {
         const response = await fetch(
-          "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/auth/google",
+          "http://localhost:3000/auth/google",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ accessToken: tokenResponse.access_token }),
+            body: JSON.stringify({ code: codeResponse.code }),
           }
         );
 
@@ -62,7 +63,8 @@ function App() {
         setIsGoogleLoading(false);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Google OAuth error:", error);
       setIsGoogleLoading(false);
       alert("Google sign-in failed");
     },
@@ -132,7 +134,7 @@ function App() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/login",
+        "http://localhost:3000/login",
         {
           method: "POST",
           headers: {
@@ -194,7 +196,7 @@ function App() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/register",
+        "http://localhost:3000/register",
         {
           method: "POST",
           headers: {
@@ -242,7 +244,7 @@ function App() {
 
     try {
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/forgot-password",
+        "http://localhost:3000/forgot-password",
         {
           method: "POST",
           headers: {
