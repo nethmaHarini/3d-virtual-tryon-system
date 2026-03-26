@@ -1,3 +1,12 @@
+const styles = {
+  disclaimer: {
+    marginTop: "12px",
+    fontSize: "12px",
+    color: "#8fa3c7",
+    textAlign: "center",
+    lineHeight: "1.5",
+  },
+};
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -276,7 +285,7 @@ function Dashboard() {
     },
     card: {
       width: "100%",
-      maxWidth: "780px",
+      maxWidth: "880px",
       background: "linear-gradient(180deg, rgba(10, 28, 76, 0.94) 0%, rgba(6, 18, 52, 0.96) 100%)",
       borderRadius: "24px",
       border: "1px solid rgba(120, 171, 255, 0.22)",
@@ -488,6 +497,9 @@ function Dashboard() {
           >
             {loading ? "Processing..." : "Generate 3D Avatar"}
           </button>
+          <p style={styles.disclaimer}>
+            By clicking generate, you agree to our Terms of Service and Privacy Policy regarding biometric data processing.
+          </p>
         </div>
       </div>
 
