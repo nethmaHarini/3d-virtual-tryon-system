@@ -108,11 +108,66 @@ function Catalog() {
 
   // Demo product data (static)
   const tshirts = [
-    { name: "White Cotton", img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80" },
-    { name: "Black Cotton", img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0" },
-    { name: "Gray Buttoned", img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50" },
-    { name: "Highneck T Shirt", img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80" },
-    { name: "Red Polo", img: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90" },
+    {
+      id: "t1",
+      name: "White Cotton",
+      category: "T-Shirts",
+      image: "/images/three-shirts.png",
+      thumbnails: [
+        "/images/three-shirts.png",
+        "/images/three-shirts.png",
+        "/images/three-shirts.png"
+      ],
+      breadcrumb: "Shop / Apparel / T-Shirts"
+    },
+    {
+      id: "t2",
+      name: "Black Cotton",
+      category: "T-Shirts",
+      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0",
+      thumbnails: [
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0"
+      ],
+      breadcrumb: "Shop / Apparel / T-Shirts"
+    },
+    {
+      id: "t3",
+      name: "Gray Buttoned",
+      category: "T-Shirts",
+      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
+      thumbnails: [
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50"
+      ],
+      breadcrumb: "Shop / Apparel / T-Shirts"
+    },
+    {
+      id: "t4",
+      name: "Highneck T Shirt",
+      category: "T-Shirts",
+      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80",
+      thumbnails: [
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80"
+      ],
+      breadcrumb: "Shop / Apparel / T-Shirts"
+    },
+    {
+      id: "t5",
+      name: "Red Polo",
+      category: "T-Shirts",
+      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90",
+      thumbnails: [
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90"
+      ],
+      breadcrumb: "Shop / Apparel / T-Shirts"
+    },
   ];
   const trousers = [];
 
@@ -180,19 +235,39 @@ function Catalog() {
           marginTop: 8,
         }}>
           {(tab === "tshirts" ? tshirts : trousers).map((item, idx) => (
-            <div key={item.name + idx} style={{
-              background: "#181f2b",
-              borderRadius: 16,
-              boxShadow: "0 2px 16px #1ce1ff11",
-              border: "1.5px solid #232b3a",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              minHeight: 240,
-            }}>
-              <img src={item.img} alt={item.name} style={{ width: "100%", height: 180, objectFit: "cover", background: "#222", borderRadius: "16px 16px 0 0" }} />
+            <div
+              key={item.name + idx}
+              style={{
+                background: "#181f2b",
+                borderRadius: 16,
+                boxShadow: "0 2px 16px #1ce1ff11",
+                border: "1.5px solid #232b3a",
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                minHeight: 240,
+                cursor: "pointer",
+                transition: "box-shadow 0.18s, border 0.18s",
+              }}
+              onClick={() =>
+                navigate("/garment-detail", {
+                  state: {
+                    garment: {
+                      ...item,
+                      breadcrumb: tab === "tshirts"
+                        ? "Shop / Apparel / T-Shirts"
+                        : "Shop / Apparel / Trousers",
+                      title: item.name,
+                      images: [item.image],
+                      sizes: ["S", "M", "L"],
+                    },
+                  },
+                })
+              }
+            >
+              <img src={item.image} alt={item.name} style={{ width: "100%", height: 180, objectFit: "cover", background: "#222", borderRadius: "16px 16px 0 0" }} />
               <div style={{ width: "100%", padding: "12px 16px 10px 16px", color: "#b6d8ff", fontWeight: 500, fontSize: 15, borderTop: "1px solid #232b3a", background: "#181f2b" }}>{item.name}</div>
             </div>
           ))}
