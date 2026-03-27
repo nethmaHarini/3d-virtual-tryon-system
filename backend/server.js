@@ -11,7 +11,7 @@ require("dotenv").config();
 
 const app = express();
 const SECRET = process.env.JWT_SECRET || "your_secret_key";
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5174";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -66,7 +66,10 @@ const createUniqueUsername = async (seed) => {
   let attempts = 0;
 
   while (attempts < 20) {
-    const existing = await pool.query("SELECT 1 FROM users WHERE username = $1", [candidate]);
+    const existing = await pool.query(
+      "SELECT 1 FROM users WHERE username = $1",
+      [candidate],
+    );
 
     if (existing.rows.length === 0) {
       return candidate;
@@ -81,11 +84,9 @@ const createUniqueUsername = async (seed) => {
 };
 
 const createAuthToken = (user) => {
-  return jwt.sign(
-    { id: user.id, email: user.email },
-    SECRET,
-    { expiresIn: "1h" }
-  );
+  return jwt.sign({ id: user.id, email: user.email }, SECRET, {
+    expiresIn: "1h",
+  });
 };
 
 app.post("/register", async (req, res) => {
@@ -118,7 +119,7 @@ app.post("/register", async (req, res) => {
   try {
     const existingUser = await pool.query(
       "SELECT * FROM users WHERE email = $1 OR username = $2",
-      [email, username]
+      [email, username],
     );
 
     if (existingUser.rows.length > 0) {
@@ -131,7 +132,7 @@ app.post("/register", async (req, res) => {
 
     await pool.query(
       "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
-      [username, email, hashedPassword]
+      [username, email, hashedPassword],
     );
 
     res.json({ message: "Registration successful" });
@@ -163,10 +164,9 @@ app.post("/login", async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(401).json({
@@ -197,20 +197,55 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/auth/google", async (req, res) => {
-  const { accessToken } = req.body;
+  const { code } = req.body;
 
-  if (!accessToken) {
+  if (!code) {
     return res.status(400).json({
-      message: "Google access token is required",
+      message: "Google authorization code is required",
     });
   }
 
   try {
-    const googleResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    // Exchange authorization code for access token
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code: code,
+        grant_type: "authorization_code",
+        redirect_uri: `${process.env.FRONTEND_URL}`,
+      }),
     });
+
+    if (!tokenResponse.ok) {
+      console.error("Token exchange failed:", await tokenResponse.text());
+      return res.status(401).json({
+        message: "Failed to exchange Google authorization code",
+      });
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    if (!accessToken) {
+      return res.status(401).json({
+        message: "No access token received from Google",
+      });
+    }
+
+    // Get user info using access token
+    const googleResponse = await fetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
 
     if (!googleResponse.ok) {
       return res.status(401).json({
@@ -227,7 +262,10 @@ app.post("/auth/google", async (req, res) => {
       });
     }
 
-    const existingUser = await pool.query("SELECT * FROM users WHERE email = $1", [googleEmail]);
+    const existingUser = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [googleEmail],
+    );
 
     if (existingUser.rows.length > 0) {
       const token = createAuthToken(existingUser.rows[0]);
@@ -243,14 +281,14 @@ app.post("/auth/google", async (req, res) => {
     }
 
     const generatedUsername = await createUniqueUsername(
-      googleUser?.name || googleEmail.split("@")[0]
+      googleUser?.name || googleEmail.split("@")[0],
     );
     const generatedPassword = `google_${Math.random().toString(36).slice(2, 14)}`;
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
     const insertedUser = await pool.query(
       "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email",
-      [generatedUsername, googleEmail, hashedPassword]
+      [generatedUsername, googleEmail, hashedPassword],
     );
 
     const token = createAuthToken(insertedUser.rows[0]);
@@ -274,14 +312,15 @@ app.post("/forgot-password", async (req, res) => {
   }
 
   if (!isValidEmail(email)) {
-    return res.status(400).json({ message: "Please provide a valid email address" });
+    return res
+      .status(400)
+      .json({ message: "Please provide a valid email address" });
   }
 
   try {
-    const result = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+    const result = await pool.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "User not found" });
@@ -291,10 +330,10 @@ app.post("/forgot-password", async (req, res) => {
     const token = crypto.randomBytes(32).toString("hex");
 
     // Save token in DB
-    await pool.query(
-      "UPDATE users SET reset_token = $1 WHERE email = $2",
-      [token, email]
-    );
+    await pool.query("UPDATE users SET reset_token = $1 WHERE email = $2", [
+      token,
+      email,
+    ]);
 
     const resetLink = `${FRONTEND_URL}/reset-password/${token}`;
 
@@ -325,24 +364,28 @@ app.post("/reset-password/:token", async (req, res) => {
   }
 
   if (!isStrongPassword(password)) {
-    return res.status(400).json({ message: "Password must be at least 6 characters" });
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 6 characters" });
   }
 
   try {
     const result = await pool.query(
       "SELECT id FROM users WHERE reset_token = $1",
-      [token]
+      [token],
     );
 
     if (result.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid or expired reset token" });
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
       "UPDATE users SET password = $1, reset_token = NULL WHERE id = $2",
-      [hashedPassword, result.rows[0].id]
+      [hashedPassword, result.rows[0].id],
     );
 
     return res.json({ message: "Password reset successful" });
@@ -424,7 +467,7 @@ app.post(
          WHERE table_name = 'avatars'
            AND column_name IN ('avatar_url', 'avatar_file')
          ORDER BY CASE WHEN column_name = 'avatar_url' THEN 1 ELSE 2 END
-         LIMIT 1`
+         LIMIT 1`,
       );
 
       if (avatarColumnResult.rows.length === 0) {
@@ -436,7 +479,7 @@ app.post(
       const avatarColumn = avatarColumnResult.rows[0].column_name;
       const insertAvatarResult = await pool.query(
         `INSERT INTO avatars (user_id, ${avatarColumn}) VALUES ($1, $2) RETURNING *`,
-        [userId, avatarUrl]
+        [userId, avatarUrl],
       );
 
       const savedAvatar = insertAvatarResult.rows[0];
@@ -456,7 +499,7 @@ app.post(
         message: "Server error",
       });
     }
-  }
+  },
 );
 
 // Serve generated avatars statically
