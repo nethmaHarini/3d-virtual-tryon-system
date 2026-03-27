@@ -52,6 +52,8 @@ This is a **temporary cloud development URL** that GitHub provides when developi
 
 ## 🔐 Environment Variables Explained
 
+**⚠️ Important**: `.env` files contain sensitive information and are **excluded from git tracking** for security. You'll need to create your own `.env` files using the templates below.
+
 ### Frontend Environment (`.env`)
 ```env
 # Google OAuth Client ID for authentication
@@ -68,7 +70,7 @@ GMAIL_APP_PASSWORD=yhmcenkgyyxssrte
 JWT_SECRET=mySuperSecretKey_12345_xyz_987
 
 # Frontend URL for CORS and OAuth redirects
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5173/
 
 # Google OAuth credentials
 GOOGLE_CLIENT_ID=1003992750101-ser2fv1rm5ijp96h2ltgkuth2mpae65f.apps.googleusercontent.com
@@ -128,7 +130,7 @@ Create `.env` file in backend folder:
 GMAIL_USER=your-email@gmail.com
 GMAIL_APP_PASSWORD=your-gmail-app-password
 JWT_SECRET=your-super-secret-jwt-key
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL=http://localhost:5173/
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
@@ -186,12 +188,18 @@ To enable Google Sign-In, you need to:
 5. **Configure Authorized URLs**
    - **Authorized JavaScript origins:**
      - `http://localhost:5173`
-   - **Authorized redirect URIs:**
-     - `http://localhost:5173/`
+   - **Authorized redirect URIs (Add ALL of these):**
+     - `http://localhost:5173` (no slash)
+     - `http://localhost:5173/` (with slash)
+     - `http://localhost:5173/auth`
+     - `http://localhost:5173/oauth`
+     - `http://localhost:5173/oauth/callback`
 
 6. **Update Environment Variables**
    - Copy Client ID to both `.env` files
    - Copy Client Secret to backend `.env`
+
+**Important**: Adding multiple redirect URIs ensures compatibility with the `@react-oauth/google` library, which automatically handles redirect URI selection based on its internal logic.
 
 ## 📧 Email Configuration
 
@@ -252,8 +260,14 @@ This URL is **temporary** and only works while your friend's Codespace is runnin
 ### Common Issues:
 
 1. **Google OAuth Error "redirect_uri_mismatch"**
-   - Check Google Console authorized redirect URIs
-   - Ensure URLs match exactly (with/without trailing slash)
+   - Check Google Console has ALL required redirect URIs:
+     - `http://localhost:5173` (no slash)
+     - `http://localhost:5173/` (with slash)
+     - `http://localhost:5173/auth`
+     - `http://localhost:5173/oauth`
+     - `http://localhost:5173/oauth/callback`
+   - Clear browser cache for `accounts.google.com`
+   - Ensure FRONTEND_URL in backend/.env has trailing slash: `http://localhost:5173/`
 
 2. **CORS Errors**
    - Verify FRONTEND_URL in backend .env matches your frontend URL

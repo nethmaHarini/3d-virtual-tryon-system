@@ -14,16 +14,24 @@ npm install
 ```
 
 ### Step 2: Set Up Environment Variables
-```bash
-# Backend - Copy template and edit
-cd backend
-cp .env.example .env
-# Edit .env with your actual credentials
 
-# Frontend - Copy template and edit
+**⚠️ Important**: `.env` files are excluded from git for security. Create them manually:
+
+```bash
+# Backend - Create .env file (copy from .env.example if available)
+cd backend
+# Create .env file and add your credentials:
+# GMAIL_USER=your-email@gmail.com
+# GMAIL_APP_PASSWORD=your-app-password
+# JWT_SECRET=your-secret-key
+# FRONTEND_URL=http://localhost:5173/
+# GOOGLE_CLIENT_ID=your-google-client-id
+# GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Frontend - Create .env file
 cd ../frontend
-cp .env.example .env
-# Edit .env with your Google Client ID
+# Create .env file and add:
+# VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
 ### Step 3: Start the Servers
@@ -56,9 +64,16 @@ npm run dev
 2. Create new project or select existing
 3. Enable "Google+ API" in APIs & Services
 4. Create OAuth 2.0 Client ID credentials
-5. Add `http://localhost:5173` to authorized origins
-6. Add `http://localhost:5173/` to authorized redirect URIs
+5. Add `http://localhost:5173` to authorized JavaScript origins
+6. **Add ALL these redirect URIs** to authorized redirect URIs:
+   - `http://localhost:5173` (no slash)
+   - `http://localhost:5173/` (with slash)
+   - `http://localhost:5173/auth`
+   - `http://localhost:5173/oauth`
+   - `http://localhost:5173/oauth/callback`
 7. Copy Client ID and Client Secret to your .env files
+
+**Note**: Adding multiple redirect URIs ensures compatibility with the `@react-oauth/google` library's automatic redirect handling.
 
 ## 📧 Setting Up Gmail for Emails
 

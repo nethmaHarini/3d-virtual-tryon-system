@@ -25,7 +25,7 @@ function App() {
   const googleSignIn = useGoogleLogin({
     flow: "auth-code",
     scope: "openid email profile",
-    redirect_uri: `${window.location.origin}/`,
+    // redirect_uri: window.location.origin, // Let library handle this automatically
     prompt: "select_account",
     onSuccess: async (codeResponse) => {
       setIsGoogleLoading(true);
