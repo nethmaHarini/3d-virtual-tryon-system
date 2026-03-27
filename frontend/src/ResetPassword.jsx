@@ -74,7 +74,8 @@ function ResetPassword() {
       justifyContent: "center",
       background: "linear-gradient(135deg, #13245f 0%, #020b2b 100%)",
       fontFamily: "Segoe UI, sans-serif",
-      padding: "20px",
+      padding: "110px 20px 20px",
+      position: "relative",
     },
     card: {
       width: "100%",
