@@ -14,9 +14,9 @@ html, body, #root {
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
   justify-content: center;
   align-items: center;
-  gap: 2rem;
-  padding: 2rem 2.5rem;
-  max-width: 1600px;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem;
+  max-width: 1400px;
   margin: 0 auto;
   box-sizing: border-box;
 }
