@@ -278,7 +278,8 @@ function App() {
       justifyContent: "center",
       background: "linear-gradient(135deg, #13245f 0%, #020b2b 100%)",
       fontFamily: "Segoe UI, sans-serif",
-      padding: "20px",
+      padding: "110px 20px 20px",
+      position: "relative",
     },
     card: {
       width: "100%",
@@ -299,14 +300,16 @@ function App() {
       },
         topHeader: {
           position: "absolute",
-          top: "30px",
+          top: "18px",
           left: "50%",
           transform: "translateX(-50%)",
           color: "#7fd4ff",
-          fontSize: "2.5rem",
+          fontSize: "1.9rem",
           fontWeight: 800,
           letterSpacing: "0.05em",
           textShadow: "0 0 14px rgba(67, 193, 255, 0.65)",
+          zIndex: 10,
+          whiteSpace: "nowrap",
         },
     subtitle: {
      color: "#9fb3c8",

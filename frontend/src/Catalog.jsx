@@ -62,7 +62,7 @@ function Catalog() {
       left: 28,
       zIndex: 1100,
       margin: 0,
-      fontSize: "2rem",
+      fontSize: "2.5rem",
       letterSpacing: "0.05em",
       fontWeight: 800,
       color: "#7fd4ff",

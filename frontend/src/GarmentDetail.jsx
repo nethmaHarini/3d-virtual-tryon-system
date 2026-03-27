@@ -100,16 +100,7 @@ export default function GarmentDetail() {
 
 
 
-  // Try-On navigation
-  const handleTryOn = () => {
-    if (!selectedSize) return;
-    navigate("/try-on", {
-      state: {
-        garment,
-        selectedSize,
-      },
-    });
-  };
+
 
   // Breadcrumbs
   const breadcrumb = garment.breadcrumb || "Shop / Apparel / Essentials";
@@ -378,16 +369,16 @@ export default function GarmentDetail() {
             <button
               style={{
                 background: selectedSize ? BRIGHT_BLUE : DISABLED_BLUE,
-                color: "#fff",
-                border: "none",
-                borderRadius: 10,
-                padding: "18px 0",
+                color: TEXT_COLOR,
                 fontSize: 22,
                 fontWeight: 800,
                 letterSpacing: 1.2,
+                border: "none",
+                borderRadius: 14,
+                padding: "18px 0",
+                width: "100%",
                 marginTop: 18,
                 marginBottom: 8,
-                width: "100%",
                 boxShadow: selectedSize
                   ? "0 4px 24px 0 #3ea6ff55"
                   : "0 2px 8px 0 #0006",
@@ -396,7 +387,7 @@ export default function GarmentDetail() {
                 transition: "background 0.2s, box-shadow 0.2s, opacity 0.2s",
               }}
               disabled={!selectedSize}
-              onClick={handleTryOn}
+              onClick={() => navigate("/try-on")}
             >
               Proceed to Try-On
             </button>
