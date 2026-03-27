@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import API_URL from "./config";
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ function ResetPassword() {
 
     try {
       const response = await fetch(
-        `https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/reset-password/${token}`,
+        `${API_URL}/reset-password/${token}`,
         {
           method: "POST",
           headers: {

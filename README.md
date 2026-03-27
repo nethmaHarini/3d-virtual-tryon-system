@@ -129,6 +129,9 @@ A modern full-stack 3D virtual try-on application that allows users to generate 
 ### Backend `.env` (backend/.env)
 
 ```env
+# Database Connection (Required for deployment)
+DATABASE_URL=postgresql://username:password@host:port/database?sslmode=require
+
 # Gmail Configuration for Password Reset Emails
 GMAIL_USER=your-email@gmail.com
 GMAIL_APP_PASSWORD=your-16-char-app-password
@@ -142,6 +145,9 @@ FRONTEND_URL=http://localhost:5173
 # Google OAuth Credentials
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Server Port (automatically set by hosting platforms)
+PORT=3000
 ```
 
 ### Frontend `.env` (frontend/.env)
@@ -149,17 +155,12 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```env
 # Google OAuth Client ID
 VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+
+# API Backend URL (for production)
+VITE_API_URL=http://localhost:3000
 ```
 
-### Database Connection (backend/db.js)
-
-Update the connection string in `backend/db.js`:
-
-```javascript
-connectionString: "postgresql://username:password@host:port/database?sslmode=require";
-```
-
-For Neon PostgreSQL, use the connection string provided in your Neon dashboard.
+**Note**: The database connection string can be set via `DATABASE_URL` environment variable or directly in `backend/db.js`.
 
 ## 📦 Quick Start
 
@@ -336,25 +337,80 @@ GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx  # 16-char app password
 
 ## 🌐 Deployment
 
-### Frontend Deployment (Vercel/Netlify)
+This application is configured for easy deployment on modern hosting platforms.
 
-1. Build command: `npm run build`
-2. Output directory: `dist`
-3. Set environment variable: `VITE_GOOGLE_CLIENT_ID`
-4. Update Google OAuth redirect URIs with production URL
+### Quick Deployment Guide
 
-### Backend Deployment (Railway/Render/Heroku)
+**Frontend → Vercel** | **Backend → Render** | **Database → Neon**
 
-1. Set all environment variables from `.env`
-2. Update `FRONTEND_URL` to production frontend URL
-3. Ensure PostgreSQL database is accessible
-4. Update Google OAuth authorized origins with production backend URL
+📘 **Detailed Instructions**: See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for complete step-by-step guide
 
-### Database Deployment
+### Frontend Deployment (Vercel)
 
-- **Neon**: Already cloud-hosted, just use the connection string
-- **Self-hosted**: Ensure PostgreSQL is accessible from backend server
-- **Other providers**: Supabase, PlanetScale, or AWS RDS
+The project includes `vercel.json` for automatic configuration.
+
+1. **Connect Repository**:
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Import your GitHub repository
+   - Vercel will auto-detect the configuration
+
+2. **Environment Variables**:
+   ```
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   VITE_API_URL=https://your-backend.onrender.com
+   ```
+
+3. **Deploy**: Vercel automatically deploys on push to main branch
+
+### Backend Deployment (Render)
+
+The backend is configured to work with Render's deployment system.
+
+1. **Create Web Service**:
+   - Root Directory: `backend`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+
+2. **Environment Variables**:
+   ```
+   DATABASE_URL=your-neon-postgresql-connection-string
+   JWT_SECRET=your-super-secret-jwt-key
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_APP_PASSWORD=your-app-password
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   FRONTEND_URL=https://your-vercel-app.vercel.app
+   ```
+
+3. **Deploy**: Push to GitHub and Render auto-deploys
+
+### Database (Neon PostgreSQL)
+
+- Already cloud-hosted and serverless
+- Use the connection string in `DATABASE_URL`
+- No additional configuration needed
+
+### Post-Deployment Steps
+
+1. **Update Google OAuth**:
+   - Add production URLs to Authorized JavaScript origins
+   - Add production URLs to Authorized redirect URIs
+
+2. **Test Authentication**:
+   - Email/password registration
+   - Google OAuth sign-in
+   - Password reset email
+
+3. **Monitor**:
+   - Check Vercel deployment logs
+   - Check Render service logs
+   - Monitor database connections in Neon dashboard
+
+### Alternative Platforms
+
+- **Frontend**: Netlify, Cloudflare Pages
+- **Backend**: Railway, Fly.io, Heroku
+- **Database**: Supabase, PlanetScale, AWS RDS
 
 ## 🤝 Contributing
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
+import API_URL from "./config";
 
 function App() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ function App() {
       setIsGoogleLoading(true);
       try {
         const response = await fetch(
-          "http://localhost:3000/auth/google",
+          `${API_URL}/auth/google`,
           {
             method: "POST",
             headers: {
@@ -134,7 +135,7 @@ function App() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        "http://localhost:3000/login",
+        `${API_URL}/login`,
         {
           method: "POST",
           headers: {
@@ -196,7 +197,7 @@ function App() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        "http://localhost:3000/register",
+        `${API_URL}/register`,
         {
           method: "POST",
           headers: {
@@ -244,7 +245,7 @@ function App() {
 
     try {
       const response = await fetch(
-        "http://localhost:3000/forgot-password",
+        `${API_URL}/forgot-password`,
         {
           method: "POST",
           headers: {
