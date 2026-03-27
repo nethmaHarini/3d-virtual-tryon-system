@@ -34,6 +34,9 @@ npm install
 Create a file named `.env` in the `backend/` directory:
 
 ```env
+# Database Connection (Optional for local if set in db.js)
+DATABASE_URL=postgresql://username:password@host:port/database?sslmode=require
+
 # Gmail Configuration
 GMAIL_USER=your-email@gmail.com
 GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
@@ -47,17 +50,26 @@ FRONTEND_URL=http://localhost:5173
 # Google OAuth Credentials
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Server Port (default: 3000)
+PORT=3000
 ```
+
+**Note**: You can either set `DATABASE_URL` here or directly configure the connection in `backend/db.js`.
 
 ### Frontend Environment (frontend/.env)
 
 Create a file named `.env` in the `frontend/` directory:
 
 ```env
+# Google OAuth Client ID
 VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+
+# Backend API URL (default: http://localhost:3000)
+VITE_API_URL=http://localhost:3000
 ```
 
-**Note**: Use the same Google Client ID in both files.
+**Note**: Use the same Google Client ID in both files. For production, update `VITE_API_URL` to your deployed backend URL.
 
 ## 🗄️ Step 3: Configure Database
 
@@ -66,7 +78,14 @@ VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 1. Go to [Neon](https://neon.tech/) and sign up
 2. Create a new project
 3. Copy the connection string
-4. Update `backend/db.js`:
+4. **Method 1 - Environment Variable (Recommended)**:
+   Add to `backend/.env`:
+   ```env
+   DATABASE_URL=your-neon-connection-string-here
+   ```
+
+5. **Method 2 - Direct Configuration**:
+   Update `backend/db.js`:
    ```javascript
    const pool = new Pool({
      connectionString: "your-neon-connection-string-here",
@@ -78,13 +97,11 @@ VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 
 1. Install PostgreSQL locally
 2. Create a database: `createdb virtufit3d`
-3. Update `backend/db.js`:
-   ```javascript
-   const pool = new Pool({
-     connectionString:
-       "postgresql://username:password@localhost:5432/virtufit3d",
-   });
+3. Add to `backend/.env`:
+   ```env
+   DATABASE_URL=postgresql://username:password@localhost:5432/virtufit3d
    ```
+   Or update `backend/db.js` with the connection string directly.
 
 ### Create Database Tables
 
@@ -299,10 +316,12 @@ Now that your app is running:
 2. **Try avatar generation** by uploading photos
 3. **Browse the catalog** to see available products
 4. **Explore the code** in `frontend/src/` and `backend/`
+5. **Deploy to production**: Follow [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) when ready
 
 ## 📚 Additional Resources
 
 - **Full Documentation**: See [README.md](README.md)
+- **Deployment Guide**: See [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md) for production deployment
 - **API Reference**: Check backend routes in `backend/server.js`
 - **Component Guide**: Explore React components in `frontend/src/`
 
