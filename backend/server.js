@@ -460,6 +460,31 @@ app.post(
 );
 
 // Serve generated avatars statically
+
+// Mock Fit Analysis API
+app.post("/fit-analysis", (req, res) => {
+  res.json({
+    bodyRegions: [
+      { name: "Chest", status: "Tight" },
+      { name: "Waist", status: "Perfect" },
+      { name: "Hip", status: "Loose" }
+    ],
+    recommendation:
+      "Recommended size is based on AI analysis. Consider adjusting garment fit for better comfort."
+  });
+});
+
+
+// Save Fit Analysis API
+app.post("/save-fit", async (req, res) => {
+  const { userId, chest, waist, hip, recommendation } = req.body;
+
+  // temporary log (later save to DB)
+  console.log(req.body);
+
+  res.json({ message: "Fit analysis saved" });
+});
+
 app.use("/generated-avatars", express.static("generated-avatars"));
 
 app.listen(3000, "0.0.0.0", () => {
