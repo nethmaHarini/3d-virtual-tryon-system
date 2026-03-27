@@ -14,7 +14,7 @@ dist-ssr
 *.local
 
 # Environment variables (IMPORTANT: Keep .env files private!)
-.env
+# .env - TEMPORARILY TRACKED FOR TEAM COLLABORATION (Remove tracking after project completes)
 .env.local
 .env.development.local
 .env.test.local
