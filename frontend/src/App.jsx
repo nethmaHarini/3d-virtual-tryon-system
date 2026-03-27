@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
+import API_URL from "./config";
 
 function App() {
   const navigate = useNavigate();
@@ -23,20 +24,21 @@ function App() {
   const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const googleSignIn = useGoogleLogin({
-    flow: "implicit",
+    flow: "auth-code",
     scope: "openid email profile",
+    // redirect_uri: window.location.origin, // Let library handle this automatically
     prompt: "select_account",
-    onSuccess: async (tokenResponse) => {
+    onSuccess: async (codeResponse) => {
       setIsGoogleLoading(true);
       try {
         const response = await fetch(
-          "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/auth/google",
+          `${API_URL}/auth/google`,
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ accessToken: tokenResponse.access_token }),
+            body: JSON.stringify({ code: codeResponse.code }),
           }
         );
 
@@ -62,7 +64,8 @@ function App() {
         setIsGoogleLoading(false);
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Google OAuth error:", error);
       setIsGoogleLoading(false);
       alert("Google sign-in failed");
     },
@@ -132,7 +135,7 @@ function App() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/login",
+        `${API_URL}/login`,
         {
           method: "POST",
           headers: {
@@ -194,7 +197,7 @@ function App() {
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/register",
+        `${API_URL}/register`,
         {
           method: "POST",
           headers: {
@@ -242,7 +245,7 @@ function App() {
 
     try {
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/forgot-password",
+        `${API_URL}/forgot-password`,
         {
           method: "POST",
           headers: {

@@ -9,6 +9,7 @@ const styles = {
 };
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "./config";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -125,7 +126,7 @@ function Dashboard() {
 
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev/generate-avatar",
+        `${API_URL}/generate-avatar`,
         {
           method: "POST",
           body: formData,
