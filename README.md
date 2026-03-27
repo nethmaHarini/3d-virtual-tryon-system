@@ -1,302 +1,394 @@
 # VirtuFit3D Studio - 3D Virtual Try-On System
 
-A modern 3D virtual try-on application that allows users to visualize clothing and accessories on virtual avatars. Built with React frontend and Node.js backend with PostgreSQL database.
+A modern full-stack 3D virtual try-on application that allows users to generate personalized avatars and virtually try on clothing. Built with React, Node.js, Express, and PostgreSQL.
 
-## 🌟 About This Project
+[![React](https://img.shields.io/badge/React-19-blue)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-blue)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This project was developed by your friend using **GitHub Codespaces** - a cloud-based development environment. That's why you see URLs like:
-```
-https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev
-```
+## 🌟 Features
 
-This is a **temporary cloud development URL** that GitHub provides when developing in Codespaces. It's not a permanent website - it only works while the Codespace is active.
+- **User Authentication**: Secure registration/login with JWT tokens and Google OAuth 2.0 integration
+- **Avatar Generation**: Upload body photos (front, back, side) to create personalized 3D avatars
+- **Product Catalog**: Browse t-shirts and trousers with detailed product views
+- **Virtual Try-On**: Visualize clothing on personalized 3D avatars
+- **Password Reset**: Email-based password recovery system
+- **Responsive Design**: Modern UI with gradient themes optimized for all devices
 
 ## 🏗️ Project Structure
 
 ```
 3d-virtual-tryon-system/
-├── frontend/                 # React + Vite frontend application
+├── frontend/                    # React + Vite frontend application
 │   ├── src/
-│   │   ├── App.jsx          # Main login/register component
-│   │   ├── Dashboard.jsx    # User dashboard
-│   │   ├── Catalog.jsx      # Product catalog
-│   │   ├── AvatarViewer.jsx # 3D avatar component
-│   │   └── GarmentDetail.jsx # Product details
-│   ├── .env                 # Frontend environment variables
-│   └── package.json         # Frontend dependencies
-├── backend/                 # Node.js + Express backend
-│   ├── server.js           # Main server file
-│   ├── db.js               # Database connection
-│   ├── .env                # Backend environment variables
-│   └── package.json        # Backend dependencies
-└── README.md               # This file
+│   │   ├── main.jsx            # App entry point with routing
+│   │   ├── App.jsx             # Login/Register/Forgot Password
+│   │   ├── Dashboard.jsx       # Avatar generation interface
+│   │   ├── AvatarViewer.jsx    # Display generated 3D avatars
+│   │   ├── Catalog.jsx         # Product catalog browser
+│   │   ├── GarmentDetail.jsx   # Individual product details
+│   │   └── ResetPassword.jsx   # Password reset page
+│   ├── .env                    # Frontend environment variables
+│   └── package.json            # Frontend dependencies
+├── backend/                     # Node.js + Express backend
+│   ├── server.js               # Main server with API routes
+│   ├── db.js                   # PostgreSQL database connection
+│   ├── .env                    # Backend environment variables
+│   └── package.json            # Backend dependencies
+├── README.md                    # Project documentation (this file)
+└── SETUP.md                     # Quick setup guide
 ```
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **React 19** - UI framework
-- **Vite** - Build tool and dev server
-- **React Router** - Client-side routing
-- **@react-oauth/google** - Google authentication
-- **Modern CSS** - Custom styling with gradients and animations
+
+- **React 19** - Modern UI framework with hooks
+- **Vite** - Fast build tool and dev server
+- **React Router v6** - Client-side routing
+- **@react-oauth/google** - Google OAuth integration
+- **CSS-in-JS** - Custom styling with modern design
 
 ### Backend
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **PostgreSQL** - Database (hosted on Neon)
+
+- **Node.js** - JavaScript runtime
+- **Express.js 5** - Web application framework
+- **PostgreSQL** - Relational database
+- **JWT (jsonwebtoken)** - Secure authentication tokens
 - **bcryptjs** - Password hashing
-- **jsonwebtoken** - JWT authentication
-- **nodemailer** - Email functionality
-- **cors** - Cross-origin resource sharing
+- **nodemailer** - Email functionality for password reset
+- **multer** - Multipart form data handling
+- **CORS** - Cross-origin resource sharing
+- **dotenv** - Environment variable management
 
-## 🔐 Environment Variables Explained
+### Database
 
-**⚠️ Important**: `.env` files contain sensitive information and are **excluded from git tracking** for security. You'll need to create your own `.env` files using the templates below.
+- **Neon PostgreSQL** - Serverless PostgreSQL hosting
+- **pg (node-postgres)** - PostgreSQL client for Node.js
 
-### Frontend Environment (`.env`)
-```env
-# Google OAuth Client ID for authentication
-VITE_GOOGLE_CLIENT_ID=1003992750101-ser2fv1rm5ijp96h2ltgkuth2mpae65f.apps.googleusercontent.com
-```
+## 📋 API Endpoints
 
-### Backend Environment (`.env`)
-```env
-# Gmail configuration for sending emails (password reset, etc.)
-GMAIL_USER=csandamali63@gmail.com
-GMAIL_APP_PASSWORD=yhmcenkgyyxssrte
+### Authentication
 
-# JWT secret for token signing
-JWT_SECRET=mySuperSecretKey_12345_xyz_987
+- `POST /register` - Create new user account
+- `POST /login` - Email/password authentication
+- `POST /auth/google` - Google OAuth authentication
+- `POST /forgot-password` - Request password reset email
+- `POST /reset-password/:token` - Reset password with token
 
-# Frontend URL for CORS and OAuth redirects
-FRONTEND_URL=http://localhost:5173/
+### Avatar & Features
 
-# Google OAuth credentials
-GOOGLE_CLIENT_ID=1003992750101-ser2fv1rm5ijp96h2ltgkuth2mpae65f.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret_here
-```
+- `POST /generate-avatar` - Generate 3D avatar from photos (requires auth)
+- `GET /generated-avatars/*` - Serve generated avatar files
 
-### Database Connection (`db.js`)
-The project uses **Neon PostgreSQL** (serverless PostgreSQL):
-```javascript
-// Cloud PostgreSQL database
-connectionString: "postgresql://neondb_owner:npg_lj4U7ZvgHSsJ@ep-purple-butterfly-a1ixbwph-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-```
+### Health Check
 
-## 🚀 Features
+- `GET /` - Server status check
+
+## 🎯 Core Features
 
 ### Authentication System
-- **Email/Password Registration & Login**
-- **Google OAuth Integration** (Sign in with Google)
-- **Password Reset via Email**
-- **JWT-based Session Management**
 
-### Core Application
-- **User Dashboard** - Personal user area
-- **3D Avatar Viewer** - Virtual try-on functionality
-- **Product Catalog** - Browse available items
-- **Garment Details** - Individual product pages
-- **Responsive Design** - Works on desktop and mobile
+- ✅ **Email/Password Registration** - Secure account creation with validation
+- ✅ **Email/Password Login** - JWT-based authentication
+- ✅ **Google OAuth 2.0** - Sign in with Google account
+- ✅ **Password Reset** - Email-based password recovery
+- ✅ **Token Management** - Secure JWT tokens (1-hour expiry)
+- ✅ **Auto-user Creation** - First-time Google users automatically registered
+
+### Avatar Generation
+
+- ✅ **Multi-angle Photo Upload** - Front, back, and side view photos
+- ✅ **Height Input** - User height specification (100-250 cm)
+- ✅ **Image Validation** - Format and file size checks (max 5MB per image)
+- ✅ **Privacy Protection** - Photos processed in-memory only, not stored
+- ✅ **GLB Export** - Generated avatars in 3D GLB format
+- ✅ **User Association** - Avatars linked to user accounts
+
+### Product Catalog
+
+- ✅ **Category Browsing** - T-Shirts and Trousers sections
+- ✅ **Product Grid View** - Visual product display with images
+- ✅ **Product Details** - Individual product pages with size selection
+- ✅ **Size Selection** - S, M, L size options
+- ✅ **Navigation** - Breadcrumbs and back navigation
 
 ### Security Features
-- **Password Hashing** (bcrypt)
-- **JWT Token Authentication**
-- **Email Validation**
-- **CORS Protection**
-- **Input Sanitization**
 
-## 📦 Local Development Setup
+- ✅ **Password Hashing** - bcrypt with salt rounds
+- ✅ **Email Validation** - Format and domain validation
+- ✅ **Input Sanitization** - Protection against malicious input
+- ✅ **CORS Protection** - Controlled cross-origin access
+- ✅ **Protected Routes** - Authentication-required endpoints
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-- Git
+## 🔐 Environment Variables
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd 3d-virtual-tryon-system
-```
+**⚠️ Important**: Never commit `.env` files to version control. Create them locally using the templates below.
 
-### 2. Backend Setup
-```bash
-cd backend
-npm install
-```
+### Backend `.env` (backend/.env)
 
-Create `.env` file in backend folder:
 ```env
+# Gmail Configuration for Password Reset Emails
 GMAIL_USER=your-email@gmail.com
-GMAIL_APP_PASSWORD=your-gmail-app-password
-JWT_SECRET=your-super-secret-jwt-key
-FRONTEND_URL=http://localhost:5173/
-GOOGLE_CLIENT_ID=your-google-client-id
+GMAIL_APP_PASSWORD=your-16-char-app-password
+
+# JWT Secret for Token Signing (use a strong random string)
+JWT_SECRET=your-super-secret-jwt-key-min-32-chars
+
+# Frontend URL for CORS and OAuth Redirects
+FRONTEND_URL=http://localhost:5173
+
+# Google OAuth Credentials
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-### 3. Frontend Setup
+### Frontend `.env` (frontend/.env)
+
+```env
+# Google OAuth Client ID
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+### Database Connection (backend/db.js)
+
+Update the connection string in `backend/db.js`:
+
+```javascript
+connectionString: "postgresql://username:password@host:port/database?sslmode=require";
+```
+
+For Neon PostgreSQL, use the connection string provided in your Neon dashboard.
+
+## 📦 Quick Start
+
+See [SETUP.md](SETUP.md) for detailed setup instructions.
+
+### Prerequisites
+
+- Node.js 16+ and npm
+- PostgreSQL database (or Neon account)
+- Gmail account for email functionality
+- Google Cloud Console project for OAuth
+
+### Installation
+
 ```bash
+# Clone repository
+git clone <repository-url>
+cd 3d-virtual-tryon-system
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
 cd ../frontend
 npm install
 ```
 
-Create `.env` file in frontend folder:
-```env
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-```
+### Configuration
 
-### 4. Start Development Servers
+1. Create `.env` files in both `backend/` and `frontend/` directories
+2. Set up PostgreSQL database
+3. Configure Google OAuth credentials
+4. Set up Gmail app password
 
-**Terminal 1 - Backend:**
+### Running
+
 ```bash
-cd backend
+# Terminal 1 - Backend (from backend/ directory)
+npm run dev
+# or
 node server.js
-# or for auto-restart:
-npx nodemon server.js
-```
 
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
+# Terminal 2 - Frontend (from frontend/ directory)
 npm run dev
 ```
 
-### 5. Access the Application
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000
-
-## 🔧 Google OAuth Setup
-
-To enable Google Sign-In, you need to:
-
-1. **Go to Google Cloud Console**
-   - Visit: https://console.cloud.google.com/
-
-2. **Create/Select Project**
-   - Create a new project or select existing one
-
-3. **Enable Google+ API**
-   - Navigate to "APIs & Services" > "Library"
-   - Search for "Google+ API" and enable it
-
-4. **Create OAuth Credentials**
-   - Go to "APIs & Services" > "Credentials"
-   - Click "Create Credentials" > "OAuth 2.0 Client ID"
-   - Application type: "Web application"
-
-5. **Configure Authorized URLs**
-   - **Authorized JavaScript origins:**
-     - `http://localhost:5173`
-   - **Authorized redirect URIs (Add ALL of these):**
-     - `http://localhost:5173` (no slash)
-     - `http://localhost:5173/` (with slash)
-     - `http://localhost:5173/auth`
-     - `http://localhost:5173/oauth`
-     - `http://localhost:5173/oauth/callback`
-
-6. **Update Environment Variables**
-   - Copy Client ID to both `.env` files
-   - Copy Client Secret to backend `.env`
-
-**Important**: Adding multiple redirect URIs ensures compatibility with the `@react-oauth/google` library, which automatically handles redirect URI selection based on its internal logic.
-
-## 📧 Email Configuration
-
-The app uses Gmail for sending password reset emails:
-
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate App Password:**
-   - Go to Google Account settings
-   - Security > 2-Step Verification > App passwords
-   - Generate password for "Mail"
-3. **Update Backend .env:**
-   ```env
-   GMAIL_USER=your-email@gmail.com
-   GMAIL_APP_PASSWORD=generated-app-password
-   ```
+Access the application at `http://localhost:5173`
 
 ## 🗄️ Database Schema
 
-The application uses PostgreSQL with the following main table:
+### Users Table
 
 ```sql
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  username VARCHAR(100) NOT NULL,
+  username VARCHAR(100) NOT NULL UNIQUE,
   email VARCHAR(255) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
+  reset_token VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-## 🌐 Deployment Options
+### Avatars Table
 
-### Option 1: Local Development
-- Use the setup instructions above
-- Perfect for development and testing
+```sql
+CREATE TABLE avatars (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  avatar_url VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### Option 2: GitHub Codespaces (Like Your Friend)
-- Fork the repository to your GitHub
-- Open in Codespaces
-- Automatically gets a dev URL like the one you saw
+## 🔧 Google OAuth Setup
 
-### Option 3: Cloud Hosting
-- **Frontend:** Vercel, Netlify, GitHub Pages
-- **Backend:** Railway, Render, Heroku
-- **Database:** Neon (already configured), Supabase, PlanetScale
+### 1. Create Google Cloud Project
 
-## 🔍 Understanding the GitHub Dev URL
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create new project or select existing
+3. Enable "Google+ API" in APIs & Services
 
-The URL `https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev` means:
-- `stunning-space-fiesta-x5q4j49ww79qh9jw` - Unique Codespace identifier
-- `3000` - Port number (backend server)
-- `app.github.dev` - GitHub Codespaces domain
+### 2. Create OAuth 2.0 Credentials
 
-This URL is **temporary** and only works while your friend's Codespace is running. Each Codespace gets a unique URL.
+1. Navigate to "APIs & Services" > "Credentials"
+2. Click "Create Credentials" > "OAuth 2.0 Client ID"
+3. Application type: "Web application"
+
+### 3. Configure Authorized URLs
+
+**Authorized JavaScript origins:**
+
+- `http://localhost:5173`
+
+**Authorized redirect URIs:**
+
+- `http://localhost:5173`
+- `http://localhost:5173/`
+
+**Note**: The redirect URI must match exactly (including trailing slash). For production, add your production URLs.
+
+### 4. Update Environment Variables
+
+Copy the Client ID and Client Secret to your `.env` files as shown above.
+
+## 📧 Gmail Configuration for Emails
+
+### 1. Enable 2-Factor Authentication
+
+Enable 2FA on your Gmail account in Google Account Security settings.
+
+### 2. Generate App Password
+
+1. Go to Google Account > Security > 2-Step Verification
+2. Scroll to "App passwords"
+3. Select "Mail" and generate password
+4. Copy the 16-character password
+
+### 3. Update Backend .env
+
+```env
+GMAIL_USER=your-email@gmail.com
+GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx  # 16-char app password
+```
 
 ## 🆘 Troubleshooting
 
-### Common Issues:
+### Common Issues
 
-1. **Google OAuth Error "redirect_uri_mismatch"**
-   - Check Google Console has ALL required redirect URIs:
-     - `http://localhost:5173` (no slash)
-     - `http://localhost:5173/` (with slash)
-     - `http://localhost:5173/auth`
-     - `http://localhost:5173/oauth`
-     - `http://localhost:5173/oauth/callback`
-   - Clear browser cache for `accounts.google.com`
-   - Ensure FRONTEND_URL in backend/.env has trailing slash: `http://localhost:5173/`
+#### Google OAuth "redirect_uri_mismatch" Error
 
-2. **CORS Errors**
-   - Verify FRONTEND_URL in backend .env matches your frontend URL
-   - Check if both servers are running
+**Solution:**
 
-3. **Database Connection Issues**
-   - Neon database might be sleeping (serverless)
-   - Check if connection string is correct in `db.js`
+- Ensure redirect URI in Google Console matches exactly: `http://localhost:5173` (no trailing slash)
+- Check `FRONTEND_URL` in backend/.env is set to `http://localhost:5173`
+- Clear browser cache for `accounts.google.com`
+- Wait 5-10 minutes for Google changes to propagate
 
-4. **Email Not Sending**
-   - Verify Gmail app password is correct
-   - Check if 2FA is enabled on Gmail account
+#### CORS Errors
+
+**Solution:**
+
+- Verify `FRONTEND_URL` in backend/.env matches your frontend URL
+- Ensure both servers are running on correct ports
+- Check browser console for specific CORS error details
+
+#### Database Connection Issues
+
+**Solution:**
+
+- Verify connection string in `backend/db.js`
+- For Neon: Database may be sleeping (serverless), retry after a few seconds
+- Check firewall/network settings
+- Ensure PostgreSQL service is running (if self-hosted)
+
+#### Email Not Sending
+
+**Solution:**
+
+- Verify Gmail app password is correct (16 characters)
+- Ensure 2FA is enabled on Gmail account
+- Check `GMAIL_USER` and `GMAIL_APP_PASSWORD` in backend/.env
+- Check backend console for nodemailer error messages
+
+#### Avatar Generation Fails with 401 Error
+
+**Solution:**
+
+- User must be logged in
+- Check JWT token is stored in localStorage
+- Verify token hasn't expired (1-hour expiry)
+- Check Authorization header is sent: `Bearer <token>`
+
+## 🌐 Deployment
+
+### Frontend Deployment (Vercel/Netlify)
+
+1. Build command: `npm run build`
+2. Output directory: `dist`
+3. Set environment variable: `VITE_GOOGLE_CLIENT_ID`
+4. Update Google OAuth redirect URIs with production URL
+
+### Backend Deployment (Railway/Render/Heroku)
+
+1. Set all environment variables from `.env`
+2. Update `FRONTEND_URL` to production frontend URL
+3. Ensure PostgreSQL database is accessible
+4. Update Google OAuth authorized origins with production backend URL
+
+### Database Deployment
+
+- **Neon**: Already cloud-hosted, just use the connection string
+- **Self-hosted**: Ensure PostgreSQL is accessible from backend server
+- **Other providers**: Supabase, PlanetScale, or AWS RDS
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 📞 Support
 
-If you encounter issues:
-1. Check if all environment variables are set correctly
-2. Ensure both frontend and backend servers are running
-3. Verify database connection
-4. Check browser console for error messages
+For issues and questions:
 
-## 🎯 Next Steps
+- Check the [Troubleshooting](#-troubleshooting) section
+- Review closed GitHub issues
+- Open a new issue with detailed description
 
-To continue development:
-1. Set up your own Google OAuth credentials
-2. Configure your own Gmail for email functionality
-3. Customize the UI and add more features
-4. Deploy to production when ready
+## 🎯 Roadmap
+
+- [ ] Real 3D avatar generation integration
+- [ ] Sketchfab API integration for garments
+- [ ] Enhanced avatar customization
+- [ ] Shopping cart and checkout
+- [ ] User profile management
+- [ ] Avatar history and gallery
+- [ ] Social sharing features
+- [ ] Mobile app (React Native)
 
 ---
 
-**Note:** This is a development version. For production use, ensure all security best practices are followed and sensitive data is properly protected.
+**Developed with ❤️ using React, Node.js, and PostgreSQL**
