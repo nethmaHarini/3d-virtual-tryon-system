@@ -34,7 +34,9 @@ const styles = {
 export default function GarmentDetail() {
   const location = useLocation();
   const navigate = useNavigate();
+
   const garment = location.state?.garment;
+  const avatarUrl = location.state?.avatarUrl || "/models/final_avatar.obj";
 
   // Fallback if no garment data
   if (!garment) {
@@ -387,13 +389,27 @@ export default function GarmentDetail() {
                 transition: "background 0.2s, box-shadow 0.2s, opacity 0.2s",
               }}
               disabled={!selectedSize}
-              onClick={() => navigate("/try-on")}
+              onClick={() =>
+                navigate("/try-on", {
+                  state: {
+                    avatarUrl,
+                    garment,
+                    selectedSize,
+                  },
+                })
+              }
             >
               Proceed to Try-On
             </button>
             {/* Back to Catalog Button (below main action) */}
             <button
-              onClick={() => navigate("/catalog")}
+              onClick={() =>
+                navigate("/catalog", {
+                  state: {
+                    avatarUrl,
+                  },
+                })
+              }
               style={{
                 background: "#142a5c",
                 border: `2px solid ${BRIGHT_BLUE}`,

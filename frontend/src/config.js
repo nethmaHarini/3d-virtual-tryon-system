@@ -1,5 +1,3 @@
-// API Configuration
-// Automatically uses environment variable if set, otherwise defaults to localhost
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const API_URL = "https://stunning-space-fiesta-x5q4j49ww79qh9jw-3000.app.github.dev";
 
 export default API_URL;

@@ -28,6 +28,7 @@ function Dashboard() {
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
   const sideInputRef = useRef(null);
+  const email = localStorage.getItem("userEmail");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -414,6 +415,11 @@ function Dashboard() {
       <button type="button" onClick={handleLogout} style={styles.logoutFixed}>
         Logout
       </button>
+      {email && (
+        <p style={{ position: "absolute", top: 18, right: 120, color: "#7fd4ff", fontWeight: 600, margin: 0 }}>
+          Welcome, {email}
+        </p>
+      )}
       <h1 style={styles.appTitle}>VirtuFit3D Studio</h1>
       <div style={styles.nav}>
         {/* Navigation content remains here */}
