@@ -1,4 +1,14 @@
+  const handleDownloadAvatar = () => {
+    const fileToDownload = avatarValue || "/models/final_avatar.obj";
+    const link = document.createElement("a");
+    link.href = fileToDownload;
+    link.download = "final_avatar.obj";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
+import AvatarCanvas from "./components/AvatarCanvas";
 import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -129,8 +139,8 @@ function AvatarViewer() {
     },
     card: {
       width: "100%",
-      maxWidth: 540,
-      minHeight: 640,
+      maxWidth: 1100,
+      minHeight: 760,
       background: "linear-gradient(180deg, rgba(10, 28, 76, 0.98) 0%, rgba(6, 18, 52, 0.99) 100%)",
       borderRadius: 36,
       border: "1.5px solid rgba(120, 171, 255, 0.18)",
@@ -145,8 +155,9 @@ function AvatarViewer() {
       position: "relative",
     },
     avatarPanel: {
-      width: 340,
-      height: 480,
+      width: "100%",
+      maxWidth: 900,
+      height: 620,
       background: "linear-gradient(180deg, #0b1e3a 60%, #0a1a2e 100%)",
       borderRadius: 36,
       boxShadow: "0 0 64px 0 #1ce1ff33, 0 0 0 3px #1ce1ff22 inset",
@@ -244,7 +255,11 @@ function AvatarViewer() {
   };
 
   const handleSelectGarment = () => {
-    navigate("/catalog");
+    navigate("/catalog", {
+      state: {
+        avatarUrl: avatarValue,
+      },
+    });
   };
 
   const handleTryAgain = () => {
@@ -299,30 +314,14 @@ function AvatarViewer() {
         <div style={styles.subtitle}>Avatar generated successfully from your inputs</div>
         <div style={styles.card}>
           <div style={styles.avatarPanel}>
-            {/* Placeholder: Large, centered human silhouette SVG */}
-            {avatarSVG}
-            <div style={styles.gridFloor}>{gridSVG}</div>
-          </div>
-          {/* Muted message below the avatar panel */}
-          <div
-            style={{
-              margin: "18px 0 0 0",
-              textAlign: "center",
-              fontSize: 16,
-              color: "#8eb6d6",
-              opacity: 0.82,
-              fontWeight: 400,
-              letterSpacing: "0.01em",
-              lineHeight: 1.5,
-              maxWidth: 380,
-              alignSelf: "center"
-            }}
-          >
-            3D avatar preview will appear here after model generation is connected.
+            <AvatarCanvas modelPath="/models/final_avatar.obj" />
           </div>
           <div style={styles.actions}>
             <button type="button" style={styles.primaryButton} onClick={handleSelectGarment}>
               Select Garment
+            </button>
+            <button type="button" style={styles.secondaryButton} onClick={handleDownloadAvatar}>
+              Download Avatar
             </button>
             <button type="button" style={styles.secondaryButton} onClick={handleTryAgain}>
               Try Again

@@ -1,7 +1,8 @@
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './TryOn.css';
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import AvatarCanvas from "./components/AvatarCanvas";
+import "./TryOn.css";
 
 const fitData = [
   { region: 'Chest', status: 'Tight', color: '#ff4d4f' },
@@ -10,6 +11,8 @@ const fitData = [
 ];
 
 export default function TryOn() {
+  const location = useLocation();
+  const { garment, selectedSize, avatarUrl } = location.state || {};
   const navStyles = {
     nav: {
       width: "100%",
@@ -68,16 +71,20 @@ export default function TryOn() {
     await fetch("http://localhost:3000/save-fit", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         userId: 1,
+        garmentName: garment?.title || garment?.name || "Unknown Garment",
+        size: selectedSize || "Not selected",
         chest: "Tight",
         waist: "Perfect",
         hip: "Loose",
-        recommendation: "AI recommendation..."
-      })
+        recommendation: "AI recommendation...",
+        avatarUrl,
+      }),
     });
+
     alert("Saved successfully");
   };
   return (
@@ -118,22 +125,26 @@ export default function TryOn() {
             </p>
 
             <div className="avatar-card">
-              <div className="avatar-placeholder">
-                <span className="viewport-text">Interactive 3D viewport rendering...</span>
+              <div className="avatar-placeholder" style={{ padding: 0, overflow: "hidden" }}>
+                <AvatarCanvas modelPath="/models/final_avatar.obj" />
               </div>
 
               <div className="avatar-preview-bar">
                 <div className="avatar-preview-texts">
-                  <span className="avatar-preview-title">3D Human Avatar Preview</span>
+                  <span className="avatar-preview-title">
+                    {garment ? `${garment.title || garment.name} Preview` : "3D Human Avatar Preview"}
+                  </span>
                   <span className="avatar-preview-subtitle">
-                    Real-time photorealistic simulation enabled
+                    {selectedSize
+                      ? `Selected size: ${selectedSize}`
+                      : "Real-time photorealistic simulation enabled"}
                   </span>
                 </div>
 
                 <button
                   type="button"
                   className="view-360-btn"
-                  onClick={() => alert("360 avatar viewer will be connected here")}
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 >
                   View in 360
                 </button>

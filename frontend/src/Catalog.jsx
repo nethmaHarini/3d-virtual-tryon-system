@@ -1,9 +1,12 @@
+
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { useState } from "react";
 
 function Catalog() {
+  const location = useLocation();
+  const avatarUrl = location.state?.avatarUrl || "/models/final_avatar.obj";
   // --- Styles ---
   const styles = {
     logoutFixed: {
@@ -254,6 +257,7 @@ function Catalog() {
               onClick={() =>
                 navigate("/garment-detail", {
                   state: {
+                    avatarUrl,
                     garment: {
                       ...item,
                       breadcrumb: tab === "tshirts"
