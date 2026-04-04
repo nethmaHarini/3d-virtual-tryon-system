@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+const { spawn } = require("child_process");
 const pool = require("./db");
 
 require("dotenv").config();
@@ -12,6 +15,31 @@ require("dotenv").config();
 const app = express();
 const SECRET = process.env.JWT_SECRET || "your_secret_key";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5174";
+const BACKEND_PUBLIC_URL =
+  process.env.BACKEND_PUBLIC_URL || "http://localhost:3000";
+const GENERATED_AVATAR_DIR = path.join(__dirname, "generated-avatars");
+const TMP_UPLOAD_DIR = path.join(__dirname, "tmp-uploads");
+const PYTHON_SCRIPT = path.join(__dirname, "python", "generate_avatar.py");
+const SAMPLE_OBJ = path.join(__dirname, "python", "sample_avatar.obj");
+
+fs.mkdirSync(GENERATED_AVATAR_DIR, { recursive: true });
+fs.mkdirSync(TMP_UPLOAD_DIR, { recursive: true });
+
+const saveTempBufferToFile = (buffer, filename) => {
+  const fullPath = path.join(TMP_UPLOAD_DIR, filename);
+  fs.writeFileSync(fullPath, buffer);
+  return fullPath;
+};
+
+const removeFileIfExists = (filePath) => {
+  try {
+    if (filePath && fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch (error) {
+    console.error("Temp file cleanup failed:", error);
+  }
+};
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -23,6 +51,7 @@ const transporter = nodemailer.createTransport({
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+app.use("/generated-avatars", express.static(path.join(__dirname, "generated-avatars")));
 
 // Privacy-safe upload handling: keep files in memory only for temporary processing.
 // Raw photos are not written to disk or permanently stored by this backend flow.
@@ -403,11 +432,13 @@ app.post(
     { name: "sideImage", maxCount: 1 },
   ]),
   async (req, res) => {
+    let frontPath = null;
+    let backPath = null;
+    let sidePath = null;
+
     try {
       const { height } = req.body;
 
-      // Uploaded images are treated as temporary processing inputs only.
-      // This endpoint validates inputs and returns a response without persisting raw photos.
       const frontImage = req.files?.frontImage?.[0];
       const backImage = req.files?.backImage?.[0];
       const sideImage = req.files?.sideImage?.[0];
@@ -426,77 +457,95 @@ app.post(
 
       const numericHeight = Number(height);
 
-      if (Number.isNaN(numericHeight)) {
+      if (Number.isNaN(numericHeight) || numericHeight < 100 || numericHeight > 250) {
         return res.status(400).json({
-          message: "Height must be numeric",
+          message: "Height must be between 100 and 250 cm",
         });
       }
 
-      // Privacy-safe behavior: raw uploaded photos are processed in-memory only.
-      // They are not persisted to disk or database in this placeholder flow.
+      const timestamp = Date.now();
+      const avatarFilename = `avatar_${timestamp}.obj`;
+      const outputPath = path.join(GENERATED_AVATAR_DIR, avatarFilename);
 
-      // Simulate avatar generation work. Later this section will be replaced with
-      // the real 3D avatar generation pipeline/service integration.
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      const avatarId = `avatar_${Date.now()}`;
-      const avatarUrl = `${FRONTEND_URL}/generated-avatars/${avatarId}.glb`;
+      frontPath = saveTempBufferToFile(frontImage.buffer, `front_${timestamp}.jpg`);
+      backPath = saveTempBufferToFile(backImage.buffer, `back_${timestamp}.jpg`);
+      sidePath = saveTempBufferToFile(sideImage.buffer, `side_${timestamp}.jpg`);
 
-      // If an authenticated token is provided, use that user id for avatar ownership.
-      // Placeholder for future middleware: centralize auth and set req.user.id.
-      let userId = null;
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        const token = authHeader.slice(7);
-        try {
-          const decoded = jwt.verify(token, SECRET);
-          userId = decoded?.id || null;
-        } catch (_error) {
-          userId = null;
+      const pythonArgs = [
+        PYTHON_SCRIPT,
+        "--front", frontPath,
+        "--back", backPath,
+        "--side", sidePath,
+        "--height", String(numericHeight),
+        "--output", outputPath,
+        "--sample_obj", SAMPLE_OBJ,
+      ];
+
+      const pythonProcess = spawn("python3", pythonArgs, {
+        cwd: __dirname,
+      });
+
+      let stdout = "";
+      let stderr = "";
+
+      pythonProcess.stdout.on("data", (data) => {
+        stdout += data.toString();
+      });
+
+      pythonProcess.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+
+      pythonProcess.on("close", async (code) => {
+        removeFileIfExists(frontPath);
+        removeFileIfExists(backPath);
+        removeFileIfExists(sidePath);
+
+        if (code !== 0) {
+          console.error("Python generation failed:", stderr || stdout);
+          return res.status(500).json({
+            message: "Avatar generation failed",
+            error: stderr || stdout,
+          });
         }
-      }
 
-      // Ensure userId is present before DB insert (fix for NOT NULL constraint)
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
+        let parsed;
+        try {
+          parsed = JSON.parse(stdout.trim());
+        } catch (error) {
+          console.error("Invalid Python output:", stdout);
+          return res.status(500).json({
+            message: "Invalid generator response",
+          });
+        }
 
-      // Save only generated avatar metadata. Never store raw uploaded photo binaries.
-      const avatarColumnResult = await pool.query(
-        `SELECT column_name
-         FROM information_schema.columns
-         WHERE table_name = 'avatars'
-           AND column_name IN ('avatar_url', 'avatar_file')
-         ORDER BY CASE WHEN column_name = 'avatar_url' THEN 1 ELSE 2 END
-         LIMIT 1`,
-      );
+        if (!parsed.success) {
+          return res.status(500).json({
+            message: parsed.message || "Avatar generation failed",
+          });
+        }
 
-      if (avatarColumnResult.rows.length === 0) {
-        return res.status(500).json({
-          message: "Avatars table is missing avatar_url/avatar_file column",
+        const avatarUrl = `${BACKEND_PUBLIC_URL}/generated-avatars/${avatarFilename}`;
+
+        return res.status(200).json({
+          message: "Avatar generated successfully",
+          avatarUrl,
+          avatar: {
+            avatar_file: avatarUrl,
+            generated_at: new Date().toISOString(),
+            height: numericHeight,
+          },
         });
-      }
-
-      const avatarColumn = avatarColumnResult.rows[0].column_name;
-      const insertAvatarResult = await pool.query(
-        `INSERT INTO avatars (user_id, ${avatarColumn}) VALUES ($1, $2) RETURNING *`,
-        [userId, avatarUrl],
-      );
-
-      const savedAvatar = insertAvatarResult.rows[0];
-
-      return res.json({
-        message: "Avatar generated successfully",
-        avatarUrl,
-        avatar: {
-          id: savedAvatar.id,
-          user_id: savedAvatar.user_id,
-          [avatarColumn]: savedAvatar[avatarColumn],
-        },
       });
     } catch (error) {
+      removeFileIfExists(frontPath);
+      removeFileIfExists(backPath);
+      removeFileIfExists(sidePath);
+
       console.error("Generate avatar error:", error);
       return res.status(500).json({
-        message: "Server error",
+        message: "Server error during avatar generation",
+        error: error.message,
       });
     }
   },

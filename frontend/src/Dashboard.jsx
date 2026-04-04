@@ -109,8 +109,14 @@ function Dashboard() {
   };
 
   const handleGenerateAvatar = async () => {
-    if (!frontImage || !backImage || !sideImage || !height) {
-      setError("Please upload all images and enter height");
+
+    if (!frontImage || !backImage || !sideImage) {
+      setError("Please upload all images");
+      return;
+    }
+
+    if (!height || height < 100 || height > 250) {
+      setError("Please enter a valid height (100–250 cm)");
       return;
     }
 
