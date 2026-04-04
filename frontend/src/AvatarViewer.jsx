@@ -1,5 +1,31 @@
+import AvatarCanvas from "./components/AvatarCanvas";
+import { useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+function AvatarViewer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const avatarValue = useMemo(() => {
+    const stateAvatarUrl = location.state?.avatarUrl;
+    const stateAvatarFile =
+      location.state?.avatar_file || location.state?.avatarFile;
+
+    if (typeof stateAvatarUrl === "string" && stateAvatarUrl.trim()) {
+      return stateAvatarUrl;
+    }
+
+    if (typeof stateAvatarFile === "string" && stateAvatarFile.trim()) {
+      return stateAvatarFile;
+    }
+
+    return null;
+  }, [location.state]);
+
+  console.log("avatarValue =", avatarValue);
+
   const handleDownloadAvatar = () => {
-    const fileToDownload = avatarValue || "/models/final_avatar.obj";
+    const fileToDownload = "/models/final_avatar.obj";
     const link = document.createElement("a");
     link.href = fileToDownload;
     link.download = "final_avatar.obj";
@@ -8,48 +34,26 @@
     document.body.removeChild(link);
   };
 
-import AvatarCanvas from "./components/AvatarCanvas";
-import { useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-
-
-function AvatarViewer() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Avatar value logic (preserved)
-  const avatarValue = useMemo(() => {
-    const stateAvatarUrl = location.state?.avatarUrl;
-    const stateAvatarFile = location.state?.avatar_file || location.state?.avatarFile;
-    if (typeof stateAvatarUrl === "string" && stateAvatarUrl.trim()) {
-      return stateAvatarUrl;
-    }
-    if (typeof stateAvatarFile === "string" && stateAvatarFile.trim()) {
-      return stateAvatarFile;
-    }
-    return null;
-  }, [location.state]);
-
-  // --- Styles ---
   const styles = {
-        logoutFixed: {
-          position: "fixed",
-          top: 18,
-          right: 28,
-          zIndex: 1000,
-          border: "1px solid rgba(255,255,255,0.28)",
-          borderRadius: "12px",
-          padding: "10px 16px",
-          cursor: "pointer",
-          background: "rgba(5, 17, 52, 0.75)",
-          color: "#f0f6ff",
-          fontWeight: 600,
-          fontSize: "0.95rem",
-        },
+    logoutFixed: {
+      position: "fixed",
+      top: 18,
+      right: 28,
+      zIndex: 1000,
+      border: "1px solid rgba(255,255,255,0.28)",
+      borderRadius: "12px",
+      padding: "10px 16px",
+      cursor: "pointer",
+      background: "rgba(5, 17, 52, 0.75)",
+      color: "#f0f6ff",
+      fontWeight: 600,
+      fontSize: "0.95rem",
+    },
     page: {
       minHeight: "100vh",
       width: "100vw",
-      background: "radial-gradient(circle at 15% 20%, #16388f 0%, #071337 40%, #030a20 100%)",
+      background:
+        "radial-gradient(circle at 15% 20%, #16388f 0%, #071337 40%, #030a20 100%)",
       color: "#eaf6ff",
       fontFamily: "'Segoe UI', 'Roboto', 'Arial', sans-serif",
       display: "flex",
@@ -97,17 +101,6 @@ function AvatarViewer() {
       pointerEvents: "none",
       userSelect: "none",
     },
-    logoutButton: {
-      border: "1px solid rgba(255,255,255,0.28)",
-      borderRadius: "12px",
-      padding: "10px 16px",
-      cursor: "pointer",
-      background: "rgba(5, 17, 52, 0.75)",
-      color: "#f0f6ff",
-      fontWeight: 600,
-      fontSize: "0.95rem",
-      margin: "0 0 0 24px",
-    },
     contentWrap: {
       width: "100vw",
       minHeight: "calc(100vh - 64px)",
@@ -141,10 +134,12 @@ function AvatarViewer() {
       width: "100%",
       maxWidth: 1100,
       minHeight: 760,
-      background: "linear-gradient(180deg, rgba(10, 28, 76, 0.98) 0%, rgba(6, 18, 52, 0.99) 100%)",
+      background:
+        "linear-gradient(180deg, rgba(10, 28, 76, 0.98) 0%, rgba(6, 18, 52, 0.99) 100%)",
       borderRadius: 36,
       border: "1.5px solid rgba(120, 171, 255, 0.18)",
-      boxShadow: "0 0 64px 0 #1ce1ff44, 0 24px 90px rgba(0, 0, 0, 0.62)",
+      boxShadow:
+        "0 0 64px 0 #1ce1ff44, 0 24px 90px rgba(0, 0, 0, 0.62)",
       padding: "48px 44px 38px 44px",
       boxSizing: "border-box",
       display: "flex",
@@ -169,44 +164,6 @@ function AvatarViewer() {
       position: "relative",
       overflow: "hidden",
       border: "1.5px solid #1ce1ff33",
-      transition: "box-shadow 0.2s, border 0.2s",
-    },
-    avatarSilhouette: {
-      width: 180,
-      height: 280,
-      margin: "0 auto",
-      display: "block",
-      filter: "drop-shadow(0 0 32px #1ce1ff77)",
-      opacity: 0.97,
-      zIndex: 2,
-      transition: "width 0.2s, height 0.2s",
-    },
-    gridFloor: {
-      position: "absolute",
-      left: 0,
-      bottom: 0,
-      width: "100%",
-      height: 60,
-      zIndex: 1,
-      pointerEvents: "none",
-      background: "linear-gradient(180deg, #1ce1ff11 0%, #1ce1ff00 100%)",
-      display: "flex",
-      alignItems: "flex-end",
-      justifyContent: "center",
-    },
-    avatarInfo: {
-      margin: "0 0 18px 0",
-      background: "rgba(8, 23, 62, 0.82)",
-      border: "1px solid rgba(113, 169, 255, 0.22)",
-      borderRadius: 12,
-      padding: "10px 14px",
-      color: "#d7e8ff",
-      fontSize: 15,
-      wordBreak: "break-word",
-      textAlign: "center",
-      minHeight: 32,
-      maxWidth: 320,
-      boxShadow: "0 0 8px #1ce1ff22",
     },
     actions: {
       display: "flex",
@@ -229,7 +186,6 @@ function AvatarViewer() {
       boxShadow: "0 10px 24px rgba(30, 137, 255, 0.32)",
       width: 210,
       marginBottom: 10,
-      transition: "background 0.18s, box-shadow 0.18s",
     },
     secondaryButton: {
       border: "1.5px solid #1ce1ff55",
@@ -243,15 +199,12 @@ function AvatarViewer() {
       fontSize: 16,
       width: 210,
       marginTop: 0,
-      transition: "background 0.18s, border 0.18s",
     },
   };
 
-  // --- Handlers ---
   const handleLogout = () => {
-    // If you have a logout function, call it here. Otherwise, just clear token and go to login.
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   const handleSelectGarment = () => {
@@ -266,64 +219,51 @@ function AvatarViewer() {
     navigate("/dashboard");
   };
 
-  // --- SVGs ---
-  const avatarSVG = (
-    <svg viewBox="0 0 120 180" style={styles.avatarSilhouette} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <ellipse cx="60" cy="38" rx="28" ry="28" fill="#eaf6ff" fillOpacity="0.92"/>
-      <rect x="32" y="66" width="56" height="70" rx="28" fill="#eaf6ff" fillOpacity="0.92"/>
-      <rect x="18" y="120" width="24" height="48" rx="12" fill="#eaf6ff" fillOpacity="0.92"/>
-      <rect x="78" y="120" width="24" height="48" rx="12" fill="#eaf6ff" fillOpacity="0.92"/>
-      <rect x="48" y="136" width="24" height="36" rx="12" fill="#eaf6ff" fillOpacity="0.92"/>
-    </svg>
-  );
-
-  const gridSVG = (
-    <svg width="100%" height="60" viewBox="0 0 220 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g opacity="0.38">
-        <rect x="0" y="59" width="220" height="1" fill="#1ce1ff"/>
-        <rect x="0" y="49" width="220" height="1" fill="#1ce1ff"/>
-        <rect x="0" y="39" width="220" height="1" fill="#1ce1ff"/>
-        <rect x="0" y="29" width="220" height="1" fill="#1ce1ff"/>
-        <rect x="0" y="19" width="220" height="1" fill="#1ce1ff"/>
-        <rect x="0" y="9" width="220" height="1" fill="#1ce1ff"/>
-        <rect x="20" y="0" width="1" height="60" fill="#1ce1ff"/>
-        <rect x="60" y="0" width="1" height="60" fill="#1ce1ff"/>
-        <rect x="100" y="0" width="1" height="60" fill="#1ce1ff"/>
-        <rect x="140" y="0" width="1" height="60" fill="#1ce1ff"/>
-        <rect x="180" y="0" width="1" height="60" fill="#1ce1ff"/>
-      </g>
-    </svg>
-  );
-
-  // --- Render ---
   return (
     <div style={styles.page}>
-      {/* Fixed Logout Button at Screen Top Right */}
       <button type="button" onClick={handleLogout} style={styles.logoutFixed}>
         Logout
       </button>
-      {/* Top Navigation Bar */}
+
       <h1 style={styles.appTitle}>VirtuFit3D Studio</h1>
+
       <div style={styles.nav}>
-        <div style={{...styles.navInner, justifyContent: "space-between"}}>
-          {/* Navigation content remains here */}
-        </div>
+        <div style={{ ...styles.navInner, justifyContent: "space-between" }} />
       </div>
+
       <div style={styles.contentWrap}>
         <div style={styles.heading}>YOUR DIGITAL TWIN</div>
-        <div style={styles.subtitle}>Avatar generated successfully from your inputs</div>
+        <div style={styles.subtitle}>
+          Avatar generated successfully from your inputs
+        </div>
+
         <div style={styles.card}>
           <div style={styles.avatarPanel}>
-            <AvatarCanvas modelPath="/models/final_avatar.obj" />
+            <AvatarCanvas modelPath={avatarValue || "/models/final_avatar.obj"} />
           </div>
+
           <div style={styles.actions}>
-            <button type="button" style={styles.primaryButton} onClick={handleSelectGarment}>
+            <button
+              type="button"
+              style={styles.primaryButton}
+              onClick={handleSelectGarment}
+            >
               Select Garment
             </button>
-            <button type="button" style={styles.secondaryButton} onClick={handleDownloadAvatar}>
+
+            <button
+              type="button"
+              style={styles.secondaryButton}
+              onClick={handleDownloadAvatar}
+            >
               Download Avatar
             </button>
-            <button type="button" style={styles.secondaryButton} onClick={handleTryAgain}>
+
+            <button
+              type="button"
+              style={styles.secondaryButton}
+              onClick={handleTryAgain}
+            >
               Try Again
             </button>
           </div>
