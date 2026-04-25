@@ -274,215 +274,380 @@ function Login() {
   const styles = {
     page: {
       minHeight: "100vh",
+      width: "100%",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, #13245f 0%, #020b2b 100%)",
-      fontFamily: "Segoe UI, sans-serif",
-      padding: "110px 20px 20px",
+      background:
+        "radial-gradient(circle at 12% 18%, rgba(93, 61, 255, 0.22) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(153, 74, 255, 0.22) 0%, transparent 48%), linear-gradient(150deg, #070d16 0%, #0d141d 45%, #101926 100%)",
+      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
+      padding: "42px 20px 48px",
       position: "relative",
+      overflow: "hidden",
     },
     card: {
       width: "100%",
-      maxWidth: "470px",
-      background: "#071a52",
-      borderRadius: "24px",
-      padding: "46px 38px 38px",
-      boxShadow: "0 18px 45px rgba(0,0,0,0.45)",
+      maxWidth: "560px",
+      borderRadius: "30px",
+      padding: "40px 36px",
+      border: "1px solid rgba(170, 188, 214, 0.16)",
+      background: "rgba(34, 42, 54, 0.52)",
+      backdropFilter: "blur(24px)",
+      boxShadow: "0 22px 60px rgba(0, 0, 0, 0.45)",
+      position: "relative",
+      zIndex: 2,
+      minHeight: "min(78vh, 720px)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "stretch",
+      boxSizing: "border-box",
     },
-      appName: {
-        textAlign: "center",
-        color: "#7fd4ff",
-        fontSize: "2rem",
-        fontWeight: 800,
-        letterSpacing: "0.05em",
-        textShadow: "0 0 14px rgba(67, 193, 255, 0.65)",
-        margin: "0 0 22px 0",
-      },
-        topHeader: {
-          position: "absolute",
-          top: "18px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          color: "#7fd4ff",
-          fontSize: "1.9rem",
-          fontWeight: 800,
-          letterSpacing: "0.05em",
-          textShadow: "0 0 14px rgba(67, 193, 255, 0.65)",
-          zIndex: 10,
-          whiteSpace: "nowrap",
-        },
+    cardFlow: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "28px",
+    },
+    headingStack: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+    },
+    contentStack: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "20px",
+    },
+    passwordSection: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "10px",
+    },
+    actionGroup: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "22px",
+    },
+    socialStack: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+      gap: "16px",
+    },
     subtitle: {
-     color: "#9fb3c8",
-     fontSize: "1.2rem",
-     marginBottom: "25px",
-     textAlign: "left",
-       },
+      color: "#c3c6d0",
+      fontSize: "0.98rem",
+      margin: 0,
+      textAlign: "center",
+      lineHeight: 1.55,
+      letterSpacing: "0.012em",
+    },
     title: {
-      textAlign: "left",
+      textAlign: "center",
       color: "#ffffff",
       fontSize: "2.2rem",
-      fontWeight: "500",
-      margin: "0 0 10px 0",
+      fontWeight: 800,
+      fontFamily: "'Poppins', 'Plus Jakarta Sans', sans-serif",
+      margin: "0",
+      lineHeight: 1.08,
+      letterSpacing: "-0.02em",
     },
     label: {
       display: "block",
       textAlign: "left",
-      color: "#dbe4ff",
-      fontSize: "0.78rem",
-      letterSpacing: "0.08em",
-      marginBottom: "10px",
-      textTransform: "uppercase",
+      color: "#c3c6d0",
+      fontSize: "0.8rem",
+      letterSpacing: "0.03em",
+      marginBottom: "9px",
+      fontWeight: 600,
     },
     input: {
       width: "100%",
       boxSizing: "border-box",
-      padding: "15px 16px",
-      borderRadius: "14px",
-      border: "1px solid rgba(255,255,255,0.22)",
-      background: "#03133f",
-      color: "#ffffff",
+      padding: "14px 16px",
+      borderRadius: "16px",
+      border: "1px solid rgba(141, 145, 153, 0.32)",
+      background: "rgba(8, 15, 24, 0.9)",
+      color: "#dce3f0",
       outline: "none",
-      marginBottom: "22px",
+      marginBottom: "0",
       fontSize: "1rem",
+      transition: "all 260ms ease",
     },
     passwordWrap: {
       position: "relative",
-      marginBottom: "22px",
+      marginBottom: "0",
     },
     passwordInput: {
       marginBottom: 0,
-      paddingRight: "52px",
+      paddingRight: "54px",
     },
     passwordToggle: {
       position: "absolute",
-      right: "12px",
+      right: "10px",
       top: "50%",
       transform: "translateY(-50%)",
       border: "none",
       background: "transparent",
-      color: "#bfcaff",
+      color: "#a4c9fc",
       cursor: "pointer",
-      padding: "4px",
+      padding: "8px",
+      borderRadius: "10px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      transition: "all 200ms ease",
     },
     forgotWrap: {
-      textAlign: "right",
-      marginBottom: "22px",
-    },
-    forgot: {
-      color: "#bfcaff",
-      fontSize: "0.95rem",
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
     },
     forgotButton: {
-      color: "#bfcaff",
-      fontSize: "0.95rem",
+      color: "#a4c9fc",
+      fontSize: "0.8rem",
       background: "transparent",
       border: "none",
       padding: 0,
       cursor: "pointer",
+      fontWeight: 600,
+      transition: "all 200ms ease",
     },
     button: {
       width: "100%",
-      padding: "15px",
-      borderRadius: "14px",
+      padding: "14px 18px",
+      borderRadius: "999px",
       border: "none",
-      background: "linear-gradient(90deg, #1b8fff, #35a7ff)",
+      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
       color: "#ffffff",
-      fontWeight: "600",
+      fontWeight: 700,
       fontSize: "1rem",
       cursor: "pointer",
-      marginTop: "2px",
-      marginBottom: "28px",
+      marginTop: "0",
+      marginBottom: "0",
+      boxShadow: "0 0 0 rgba(164, 201, 252, 0), 0 18px 30px rgba(27, 21, 70, 0.45)",
+      transition: "all 300ms ease",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "52px",
     },
     buttonDisabled: {
       opacity: 0.65,
       cursor: "not-allowed",
+      transform: "none",
+      boxShadow: "0 8px 18px rgba(15, 15, 30, 0.35)",
     },
     dividerRow: {
       display: "flex",
       alignItems: "center",
       gap: "12px",
-      marginBottom: "22px",
+      margin: 0,
     },
     dividerLine: {
       flex: 1,
       height: "1px",
-      background: "rgba(255,255,255,0.15)",
+      background: "rgba(66, 71, 79, 0.42)",
     },
     dividerText: {
-      color: "#dbe4ff",
-      fontSize: "0.78rem",
-      letterSpacing: "0.04em",
+      color: "#8d9199",
+      fontSize: "0.7rem",
+      letterSpacing: "0.14em",
       whiteSpace: "nowrap",
+      textTransform: "uppercase",
     },
     googleWrap: {
       display: "flex",
       justifyContent: "center",
-      marginBottom: "28px",
+      marginBottom: "0",
     },
     googleBtn: {
       width: "100%",
-      padding: "14px",
-      borderRadius: "14px",
-      border: "1px solid rgba(255,255,255,0.2)",
-      background: "#0a0a0a",
-      color: "#ffffff",
+      padding: "13px 16px",
+      borderRadius: "999px",
+      border: "1px solid rgba(66, 71, 79, 0.45)",
+      background: "rgba(21, 28, 38, 0.92)",
+      color: "#dce3f0",
       cursor: "pointer",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       gap: "10px",
-      fontSize: "1rem",
+      fontSize: "0.95rem",
+      fontWeight: 600,
+      minHeight: "50px",
+      transition: "all 280ms ease",
     },
     googleBtnDisabled: {
       opacity: 0.6,
       cursor: "not-allowed",
+      transform: "none",
     },
     footer: {
       textAlign: "center",
-      color: "#d9e2ff",
-      fontSize: "0.95rem",
+      color: "#c3c6d0",
+      fontSize: "0.93rem",
+      margin: 0,
     },
     signUp: {
-      color: "#2b9cff",
-      fontWeight: "600",
+      color: "#a4c9fc",
+      fontWeight: 700,
       cursor: "pointer",
       background: "transparent",
       border: "none",
       padding: 0,
-      fontSize: "0.95rem",
+      fontSize: "0.93rem",
+      transition: "all 220ms ease",
     },
   };
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.topHeader}>VirtuFit3D Studio</h1>
-      <div style={styles.card}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap');
+
+        .login-card-surface {
+          transition: transform 220ms ease, box-shadow 260ms ease, border-color 260ms ease, background 260ms ease;
+        }
+        .login-card-surface:hover {
+          transform: translateY(-3px) scale(1.005);
+          box-shadow: 0 0 28px rgba(164, 201, 252, 0.22), 0 20px 40px rgba(4, 10, 18, 0.42);
+        }
+        .login-field {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+          width: 100%;
+        }
+        .login-input::placeholder {
+          color: #8d9199;
+        }
+        .login-input:hover {
+          border-color: rgba(164, 201, 252, 0.42);
+          box-shadow: 0 8px 22px rgba(10, 18, 32, 0.35);
+        }
+        .login-input:focus {
+          border-color: rgba(164, 201, 252, 0.76);
+          box-shadow: 0 0 0 3px rgba(164, 201, 252, 0.18), 0 14px 28px rgba(6, 13, 24, 0.46);
+          background: rgba(13, 20, 29, 0.96);
+        }
+        .password-toggle:hover {
+          color: #f9d8ff;
+          background: rgba(255, 255, 255, 0.06);
+        }
+        .forgot-link:hover {
+          color: #ffffff;
+        }
+        .primary-btn:hover:not(:disabled) {
+          transform: translateY(-2px) scale(1.01);
+          filter: saturate(1.08) brightness(1.05);
+          box-shadow: 0 0 24px rgba(164, 201, 252, 0.22), 0 20px 35px rgba(31, 22, 81, 0.55);
+        }
+        .primary-btn:active:not(:disabled) {
+          transform: scale(0.985);
+        }
+        .google-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          border-color: rgba(164, 201, 252, 0.5);
+          background: rgba(30, 39, 53, 0.95);
+        }
+        .switch-link:hover {
+          color: #ffffff;
+          text-decoration: underline;
+        }
+        .btn-stack {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+        }
+        .btn-spinner {
+          width: 16px;
+          height: 16px;
+          border-radius: 999px;
+          border: 2px solid rgba(255, 255, 255, 0.35);
+          border-top-color: #ffffff;
+          animation: spin 0.8s linear infinite;
+        }
+        .ambient-blob {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(110px);
+          pointer-events: none;
+        }
+        .ambient-blob-left {
+          width: 42vw;
+          height: 42vw;
+          min-width: 260px;
+          min-height: 260px;
+          max-width: 580px;
+          max-height: 580px;
+          left: -18vw;
+          top: -18vw;
+          background: rgba(83, 61, 209, 0.26);
+        }
+        .ambient-blob-right {
+          width: 44vw;
+          height: 44vw;
+          min-width: 280px;
+          min-height: 280px;
+          max-width: 620px;
+          max-height: 620px;
+          right: -18vw;
+          bottom: -20vw;
+          background: rgba(95, 11, 126, 0.22);
+        }
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @media (max-width: 640px) {
+          .login-card-surface {
+            border-radius: 24px !important;
+          }
+          .login-card-body {
+            gap: 24px !important;
+          }
+        }
+      `}</style>
+
+      <div className="ambient-blob ambient-blob-left" />
+      <div className="ambient-blob ambient-blob-right" />
+
+      <div style={styles.card} className="login-card-surface">
+        <div style={styles.cardFlow} className="login-card-body">
+        <div style={styles.headingStack}>
         {view === "signup" ? (
           <>
             <h1 style={styles.title}>Create Your Account</h1>
             <p style={styles.subtitle}>
-              Join the future of 3D virtual try-on
+              Join your couture identity and unlock personalized 3D virtual fitting.
             </p>
           </>
         ) : view === "login" ? (
           <>
-            <h1 style={styles.title}>Login to VirtuFit3D</h1>
+            <h1 style={styles.title}>Welcome Back</h1>
             <p style={styles.subtitle}>
-              Experience the future of 3D virtual try-on
+              Enter your credentials to access your digital wardrobe and couture engine.
             </p>
           </>
         ) : (
-          <h1 style={styles.title}>Forgot Password</h1>
-        )}
-
-        {view === "signup" && (
           <>
+            <h1 style={styles.title}>Forgot Password</h1>
+            <p style={styles.subtitle}>Enter your email to receive a secure reset link.</p>
+          </>
+        )}
+        </div>
+
+        <div style={styles.contentStack}>
+        {view === "signup" && (
+          <div className="login-field">
             <label style={styles.label}>FULL NAME</label>
             <input
+              className="login-input"
               type="text"
               style={styles.input}
               value={username}
@@ -490,35 +655,41 @@ function Login() {
               placeholder="Enter your full name"
               autoComplete="username"
             />
-          </>
+          </div>
         )}
 
-        <label style={styles.label}>EMAIL</label>
-        <input
-          type="email"
-          style={styles.input}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter email"
-          autoComplete="email"
-          inputMode="email"
-        />
+        <div className="login-field">
+          <label style={styles.label}>EMAIL ADDRESS</label>
+          <input
+            className="login-input"
+            type="email"
+            style={styles.input}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="couturier@atelier.com"
+            autoComplete="email"
+            inputMode="email"
+          />
+        </div>
 
         {view !== "forgot" && (
-          <>
-            <label style={styles.label}>PASSWORD</label>
-            <div style={styles.passwordWrap}>
+          <div style={styles.passwordSection}>
+            <div className="login-field">
+              <label style={styles.label}>PASSWORD</label>
+              <div style={styles.passwordWrap}>
               <input
+                className="login-input"
                 type={showPassword ? "text" : "password"}
                 style={{ ...styles.input, ...styles.passwordInput }}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                  autoComplete={view === "signup" ? "new-password" : "current-password"}
+                placeholder="••••••••"
+                autoComplete={view === "signup" ? "new-password" : "current-password"}
               />
               <button
                 type="button"
                 style={styles.passwordToggle}
+                className="password-toggle"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 title={showPassword ? "Hide password" : "Show password"}
@@ -553,24 +724,39 @@ function Login() {
                 </svg>
               </button>
             </div>
-          </>
+            </div>
+            {view === "login" && (
+              <div style={styles.forgotWrap}>
+                <button
+                  type="button"
+                  style={styles.forgotButton}
+                  className="forgot-link"
+                  onClick={switchToForgot}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {view === "signup" && (
-          <>
+          <div className="login-field">
             <label style={styles.label}>CONFIRM PASSWORD</label>
             <div style={styles.passwordWrap}>
               <input
+                className="login-input"
                 type={showConfirmPassword ? "text" : "password"}
                 style={{ ...styles.input, ...styles.passwordInput }}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repeat your password"
+                placeholder="••••••••"
                 autoComplete="new-password"
               />
               <button
                 type="button"
                 style={styles.passwordToggle}
+                className="password-toggle"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
                 title={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
@@ -605,27 +791,17 @@ function Login() {
                 </svg>
               </button>
             </div>
-          </>
-        )}
-
-        {view === "login" && (
-          <div style={styles.forgotWrap}>
-            <button
-              type="button"
-              style={styles.forgotButton}
-              onClick={switchToForgot}
-            >
-              Forgot password?
-            </button>
           </div>
         )}
 
+        <div style={styles.actionGroup}>
         <button
           type="button"
           style={{
             ...styles.button,
             ...(isSubmitting ? styles.buttonDisabled : {}),
           }}
+          className="primary-btn"
           disabled={isSubmitting}
           onClick={
             view === "login"
@@ -635,17 +811,22 @@ function Login() {
                 : handleForgotPassword
           }
         >
-          {isSubmitting
-            ? "PLEASE WAIT..."
-            : view === "login"
-              ? "LOGIN"
-              : view === "signup"
-                ? "SIGN UP"
-                : "SEND RESET LINK"}
+          {isSubmitting ? (
+            <span className="btn-stack">
+              <span className="btn-spinner" aria-hidden="true"></span>
+              PLEASE WAIT...
+            </span>
+          ) : view === "login" ? (
+            "LOGIN"
+          ) : view === "signup" ? (
+            "SIGN UP"
+          ) : (
+            "SEND RESET LINK"
+          )}
         </button>
 
         {view !== "forgot" && (
-          <>
+          <div style={styles.socialStack}>
             <div style={styles.dividerRow}>
               <div style={styles.dividerLine}></div>
               <div style={styles.dividerText}>OR CONTINUE WITH</div>
@@ -661,6 +842,7 @@ function Login() {
                     ? {}
                     : styles.googleBtnDisabled),
                 }}
+                className="google-btn"
                 disabled={!isGoogleConfigured || isGoogleLoading || isSubmitting}
                 onClick={handleGoogleContinue}
               >
@@ -669,7 +851,14 @@ function Login() {
                   alt="google"
                   style={{ width: "18px", height: "18px" }}
                 />
-                {isGoogleLoading ? "Please wait..." : "Google"}
+                {isGoogleLoading ? (
+                  <span className="btn-stack">
+                    <span className="btn-spinner" aria-hidden="true"></span>
+                    Please wait...
+                  </span>
+                ) : (
+                  "Sign in with Google"
+                )}
               </button>
             </div>
 
@@ -680,12 +869,13 @@ function Login() {
               <button
                 type="button"
                 style={styles.signUp}
+                className="switch-link"
                 onClick={view === "login" ? switchToSignup : switchToLogin}
               >
                 {view === "login" ? "Sign Up" : "Log In"}
               </button>
             </p>
-          </>
+          </div>
         )}
 
         {view === "forgot" && (
@@ -693,13 +883,18 @@ function Login() {
             <button
               type="button"
               style={styles.signUp}
+              className="switch-link"
               onClick={switchToLogin}
             >
               Back to Log In
             </button>
           </p>
         )}
+        </div>
+        </div>
+        </div>
       </div>
+
     </div>
   );
 }
