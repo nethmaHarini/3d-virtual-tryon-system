@@ -20,12 +20,14 @@ export default function AvatarCanvas({ modelPath = "/models/final_avatar.obj" })
     <div
       style={{
         width: "100%",
-        height: "80vh",
-        minHeight: "700px",
-        background: "#0a1a2e",
-        borderRadius: "20px",
+        maxWidth: "100%",
+        height: "70vh",
+        minHeight: "560px",
+        background: "transparent",
+        borderRadius: "18px",
         overflow: "hidden",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+        boxShadow: "none",
+        boxSizing: "border-box",
       }}
     >
       <Canvas camera={{ position: [0, 0.9, 2.8], fov: 35 }}>
@@ -37,7 +39,17 @@ export default function AvatarCanvas({ modelPath = "/models/final_avatar.obj" })
           <AvatarModel modelPath={modelPath} />
         </Suspense>
 
-        <OrbitControls />
+        <OrbitControls
+          enablePan={false}
+          enableDamping
+          dampingFactor={0.08}
+          rotateSpeed={0.75}
+          zoomSpeed={0.85}
+          minDistance={1.4}
+          maxDistance={4.6}
+          minPolarAngle={Math.PI / 5}
+          maxPolarAngle={(Math.PI * 4) / 5}
+        />
       </Canvas>
     </div>
   );
