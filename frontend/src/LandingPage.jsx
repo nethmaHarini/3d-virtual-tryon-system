@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import heroImage from "./assets/hero.png";
+import heroImage from "./assets/heroL.png";
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -148,7 +148,7 @@ function LandingPage() {
     },
     visualImage: {
       width: "100%",
-      height: 300,
+      height: 550,
       objectFit: "cover",
       display: "block",
     },
@@ -279,12 +279,7 @@ function LandingPage() {
             <div style={styles.glowRing} />
             <div style={styles.visualCard}>
               <img src={heroImage} alt="Virtual fitting room preview" style={styles.visualImage} />
-              <div style={styles.visualMeta}>
-                <p style={styles.visualHeading}>Virtual Try-On Dashboard</p>
-                <p style={styles.visualText}>
-                  Upload body images, generate avatar, and test outfit combinations in one flow.
-                </p>
-              </div>
+              
             </div>
           </section>
         </main>
