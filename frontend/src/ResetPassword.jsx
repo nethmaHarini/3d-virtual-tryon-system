@@ -54,7 +54,7 @@ function ResetPassword() {
 
       if (response.ok) {
         alert("SUCCESS: " + data.message);
-        navigate("/", { replace: true });
+        navigate("/login", { replace: true });
       } else {
         alert("ERROR: " + data.message);
       }
@@ -247,7 +247,7 @@ function ResetPassword() {
           <button
             type="button"
             style={styles.linkButton}
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/login")}
           >
             Back to Log In
           </button>

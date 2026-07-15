@@ -406,7 +406,7 @@ function AvatarViewer() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/login");
   };
 
   const handleSelectGarment = () => {
