@@ -1143,7 +1143,7 @@ function Dashboard() {
             <span>◈</span>
             <span>Dashboard</span>
           </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase}>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/avatar-viewer", { state: { avatarUrl: localStorage.getItem("avatarUrl") } })}>
             <span>◌</span>
             <span>View Avatar</span>
           </button>
