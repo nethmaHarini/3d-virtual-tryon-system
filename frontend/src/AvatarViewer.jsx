@@ -500,15 +500,15 @@ function AvatarViewer() {
             <span>◌</span>
             <span>View Avatar</span>
           </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item">
+          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/catalog", { state: { avatarUrl: avatarValue } }) }>
             <span>◍</span>
             <span>Garment Catalog</span>
           </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item">
+          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/dashboard") }>
             <span>◎</span>
             <span>View History</span>
           </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item">
+          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/dashboard") }>
             <span>◔</span>
             <span>Notifications</span>
           </button>

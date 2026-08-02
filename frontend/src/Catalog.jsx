@@ -484,7 +484,7 @@ function Catalog() {
           <button
             type="button"
             style={{ ...styles.navPillBase, ...styles.navPillActive }}
-            onClick={() => navigate("/catalog")}
+            onClick={() => navigate("/catalog", { state: { avatarUrl } })}
           >
             <span>◍</span><span>Garment Catalog</span>
           </button>

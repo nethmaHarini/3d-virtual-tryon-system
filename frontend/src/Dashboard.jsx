@@ -1139,7 +1139,7 @@ function Dashboard() {
         </div>
 
         <nav style={styles.sidebarSection}>
-          <button type="button" style={{ ...styles.sidebarButtonBase, ...styles.sidebarButtonActive }}>
+          <button type="button" style={{ ...styles.sidebarButtonBase, ...styles.sidebarButtonActive }} onClick={() => navigate("/dashboard") }>
             <span>◈</span>
             <span>Dashboard</span>
           </button>
@@ -1156,22 +1156,22 @@ function Dashboard() {
             <span>◍</span>
             <span>Garment Catalog</span>
           </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase}>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
             <span>◎</span>
             <span>View History</span>
           </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase}>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
             <span>◔</span>
             <span>Notifications</span>
           </button>
         </nav>
 
         <div style={styles.sidebarFooter}>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase}>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
             <span>◉</span>
             <span>Profile</span>
           </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase}>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
             <span>◒</span>
             <span>Settings</span>
           </button>
