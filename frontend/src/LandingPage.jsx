@@ -1,19 +1,109 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "./assets/hero.png";
 
+const THEME_STORAGE_KEY = "landing-theme";
+
+function getInitialTheme() {
+  if (typeof window === "undefined") {
+    return "dark";
+  }
+
+  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 function LandingPage() {
   const navigate = useNavigate();
+  const [theme, setTheme] = useState(getInitialTheme);
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  const colors = useMemo(
+    () =>
+      isDark
+        ? {
+            pageBackground:
+              "radial-gradient(circle at 12% 18%, rgba(93, 61, 255, 0.22) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(153, 74, 255, 0.22) 0%, transparent 48%), linear-gradient(150deg, #070d16 0%, #0d141d 45%, #101926 100%)",
+            text: "#e7edf9",
+            brand: "#ffffff",
+            navButtonBorder: "rgba(255, 255, 255, 0.16)",
+            navButtonBackground: "rgba(12, 19, 30, 0.75)",
+            navButtonText: "#d5def0",
+            title: "#ffffff",
+            subtitle: "#c3cce1",
+            secondaryButtonBorder: "rgba(255, 255, 255, 0.18)",
+            secondaryButtonBackground: "rgba(12, 19, 30, 0.65)",
+            secondaryButtonText: "#e7edf9",
+            statBorder: "rgba(255, 255, 255, 0.1)",
+            statBackground: "rgba(18, 26, 38, 0.66)",
+            statValue: "#ffffff",
+            statLabel: "#9fb3d9",
+            ringBorder: "16px solid rgba(188, 208, 255, 0.15)",
+            ringShadow:
+              "inset 0 0 34px rgba(164, 201, 252, 0.3), 0 0 70px rgba(164, 201, 252, 0.2), 0 0 120px rgba(128, 90, 213, 0.2)",
+            visualBorder: "1px solid rgba(255, 255, 255, 0.12)",
+            visualBackground: "rgba(21, 28, 38, 0.7)",
+            visualShadow: "0 20px 42px rgba(6, 12, 20, 0.45)",
+            visualHeading: "#ffffff",
+            visualText: "#a6badb",
+            ambientLeft: "rgba(83, 61, 209, 0.24)",
+            ambientRight: "rgba(95, 11, 126, 0.24)",
+            toggleBorder: "rgba(191, 212, 255, 0.35)",
+            toggleBackground: "rgba(35, 47, 69, 0.75)",
+            toggleText: "#f1f5ff",
+          }
+        : {
+            pageBackground:
+              "radial-gradient(circle at 12% 18%, rgba(122, 117, 255, 0.2) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(216, 121, 255, 0.16) 0%, transparent 48%), linear-gradient(150deg, #f6f8ff 0%, #edf2ff 45%, #f8fbff 100%)",
+            text: "#20293a",
+            brand: "#121a2a",
+            navButtonBorder: "rgba(19, 32, 55, 0.15)",
+            navButtonBackground: "rgba(255, 255, 255, 0.9)",
+            navButtonText: "#1d2b47",
+            title: "#101b31",
+            subtitle: "#3f4f70",
+            secondaryButtonBorder: "rgba(19, 32, 55, 0.15)",
+            secondaryButtonBackground: "rgba(255, 255, 255, 0.9)",
+            secondaryButtonText: "#1d2b47",
+            statBorder: "rgba(17, 27, 45, 0.12)",
+            statBackground: "rgba(255, 255, 255, 0.78)",
+            statValue: "#131f36",
+            statLabel: "#4f6185",
+            ringBorder: "16px solid rgba(117, 141, 204, 0.2)",
+            ringShadow:
+              "inset 0 0 34px rgba(137, 159, 228, 0.25), 0 0 70px rgba(164, 183, 241, 0.2), 0 0 120px rgba(158, 107, 215, 0.18)",
+            visualBorder: "1px solid rgba(17, 27, 45, 0.1)",
+            visualBackground: "rgba(255, 255, 255, 0.78)",
+            visualShadow: "0 20px 42px rgba(34, 57, 95, 0.18)",
+            visualHeading: "#14203a",
+            visualText: "#4f6288",
+            ambientLeft: "rgba(123, 106, 255, 0.2)",
+            ambientRight: "rgba(183, 97, 234, 0.16)",
+            toggleBorder: "rgba(45, 61, 96, 0.2)",
+            toggleBackground: "rgba(255, 255, 255, 0.9)",
+            toggleText: "#192746",
+          },
+    [isDark]
+  );
 
   const styles = {
     page: {
       minHeight: "100vh",
       width: "100%",
-      background:
-        "radial-gradient(circle at 12% 18%, rgba(93, 61, 255, 0.22) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(153, 74, 255, 0.22) 0%, transparent 48%), linear-gradient(150deg, #070d16 0%, #0d141d 45%, #101926 100%)",
-      color: "#e7edf9",
+      background: colors.pageBackground,
+      color: colors.text,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
       position: "relative",
       overflow: "hidden",
+      transition: "background 240ms ease, color 240ms ease",
     },
     shell: {
       maxWidth: 1200,
@@ -34,15 +124,31 @@ function LandingPage() {
       fontSize: "1.1rem",
       fontWeight: 800,
       letterSpacing: "0.02em",
-      color: "#ffffff",
+      color: colors.brand,
+    },
+    navActions: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
     },
     navButton: {
-      border: "1px solid rgba(255, 255, 255, 0.16)",
-      background: "rgba(12, 19, 30, 0.75)",
-      color: "#d5def0",
+      border: `1px solid ${colors.navButtonBorder}`,
+      background: colors.navButtonBackground,
+      color: colors.navButtonText,
       borderRadius: 999,
       padding: "10px 18px",
       fontWeight: 600,
+      cursor: "pointer",
+      transition: "all 220ms ease",
+    },
+    themeToggleButton: {
+      border: `1px solid ${colors.toggleBorder}`,
+      background: colors.toggleBackground,
+      color: colors.toggleText,
+      borderRadius: 999,
+      padding: "10px 14px",
+      minWidth: 114,
+      fontWeight: 700,
       cursor: "pointer",
       transition: "all 220ms ease",
     },
@@ -58,12 +164,12 @@ function LandingPage() {
       lineHeight: 1.05,
       letterSpacing: "-0.02em",
       fontWeight: 800,
-      color: "#ffffff",
+      color: colors.title,
     },
     subtitle: {
       margin: "0 0 30px 0",
       fontSize: "1.02rem",
-      color: "#c3cce1",
+      color: colors.subtitle,
       lineHeight: 1.62,
       maxWidth: 560,
     },
@@ -86,11 +192,11 @@ function LandingPage() {
       transition: "all 240ms ease",
     },
     secondaryButton: {
-      border: "1px solid rgba(255, 255, 255, 0.18)",
+      border: `1px solid ${colors.secondaryButtonBorder}`,
       borderRadius: 999,
       padding: "11px 23px",
-      background: "rgba(12, 19, 30, 0.65)",
-      color: "#e7edf9",
+      background: colors.secondaryButtonBackground,
+      color: colors.secondaryButtonText,
       fontWeight: 600,
       cursor: "pointer",
       transition: "all 240ms ease",
@@ -103,20 +209,20 @@ function LandingPage() {
     statCard: {
       minWidth: 136,
       borderRadius: 16,
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      background: "rgba(18, 26, 38, 0.66)",
+      border: `1px solid ${colors.statBorder}`,
+      background: colors.statBackground,
       padding: "12px 14px",
       backdropFilter: "blur(10px)",
     },
     statValue: {
       margin: 0,
-      color: "#ffffff",
+      color: colors.statValue,
       fontSize: "1.15rem",
       fontWeight: 800,
     },
     statLabel: {
       margin: "4px 0 0 0",
-      color: "#9fb3d9",
+      color: colors.statLabel,
       fontSize: "0.78rem",
       letterSpacing: "0.05em",
       textTransform: "uppercase",
@@ -132,19 +238,18 @@ function LandingPage() {
       width: "min(70vw, 420px)",
       height: "min(70vw, 420px)",
       borderRadius: "999px",
-      border: "16px solid rgba(188, 208, 255, 0.15)",
-      boxShadow:
-        "inset 0 0 34px rgba(164, 201, 252, 0.3), 0 0 70px rgba(164, 201, 252, 0.2), 0 0 120px rgba(128, 90, 213, 0.2)",
+      border: colors.ringBorder,
+      boxShadow: colors.ringShadow,
     },
     visualCard: {
       position: "relative",
       width: "min(88%, 440px)",
       borderRadius: 24,
-      border: "1px solid rgba(255, 255, 255, 0.12)",
-      background: "rgba(21, 28, 38, 0.7)",
+      border: colors.visualBorder,
+      background: colors.visualBackground,
       backdropFilter: "blur(16px)",
       overflow: "hidden",
-      boxShadow: "0 20px 42px rgba(6, 12, 20, 0.45)",
+      boxShadow: colors.visualShadow,
     },
     visualImage: {
       width: "100%",
@@ -157,20 +262,26 @@ function LandingPage() {
     },
     visualHeading: {
       margin: 0,
-      color: "#ffffff",
+      color: colors.visualHeading,
       fontSize: "1.02rem",
       fontWeight: 700,
     },
     visualText: {
       margin: "5px 0 0 0",
-      color: "#a6badb",
+      color: colors.visualText,
       fontSize: "0.88rem",
       lineHeight: 1.45,
+    },
+    ambientLeft: {
+      background: colors.ambientLeft,
+    },
+    ambientRight: {
+      background: colors.ambientRight,
     },
   };
 
   return (
-    <div style={styles.page}>
+    <div style={styles.page} className={`landing-page landing-page-${theme}`}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
         .landing-ambient {
@@ -188,7 +299,6 @@ function LandingPage() {
           max-height: 620px;
           left: -16vw;
           top: -18vw;
-          background: rgba(83, 61, 209, 0.24);
         }
         .landing-ambient-right {
           width: 42vw;
@@ -199,7 +309,6 @@ function LandingPage() {
           max-height: 580px;
           right: -16vw;
           bottom: -20vw;
-          background: rgba(95, 11, 126, 0.24);
         }
         .landing-cta:hover {
           transform: translateY(-2px);
@@ -207,7 +316,11 @@ function LandingPage() {
         }
         .landing-ghost:hover {
           transform: translateY(-2px);
-          border-color: rgba(164, 201, 252, 0.4);
+          border-color: rgba(103, 121, 165, 0.55);
+        }
+        .landing-theme-toggle:hover {
+          transform: translateY(-2px);
+          filter: brightness(1.04);
         }
         @media (max-width: 980px) {
           .landing-hero {
@@ -222,15 +335,27 @@ function LandingPage() {
         }
       `}</style>
 
-      <div className="landing-ambient landing-ambient-left" />
-      <div className="landing-ambient landing-ambient-right" />
+      <div className="landing-ambient landing-ambient-left" style={styles.ambientLeft} />
+      <div className="landing-ambient landing-ambient-right" style={styles.ambientRight} />
 
       <div style={styles.shell}>
         <nav style={styles.nav} className="landing-nav">
           <h1 style={styles.brand}>VirtuFit 3D</h1>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/login")}>
-            Sign In
-          </button>
+          <div style={styles.navActions}>
+            <button
+              type="button"
+              style={styles.themeToggleButton}
+              className="landing-theme-toggle"
+              aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+              title={`Switch to ${isDark ? "light" : "dark"} mode`}
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+            >
+              {isDark ? "☀ Light" : "🌙 Dark"}
+            </button>
+            <button type="button" style={styles.navButton} onClick={() => navigate("/login")}>
+              Sign In
+            </button>
+          </div>
         </nav>
 
         <main style={styles.hero} className="landing-hero">
