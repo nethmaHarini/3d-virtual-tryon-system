@@ -22,35 +22,13 @@ function LandingPage() {
       position: "relative",
       zIndex: 2,
     },
-    nav: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 16,
-      marginBottom: 56,
-    },
-    brand: {
-      margin: 0,
-      fontSize: "1.1rem",
-      fontWeight: 800,
-      letterSpacing: "0.02em",
-      color: "#ffffff",
-    },
-    navButton: {
-      border: "1px solid rgba(255, 255, 255, 0.16)",
-      background: "rgba(12, 19, 30, 0.75)",
-      color: "#d5def0",
-      borderRadius: 999,
-      padding: "10px 18px",
-      fontWeight: 600,
-      cursor: "pointer",
-      transition: "all 220ms ease",
-    },
     hero: {
       display: "grid",
       gridTemplateColumns: "1.1fr 1fr",
       gap: 34,
       alignItems: "center",
+      // Added a slight top margin to account for the removed nav
+      marginTop: "40px", 
     },
     title: {
       margin: "0 0 14px 0",
@@ -216,9 +194,6 @@ function LandingPage() {
           .landing-visual {
             min-height: 360px !important;
           }
-          .landing-nav {
-            margin-bottom: 34px !important;
-          }
         }
       `}</style>
 
@@ -226,13 +201,6 @@ function LandingPage() {
       <div className="landing-ambient landing-ambient-right" />
 
       <div style={styles.shell}>
-        <nav style={styles.nav} className="landing-nav">
-          <h1 style={styles.brand}>VirtuFit 3D</h1>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/login")}>
-            Sign In
-          </button>
-        </nav>
-
         <main style={styles.hero} className="landing-hero">
           <section>
             <h2 style={styles.title}> Experience the Future of Couture </h2>
@@ -279,7 +247,6 @@ function LandingPage() {
             <div style={styles.glowRing} />
             <div style={styles.visualCard}>
               <img src={heroImage} alt="Virtual fitting room preview" style={styles.visualImage} />
-              
             </div>
           </section>
         </main>
