@@ -143,12 +143,26 @@ function Dashboard() {
       if (response.ok) {
         setSuccess(data.message);
         console.log("Uploaded data:", data);
+        const avatarUrl =
+          data?.avatarUrl ||
+          data?.avatar?.avatarUrl ||
+          data?.avatar?.avatar_file ||
+          data?.avatar_file ||
+          "";
+
+        if (avatarUrl) {
+          localStorage.setItem("avatarUrl", avatarUrl);
+          localStorage.setItem("avatar_file", avatarUrl);
+          localStorage.setItem("generatedAvatar", avatarUrl);
+        }
+
         navigate("/avatar-viewer", {
+          replace: true,
           state: {
-            avatarUrl: data.avatarUrl,
+            avatarUrl,
             avatar: data.avatar,
-            avatar_file: data?.avatar?.avatar_file,
-            avatarFile: data?.avatar?.avatar_file,
+            avatar_file: avatarUrl,
+            avatarFile: avatarUrl,
           },
         });
       } else {

@@ -10,6 +10,9 @@ function AvatarViewer() {
     const stateAvatarUrl = location.state?.avatarUrl;
     const stateAvatarFile =
       location.state?.avatar_file || location.state?.avatarFile;
+    const storedAvatarUrl = localStorage.getItem("avatarUrl");
+    const storedAvatarFile = localStorage.getItem("avatar_file");
+    const storedGeneratedAvatar = localStorage.getItem("generatedAvatar");
 
     if (typeof stateAvatarUrl === "string" && stateAvatarUrl.trim()) {
       return stateAvatarUrl;
@@ -17,6 +20,18 @@ function AvatarViewer() {
 
     if (typeof stateAvatarFile === "string" && stateAvatarFile.trim()) {
       return stateAvatarFile;
+    }
+
+    if (typeof storedAvatarUrl === "string" && storedAvatarUrl.trim()) {
+      return storedAvatarUrl;
+    }
+
+    if (typeof storedAvatarFile === "string" && storedAvatarFile.trim()) {
+      return storedAvatarFile;
+    }
+
+    if (typeof storedGeneratedAvatar === "string" && storedGeneratedAvatar.trim()) {
+      return storedGeneratedAvatar;
     }
 
     return null;
