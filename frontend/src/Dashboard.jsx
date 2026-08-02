@@ -1181,7 +1181,7 @@ function Dashboard() {
         <header style={styles.pageHeader}>
           <div>
             <h2 style={styles.headerTitle}>
-              Hello {username || "User"}! Welcome to VirtuFit 3D
+              Hello {username || "User"} !,  Welcome to VirtuFit 3D
             </h2>
             <p style={styles.headerSub}>
               {hasGeneratedAvatar
