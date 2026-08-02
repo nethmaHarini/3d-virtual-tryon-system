@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import heroImage from "./assets/hero.png";
+import heroImage from "./assets/heroL.png";
 
 const THEME_STORAGE_KEY = "landing-theme";
 
@@ -157,6 +157,8 @@ function LandingPage() {
       gridTemplateColumns: "1.1fr 1fr",
       gap: 34,
       alignItems: "center",
+      // Added a slight top margin to account for the removed nav
+      marginTop: "40px", 
     },
     title: {
       margin: "0 0 14px 0",
@@ -253,7 +255,7 @@ function LandingPage() {
     },
     visualImage: {
       width: "100%",
-      height: 300,
+      height: 550,
       objectFit: "cover",
       display: "block",
     },
@@ -329,9 +331,6 @@ function LandingPage() {
           .landing-visual {
             min-height: 360px !important;
           }
-          .landing-nav {
-            margin-bottom: 34px !important;
-          }
         }
       `}</style>
 
@@ -404,12 +403,6 @@ function LandingPage() {
             <div style={styles.glowRing} />
             <div style={styles.visualCard}>
               <img src={heroImage} alt="Virtual fitting room preview" style={styles.visualImage} />
-              <div style={styles.visualMeta}>
-                <p style={styles.visualHeading}>Virtual Try-On Dashboard</p>
-                <p style={styles.visualText}>
-                  Upload body images, generate avatar, and test outfit combinations in one flow.
-                </p>
-              </div>
             </div>
           </section>
         </main>

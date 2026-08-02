@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
 
 import LandingPage from "./LandingPage";
 import Login from "./Login";
@@ -14,10 +15,18 @@ import ProtectedRoute from "./ProtectedRoute";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/reset-password/:token" element={<ResetPassword />} />
+      {/* 1. PUBLIC ROUTES 
+        Wrapped in the Layout component so the Navbar appears at the top 
+      */}
+      <Route element={<Layout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+      </Route>
 
+      {/* 2. PROTECTED ROUTES 
+        Kept outside the Layout so they have their own independent styling 
+      */}
       <Route
         path="/dashboard"
         element={
