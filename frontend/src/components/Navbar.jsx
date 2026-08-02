@@ -153,23 +153,6 @@ function Navbar({ theme, setTheme }) {
 
       {/* 3. RIGHT: Action Buttons */}
       <div style={styles.actionGroup}>
-        <button
-          type="button"
-          style={styles.themeToggleBtn}
-          aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-          title={`Switch to ${isDark ? "light" : "dark"} mode`}
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          onMouseEnter={(e) => {
-            e.target.style.transform = "translateY(-2px)";
-            e.target.style.filter = "brightness(1.05)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = "translateY(0)";
-            e.target.style.filter = "brightness(1)";
-          }}
-        >
-          {isDark ? "☀" : "🌙"}
-        </button>
         <button 
           style={styles.signInBtn}
           onClick={() => navigate("/login")}
@@ -198,6 +181,23 @@ function Navbar({ theme, setTheme }) {
           }}
         >
           Get Started
+        </button>
+        <button
+          type="button"
+          style={styles.themeToggleBtn}
+          aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+          title={`Switch to ${isDark ? "light" : "dark"} mode`}
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.filter = "brightness(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "translateY(0)";
+            e.target.style.filter = "brightness(1)";
+          }}
+        >
+          {isDark ? "☀" : "🌙"}
         </button>
       </div>
 

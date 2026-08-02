@@ -216,9 +216,14 @@ app.post("/login", async (req, res) => {
     const token = createAuthToken(user);
 
     res.json({
-      message: "Login successful",
-      token,
-    });
+  message: "Login successful",
+  token,
+  user: {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+  },
+});
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });

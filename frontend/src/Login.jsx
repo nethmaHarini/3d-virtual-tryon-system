@@ -149,12 +149,18 @@ function Login() {
       const data = await response.json();
 
       if (response.ok) {
-        if (data?.token) {
-          localStorage.setItem("token", data.token);
-        }
-        alert("SUCCESS: " + data.message);
-        navigate("/dashboard");
-      } else {
+  if (data?.token) {
+    localStorage.setItem("token", data.token);
+  }
+
+  if (data?.user) {
+    localStorage.setItem("username", data.user.username);
+    localStorage.setItem("userEmail", data.user.email);
+  }
+
+  alert("SUCCESS: " + data.message);
+  navigate("/dashboard");
+} else {
         alert("ERROR: " + data.message);
       }
     } catch (error) {

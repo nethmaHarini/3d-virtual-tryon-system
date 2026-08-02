@@ -19,6 +19,7 @@ function Dashboard() {
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
   const sideInputRef = useRef(null);
+  const username = localStorage.getItem("username");
   const email = localStorage.getItem("userEmail");
 
   const hasGeneratedAvatar =
@@ -35,8 +36,10 @@ function Dashboard() {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  localStorage.removeItem("userEmail");
+  navigate("/login");
   };
 
   useEffect(() => {
@@ -1178,7 +1181,7 @@ function Dashboard() {
         <header style={styles.pageHeader}>
           <div>
             <h2 style={styles.headerTitle}>
-              {hasGeneratedAvatar ? `Welcome Back, ${email || "VirtuFit 3D"}` : `Welcome Back, ${email || "VirtuFit 3D"}`}
+              Hello {username || "User"}! Welcome to VirtuFit 3D
             </h2>
             <p style={styles.headerSub}>
               {hasGeneratedAvatar
