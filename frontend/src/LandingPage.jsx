@@ -1,30 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import heroImage from "./assets/heroL.png";
-
-const THEME_STORAGE_KEY = "landing-theme";
-
-function getInitialTheme() {
-  if (typeof window === "undefined") {
-    return "dark";
-  }
-
-  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (savedTheme === "light" || savedTheme === "dark") {
-    return savedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
 
 function LandingPage() {
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(getInitialTheme);
+  const { theme = "dark" } = useOutletContext() || {};
   const isDark = theme === "dark";
-
-  useEffect(() => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
 
   const colors = useMemo(
     () =>
@@ -34,9 +15,6 @@ function LandingPage() {
               "radial-gradient(circle at 12% 18%, rgba(93, 61, 255, 0.22) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(153, 74, 255, 0.22) 0%, transparent 48%), linear-gradient(150deg, #070d16 0%, #0d141d 45%, #101926 100%)",
             text: "#e7edf9",
             brand: "#ffffff",
-            navButtonBorder: "rgba(255, 255, 255, 0.16)",
-            navButtonBackground: "rgba(12, 19, 30, 0.75)",
-            navButtonText: "#d5def0",
             title: "#ffffff",
             subtitle: "#c3cce1",
             secondaryButtonBorder: "rgba(255, 255, 255, 0.18)",
@@ -56,18 +34,12 @@ function LandingPage() {
             visualText: "#a6badb",
             ambientLeft: "rgba(83, 61, 209, 0.24)",
             ambientRight: "rgba(95, 11, 126, 0.24)",
-            toggleBorder: "rgba(191, 212, 255, 0.35)",
-            toggleBackground: "rgba(35, 47, 69, 0.75)",
-            toggleText: "#f1f5ff",
           }
         : {
             pageBackground:
               "radial-gradient(circle at 12% 18%, rgba(122, 117, 255, 0.2) 0%, transparent 42%), radial-gradient(circle at 88% 82%, rgba(216, 121, 255, 0.16) 0%, transparent 48%), linear-gradient(150deg, #f6f8ff 0%, #edf2ff 45%, #f8fbff 100%)",
             text: "#20293a",
             brand: "#121a2a",
-            navButtonBorder: "rgba(19, 32, 55, 0.15)",
-            navButtonBackground: "rgba(255, 255, 255, 0.9)",
-            navButtonText: "#1d2b47",
             title: "#101b31",
             subtitle: "#3f4f70",
             secondaryButtonBorder: "rgba(19, 32, 55, 0.15)",
@@ -87,9 +59,6 @@ function LandingPage() {
             visualText: "#4f6288",
             ambientLeft: "rgba(123, 106, 255, 0.2)",
             ambientRight: "rgba(183, 97, 234, 0.16)",
-            toggleBorder: "rgba(45, 61, 96, 0.2)",
-            toggleBackground: "rgba(255, 255, 255, 0.9)",
-            toggleText: "#192746",
           },
     [isDark]
   );
@@ -112,53 +81,12 @@ function LandingPage() {
       position: "relative",
       zIndex: 2,
     },
-    nav: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 16,
-      marginBottom: 56,
-    },
-    brand: {
-      margin: 0,
-      fontSize: "1.1rem",
-      fontWeight: 800,
-      letterSpacing: "0.02em",
-      color: colors.brand,
-    },
-    navActions: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-    },
-    navButton: {
-      border: `1px solid ${colors.navButtonBorder}`,
-      background: colors.navButtonBackground,
-      color: colors.navButtonText,
-      borderRadius: 999,
-      padding: "10px 18px",
-      fontWeight: 600,
-      cursor: "pointer",
-      transition: "all 220ms ease",
-    },
-    themeToggleButton: {
-      border: `1px solid ${colors.toggleBorder}`,
-      background: colors.toggleBackground,
-      color: colors.toggleText,
-      borderRadius: 999,
-      padding: "10px 14px",
-      minWidth: 114,
-      fontWeight: 700,
-      cursor: "pointer",
-      transition: "all 220ms ease",
-    },
     hero: {
       display: "grid",
       gridTemplateColumns: "1.1fr 1fr",
       gap: 34,
       alignItems: "center",
-      // Added a slight top margin to account for the removed nav
-      marginTop: "40px", 
+      marginTop: "40px",
     },
     title: {
       margin: "0 0 14px 0",
@@ -320,10 +248,6 @@ function LandingPage() {
           transform: translateY(-2px);
           border-color: rgba(103, 121, 165, 0.55);
         }
-        .landing-theme-toggle:hover {
-          transform: translateY(-2px);
-          filter: brightness(1.04);
-        }
         @media (max-width: 980px) {
           .landing-hero {
             grid-template-columns: 1fr !important;
@@ -338,25 +262,6 @@ function LandingPage() {
       <div className="landing-ambient landing-ambient-right" style={styles.ambientRight} />
 
       <div style={styles.shell}>
-        <nav style={styles.nav} className="landing-nav">
-          <h1 style={styles.brand}>VirtuFit 3D</h1>
-          <div style={styles.navActions}>
-            <button
-              type="button"
-              style={styles.themeToggleButton}
-              className="landing-theme-toggle"
-              aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-              title={`Switch to ${isDark ? "light" : "dark"} mode`}
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-            >
-              {isDark ? "☀ Light" : "🌙 Dark"}
-            </button>
-            <button type="button" style={styles.navButton} onClick={() => navigate("/login")}>
-              Sign In
-            </button>
-          </div>
-        </nav>
-
         <main style={styles.hero} className="landing-hero">
           <section>
             <h2 style={styles.title}> Experience the Future of Couture </h2>

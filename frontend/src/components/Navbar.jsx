@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
-function Navbar() {
+function Navbar({ theme, setTheme }) {
   const navigate = useNavigate();
+  const isDark = theme === "dark";
 
   const styles = {
     nav: {
@@ -15,14 +16,19 @@ function Navbar() {
       alignItems: "center",
       padding: "0 6%",
       boxSizing: "border-box",
-      background: "linear-gradient(90deg, rgba(10, 15, 30, 0.3) 0%, rgba(54, 38, 206, 0.12) 100%)",
+      background: isDark
+        ? "linear-gradient(90deg, rgba(10, 15, 30, 0.3) 0%, rgba(54, 38, 206, 0.12) 100%)"
+        : "linear-gradient(90deg, rgba(245, 248, 255, 0.85) 0%, rgba(227, 233, 255, 0.65) 100%)",
       backdropFilter: "blur(24px)",
       WebkitBackdropFilter: "blur(24px)",
-      borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-      borderTop: "1px solid rgba(255, 255, 255, 0.03)",
-      boxShadow: "0 10px 40px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0,0,0,0.4)",
+      borderBottom: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(21, 36, 68, 0.1)",
+      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.03)" : "1px solid rgba(255, 255, 255, 0.8)",
+      boxShadow: isDark
+        ? "0 10px 40px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0,0,0,0.4)"
+        : "0 8px 32px rgba(31, 47, 86, 0.12)",
       zIndex: 100,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
+      transition: "all 220ms ease",
     },
     // Left Zone
     leftZone: {
@@ -31,13 +37,13 @@ function Navbar() {
       alignItems: "center",
     },
     logo: {
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#1a2542",
       fontSize: "1.45rem",
       fontWeight: 800,
       letterSpacing: "-0.02em",
       cursor: "pointer",
       margin: 0,
-      textShadow: "0 0 20px rgba(164, 201, 252, 0.3)",
+      textShadow: isDark ? "0 0 20px rgba(164, 201, 252, 0.3)" : "none",
       transition: "all 0.3s ease",
     },
     // Center Zone
@@ -48,7 +54,7 @@ function Navbar() {
       justifyContent: "center",
     },
     navLink: {
-      color: "#c3cce1",
+      color: isDark ? "#c3cce1" : "#425277",
       fontSize: "0.9rem",
       fontWeight: 600,
       cursor: "pointer",
@@ -62,10 +68,25 @@ function Navbar() {
       alignItems: "center",
       justifyContent: "flex-end",
     },
+    themeToggleBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: "999px",
+      border: isDark ? "1px solid rgba(191, 212, 255, 0.35)" : "1px solid rgba(45, 61, 96, 0.2)",
+      background: isDark ? "rgba(35, 47, 69, 0.75)" : "rgba(255, 255, 255, 0.9)",
+      color: isDark ? "#f1f5ff" : "#1a2745",
+      fontSize: "1rem",
+      cursor: "pointer",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      transition: "all 0.22s ease",
+      fontFamily: "inherit",
+    },
     signInBtn: {
-      background: "rgba(255, 255, 255, 0.03)",
-      color: "#ffffff",
-      border: "1px solid rgba(255, 255, 255, 0.15)",
+      background: isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(255, 255, 255, 0.75)",
+      color: isDark ? "#ffffff" : "#172442",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid rgba(25, 40, 70, 0.2)",
       padding: "10px 24px",
       borderRadius: "999px",
       fontSize: "0.9rem",
@@ -92,8 +113,8 @@ function Navbar() {
 
   // Helper function for the link hover effect
   const handleLinkHover = (e, isHovering) => {
-    e.target.style.color = isHovering ? "#ffffff" : "#c3cce1";
-    e.target.style.textShadow = isHovering ? "0 0 12px rgba(255,255,255,0.4)" : "none";
+    e.target.style.color = isHovering ? (isDark ? "#ffffff" : "#101b34") : isDark ? "#c3cce1" : "#425277";
+    e.target.style.textShadow = isHovering && isDark ? "0 0 12px rgba(255,255,255,0.4)" : "none";
   };
 
   return (
@@ -132,16 +153,33 @@ function Navbar() {
 
       {/* 3. RIGHT: Action Buttons */}
       <div style={styles.actionGroup}>
+        <button
+          type="button"
+          style={styles.themeToggleBtn}
+          aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+          title={`Switch to ${isDark ? "light" : "dark"} mode`}
+          onClick={() => setTheme(isDark ? "light" : "dark")}
+          onMouseEnter={(e) => {
+            e.target.style.transform = "translateY(-2px)";
+            e.target.style.filter = "brightness(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = "translateY(0)";
+            e.target.style.filter = "brightness(1)";
+          }}
+        >
+          {isDark ? "☀" : "🌙"}
+        </button>
         <button 
           style={styles.signInBtn}
           onClick={() => navigate("/login")}
           onMouseEnter={(e) => {
-            e.target.style.background = "rgba(255,255,255,0.1)";
-            e.target.style.borderColor = "rgba(255,255,255,0.4)";
+            e.target.style.background = isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.95)";
+            e.target.style.borderColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(25,40,70,0.35)";
           }}
           onMouseLeave={(e) => {
-            e.target.style.background = "rgba(255,255,255,0.03)";
-            e.target.style.borderColor = "rgba(255,255,255,0.15)";
+            e.target.style.background = isDark ? "rgba(255,255,255,0.03)" : "rgba(255, 255, 255, 0.75)";
+            e.target.style.borderColor = isDark ? "rgba(255,255,255,0.15)" : "rgba(25, 40, 70, 0.2)";
           }}
         >
           Sign In
