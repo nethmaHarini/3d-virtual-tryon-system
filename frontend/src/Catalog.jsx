@@ -492,7 +492,7 @@ function Catalog() {
             type="button"
             style={{ ...styles.navPillBase }}
             className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/history")}
           >
             <span>◎</span><span>View History</span>
           </button>

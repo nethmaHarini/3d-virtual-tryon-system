@@ -504,7 +504,7 @@ function AvatarViewer() {
             <span>◍</span>
             <span>Garment Catalog</span>
           </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/dashboard") }>
+          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/history") }>
             <span>◎</span>
             <span>View History</span>
           </button>

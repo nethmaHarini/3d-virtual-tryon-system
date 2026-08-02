@@ -9,6 +9,7 @@ import AvatarViewer from "./AvatarViewer";
 import Catalog from "./Catalog";
 import GarmentDetail from "./GarmentDetail";
 import TryOn from "./TryOn";
+import ViewHistory from "./ViewHistory";
 import ResetPassword from "./ResetPassword";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -68,6 +69,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TryOn />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <ViewHistory />
           </ProtectedRoute>
         }
       />

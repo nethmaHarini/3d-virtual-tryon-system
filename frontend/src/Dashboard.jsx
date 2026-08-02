@@ -1156,7 +1156,7 @@ function Dashboard() {
             <span>◍</span>
             <span>Garment Catalog</span>
           </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/history") }>
             <span>◎</span>
             <span>View History</span>
           </button>
