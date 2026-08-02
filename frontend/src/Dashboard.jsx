@@ -1366,38 +1366,6 @@ function Dashboard() {
               </div>
             </div>
 
-            <aside style={styles.rightRail}>
-              <div style={styles.sideCard} className="dash-card-lift">
-                <div style={styles.sideCardHeader}>
-                  <h4 style={styles.sideCardTitle}>Recent Activity</h4>
-                  <span style={{ color: "#8d9199" }}>⋯</span>
-                </div>
-                <div style={styles.emptyWrap}>
-                  <div style={styles.emptyIcon}>◴</div>
-                  <p style={{ margin: 0, color: "#ffffff", fontWeight: 700, fontSize: "0.86rem" }}>No Activity Yet</p>
-                  <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.45 }}>Your simulations and generated avatars will appear here.</p>
-                </div>
-              </div>
-
-              <div style={styles.sideCard} className="dash-card-lift">
-                <div style={styles.sideCardHeader}>
-                  <h4 style={styles.sideCardTitle}>Saved Garments</h4>
-                  <span style={{ color: "#a4c9fc", fontSize: "0.7rem", fontWeight: 700 }}>Browse</span>
-                </div>
-                <div style={styles.emptyWrap}>
-                  <div style={styles.emptyIcon}>◍</div>
-                  <p style={{ margin: 0, color: "#ffffff", fontWeight: 700, fontSize: "0.86rem" }}>Wardrobe is Empty</p>
-                  <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.45 }}>Create your avatar first to start trying digital couture pieces.</p>
-                </div>
-              </div>
-
-              <div style={styles.featureCard} className="dash-card-lift">
-                <div>
-                  <p style={styles.featureKicker}>New Collection</p>
-                  <p style={styles.featureTitle}>Ethereal Silk 2024</p>
-                </div>
-              </div>
-            </aside>
           </div>
         )}
 
