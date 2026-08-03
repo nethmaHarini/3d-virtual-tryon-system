@@ -8,6 +8,7 @@ function Dashboard() {
   const [backImage, setBackImage] = useState(null);
   const [sideImage, setSideImage] = useState(null);
   const [height, setHeight] = useState("");
+  const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
   const [frontPreview, setFrontPreview] = useState("");
   const [backPreview, setBackPreview] = useState("");
@@ -128,6 +129,7 @@ function Dashboard() {
       formData.append("backImage", backImage);
       formData.append("sideImage", sideImage);
       formData.append("height", height);
+      formData.append("gender", gender);
 
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_URL}/generate-avatar`, {
@@ -451,6 +453,15 @@ function Dashboard() {
       gap: 20,
       alignItems: "end",
     },
+    measurementFields: {
+      display: "grid",
+      gridTemplateColumns: "minmax(0, 1fr) minmax(170px, 0.8fr)",
+      gap: 12,
+      alignItems: "end",
+    },
+    measurementField: {
+      minWidth: 0,
+    },
     inputLabel: {
       display: "block",
       fontSize: "0.72rem",
@@ -471,6 +482,22 @@ function Dashboard() {
       outline: "none",
       fontSize: "0.96rem",
       transition: "all 220ms ease",
+    },
+    selectInput: {
+      width: "100%",
+      boxSizing: "border-box",
+      padding: "13px 14px",
+      borderRadius: 14,
+      border: "1px solid rgba(141, 145, 153, 0.34)",
+      background: "rgba(8, 15, 24, 0.9)",
+      color: "#ffffff",
+      outline: "none",
+      fontSize: "0.96rem",
+      transition: "all 220ms ease",
+      appearance: "none",
+      WebkitAppearance: "none",
+      MozAppearance: "none",
+      cursor: "pointer",
     },
     generateButton: {
       border: "none",
@@ -908,6 +935,13 @@ function Dashboard() {
           border-color: rgba(164, 201, 252, 0.76);
           box-shadow: 0 0 0 3px rgba(164, 201, 252, 0.16);
         }
+        .dash-select-focus:hover {
+          border-color: rgba(164, 201, 252, 0.46);
+        }
+        .dash-select-focus:focus {
+          border-color: rgba(164, 201, 252, 0.76);
+          box-shadow: 0 0 0 3px rgba(164, 201, 252, 0.16);
+        }
         .dash-generate-btn:hover:not(:disabled) {
           transform: translateY(-2px);
           box-shadow: 0 18px 30px rgba(40, 30, 104, 0.55), 0 0 20px rgba(164, 201, 252, 0.18);
@@ -1117,6 +1151,9 @@ function Dashboard() {
           .controls-row {
             grid-template-columns: 1fr !important;
           }
+          .measurement-fields {
+            grid-template-columns: 1fr !important;
+          }
           .helper-grid,
           .catalog-grid {
             grid-template-columns: 1fr !important;
@@ -1255,18 +1292,38 @@ function Dashboard() {
 
               <div style={styles.controlsRow} className="controls-row">
                 <div>
-                  <label htmlFor="height" style={styles.inputLabel}>Measurement: Height (cm)</label>
-                  <input
-                    id="height"
-                    type="number"
-                    value={height}
-                    onChange={(event) => setHeight(event.target.value)}
-                    min="100"
-                    max="250"
-                    placeholder="e.g. 175"
-                    style={styles.heightInput}
-                    className="dash-input-focus"
-                  />
+                  <div style={styles.measurementFields} className="measurement-fields">
+                    <div style={styles.measurementField}>
+                      <label htmlFor="height" style={styles.inputLabel}>Measurement: Height (cm)</label>
+                      <input
+                        id="height"
+                        type="number"
+                        value={height}
+                        onChange={(event) => setHeight(event.target.value)}
+                        min="100"
+                        max="250"
+                        placeholder="e.g. 175"
+                        style={styles.heightInput}
+                        className="dash-input-focus"
+                      />
+                    </div>
+                    <div style={styles.measurementField}>
+                      <label htmlFor="gender" style={styles.inputLabel}>Gender</label>
+                      <select
+                        id="gender"
+                        value={gender}
+                        onChange={(event) => setGender(event.target.value)}
+                        style={styles.selectInput}
+                        className="dash-select-focus"
+                      >
+                        <option value="" disabled>
+                          Select gender
+                        </option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                      </select>
+                    </div>
+                  </div>
                   <p style={styles.disclaimer}>
                     By clicking generate, you agree to our Terms of Service and Privacy Policy regarding biometric data processing.
                   </p>
