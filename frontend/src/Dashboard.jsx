@@ -1151,15 +1151,15 @@ function Dashboard() {
           .controls-row {
             grid-template-columns: 1fr !important;
           }
-          .measurement-fields {
-            grid-template-columns: 1fr !important;
-          }
           .helper-grid,
           .catalog-grid {
             grid-template-columns: 1fr !important;
           }
         }
         @media (max-width: 780px) {
+          .measurement-fields {
+            grid-template-columns: 1fr !important;
+          }
           .guidelines-grid {
             grid-template-columns: 1fr;
           }
