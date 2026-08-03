@@ -8,6 +8,7 @@ function Dashboard() {
   const [backImage, setBackImage] = useState(null);
   const [sideImage, setSideImage] = useState(null);
   const [height, setHeight] = useState("");
+  const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
   const [frontPreview, setFrontPreview] = useState("");
   const [backPreview, setBackPreview] = useState("");
@@ -118,6 +119,11 @@ function Dashboard() {
       return;
     }
 
+    if (!gender) {
+      setError("Please select a gender");
+      return;
+    }
+
     setLoading(true);
     setSuccess("");
     setError("");
@@ -128,6 +134,7 @@ function Dashboard() {
       formData.append("backImage", backImage);
       formData.append("sideImage", sideImage);
       formData.append("height", height);
+      formData.append("gender", gender);
 
       const token = localStorage.getItem("token");
       const response = await fetch(`${API_URL}/generate-avatar`, {
@@ -354,7 +361,7 @@ function Dashboard() {
     },
     newGrid: {
       display: "grid",
-      gridTemplateColumns: "minmax(0, 1.95fr) minmax(320px, 1fr)",
+      gridTemplateColumns: "minmax(0, 1fr)",
       gap: 22,
       alignItems: "stretch",
     },
@@ -447,9 +454,18 @@ function Dashboard() {
       paddingTop: 18,
       borderTop: "1px solid rgba(255, 255, 255, 0.1)",
       display: "grid",
-      gridTemplateColumns: "1.1fr auto",
+      gridTemplateColumns: "minmax(0, 1fr) auto",
       gap: 20,
       alignItems: "end",
+    },
+    controlGroup: {
+      display: "grid",
+      gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+      gap: 14,
+      alignItems: "start",
+    },
+    controlField: {
+      minWidth: 0,
     },
     inputLabel: {
       display: "block",
@@ -471,6 +487,32 @@ function Dashboard() {
       outline: "none",
       fontSize: "0.96rem",
       transition: "all 220ms ease",
+    },
+    genderSelector: {
+      display: "grid",
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+      gap: 10,
+      padding: 6,
+      borderRadius: 16,
+      border: "1px solid rgba(141, 145, 153, 0.34)",
+      background: "rgba(8, 15, 24, 0.9)",
+    },
+    genderOption: {
+      border: "1px solid transparent",
+      borderRadius: 12,
+      padding: "12px 14px",
+      background: "transparent",
+      color: "#c3c6d0",
+      fontSize: "0.92rem",
+      fontWeight: 700,
+      cursor: "pointer",
+      transition: "all 200ms ease",
+    },
+    genderOptionActive: {
+      background: "linear-gradient(135deg, rgba(54, 38, 206, 0.95) 0%, rgba(95, 11, 126, 0.95) 100%)",
+      color: "#ffffff",
+      borderColor: "rgba(164, 201, 252, 0.36)",
+      boxShadow: "0 8px 18px rgba(40, 30, 104, 0.34)",
     },
     generateButton: {
       border: "none",
@@ -1254,20 +1296,49 @@ function Dashboard() {
               </div>
 
               <div style={styles.controlsRow} className="controls-row">
-                <div>
-                  <label htmlFor="height" style={styles.inputLabel}>Measurement: Height (cm)</label>
-                  <input
-                    id="height"
-                    type="number"
-                    value={height}
-                    onChange={(event) => setHeight(event.target.value)}
-                    min="100"
-                    max="250"
-                    placeholder="e.g. 175"
-                    style={styles.heightInput}
-                    className="dash-input-focus"
-                  />
-                  <p style={styles.disclaimer}>
+                <div style={styles.controlGroup}>
+                  <div style={styles.controlField}>
+                    <label htmlFor="height" style={styles.inputLabel}>Measurement: Height (cm)</label>
+                    <input
+                      id="height"
+                      type="number"
+                      value={height}
+                      onChange={(event) => setHeight(event.target.value)}
+                      min="100"
+                      max="250"
+                      placeholder="e.g. 175"
+                      style={styles.heightInput}
+                      className="dash-input-focus"
+                    />
+                  </div>
+
+                  <div style={styles.controlField}>
+                    <label style={styles.inputLabel}>Gender</label>
+                    <div style={styles.genderSelector} className="gender-selector">
+                      <button
+                        type="button"
+                        onClick={() => setGender("male")}
+                        style={{
+                          ...styles.genderOption,
+                          ...(gender === "male" ? styles.genderOptionActive : {}),
+                        }}
+                      >
+                        Male
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGender("female")}
+                        style={{
+                          ...styles.genderOption,
+                          ...(gender === "female" ? styles.genderOptionActive : {}),
+                        }}
+                      >
+                        Female
+                      </button>
+                    </div>
+                  </div>
+
+                  <p style={{ ...styles.disclaimer, gridColumn: "1 / -1" }}>
                     By clicking generate, you agree to our Terms of Service and Privacy Policy regarding biometric data processing.
                   </p>
                 </div>
