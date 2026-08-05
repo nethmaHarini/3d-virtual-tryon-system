@@ -541,7 +541,8 @@ app.post(
           });
         }
 
-        const avatarUrl = `${BACKEND_PUBLIC_URL}/generated-avatars/${avatarFilename}`;
+        const avatarBaseUrl = `${req.protocol}://${req.get("host")}`;
+        const avatarUrl = `${avatarBaseUrl}/generated-avatars/${avatarFilename}`;
 
         return res.status(200).json({
           message: "Avatar generated successfully",
