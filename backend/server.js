@@ -478,15 +478,26 @@ app.post(
 
       const pythonArgs = [
         PYTHON_SCRIPT,
-        "--front", frontPath,
-        "--back", backPath,
-        "--side", sidePath,
-        "--height", String(numericHeight),
-        "--output", outputPath,
-        "--sample_obj", SAMPLE_OBJ,
+        "--front",
+        frontPath,
+        "--back",
+        backPath,
+        "--side",
+        sidePath,
+        "--height",
+        String(numericHeight),
+        "--body_model",
+        "neutral",
+        "--output",
+        outputPath,
+        "--sample_obj",
+        SAMPLE_OBJ,
       ];
 
-      const pythonProcess = spawn("python3", pythonArgs, {
+      const pythonCommand =
+        process.platform === "win32" ? "python" : "python3";
+
+      const pythonProcess = spawn(pythonCommand, pythonArgs, {
         cwd: __dirname,
       });
 
