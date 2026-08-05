@@ -43,6 +43,27 @@ function Dashboard() {
   navigate("/login");
   };
 
+  // Clear generated avatar data and return to the photo upload portion of the dashboard
+  const handleRegenerate = () => {
+    try {
+      localStorage.removeItem("avatar_file");
+      localStorage.removeItem("avatarUrl");
+      localStorage.removeItem("generatedAvatar");
+      // If there are other avatar-related keys they can be cleared here as well
+    } catch (e) {
+      console.warn("Error clearing avatar data:", e);
+    }
+    // Navigate to dashboard and reload so the upload UI (new user flow) is shown
+    navigate("/dashboard");
+    // Force a reload to ensure hasGeneratedAvatar (read from localStorage) is recalculated
+    window.location.reload();
+  };
+
+  // Navigate to the try-on page
+  const handleTryOn = () => {
+    navigate("/try-on");
+  };
+
   useEffect(() => {
     return () => {
       if (frontPreview) {
@@ -1437,8 +1458,8 @@ function Dashboard() {
                   <h3 style={styles.avatarTitle}>Digital Fitting Canvas</h3>
                   <p style={styles.avatarText}>SMPL preview is coming soon. This placeholder represents your personalized 3D avatar zone.</p>
                   <div style={styles.actionRow}>
-                    <button type="button" style={styles.actionGhost} className="dash-action-btn">Regenerate</button>
-                    <button type="button" style={styles.actionPrimary} className="dash-action-primary">Try-On Now</button>
+                    <button type="button" style={styles.actionGhost} className="dash-action-btn" onClick={handleRegenerate}>Regenerate</button>
+                    <button type="button" style={styles.actionPrimary} className="dash-action-primary" onClick={handleTryOn}>Try-On Now</button>
                   </div>
                 </div>
               </div>
