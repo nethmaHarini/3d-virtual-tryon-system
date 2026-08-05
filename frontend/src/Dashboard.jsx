@@ -138,8 +138,8 @@ function Dashboard() {
       return;
     }
 
-    if (!height || height < 100 || height > 250) {
-      setError("Please enter a valid height (100–250 cm)");
+    if (!height || height < 100 || height > 230) {
+      setError("Please enter a valid height (100–230 cm)");
       return;
     }
 
@@ -1323,7 +1323,7 @@ function Dashboard() {
                         value={height}
                         onChange={(event) => setHeight(event.target.value)}
                         min="100"
-                        max="250"
+                        max="230"
                         placeholder="e.g. 175"
                         style={styles.heightInput}
                         className="dash-input-focus"
@@ -1544,6 +1544,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
-
 
