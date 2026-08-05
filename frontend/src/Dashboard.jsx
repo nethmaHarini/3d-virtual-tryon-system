@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+﻿import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import API_URL from "./config";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
   const [sideImage, setSideImage] = useState(null);
@@ -23,10 +24,14 @@ function Dashboard() {
   const username = localStorage.getItem("username");
   const email = localStorage.getItem("userEmail");
 
-  const hasGeneratedAvatar =
+  const _regenQuery = new URLSearchParams(location.search).get("regen");
+  const regenRequested = _regenQuery === "true" || (location.state && location.state.regen === true);
+
+  const hasGeneratedAvatar = !regenRequested && (
     Boolean(localStorage.getItem("avatar_file")) ||
     Boolean(localStorage.getItem("avatarUrl")) ||
-    Boolean(localStorage.getItem("generatedAvatar"));
+    Boolean(localStorage.getItem("generatedAvatar"))
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -53,10 +58,8 @@ function Dashboard() {
     } catch (e) {
       console.warn("Error clearing avatar data:", e);
     }
-    // Navigate to dashboard and reload so the upload UI (new user flow) is shown
-    navigate("/dashboard");
-    // Force a reload to ensure hasGeneratedAvatar (read from localStorage) is recalculated
-    window.location.reload();
+    // Navigate to dashboard and include a query param that forces the upload UI to show
+    navigate("/dashboard?regen=true", { replace: true });
   };
 
   // Navigate to the try-on page
@@ -156,9 +159,7 @@ function Dashboard() {
       const response = await fetch(`${API_URL}/generate-avatar`, {
         method: "POST",
         body: formData,
-        headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
+        headers: { Authorization: token ? "Bearer " + token : undefined },
       });
 
       const data = await response.json();
@@ -1543,3 +1544,6 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+
+
