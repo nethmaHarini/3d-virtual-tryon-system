@@ -547,7 +547,7 @@ app.post(
           });
         }
 
-        const avatarBaseUrl = `${req.protocol}://${req.get("host")}`;
+        const avatarBaseUrl = BACKEND_PUBLIC_URL.replace(/\/$/, "");
         const avatarUrl = `${avatarBaseUrl}/generated-avatars/${avatarFilename}`;
 
         return res.status(200).json({
