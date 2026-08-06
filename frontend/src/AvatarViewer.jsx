@@ -40,10 +40,19 @@ function AvatarViewer() {
   console.log("avatarValue =", avatarValue);
 
   const handleDownloadAvatar = () => {
-    const fileToDownload = "/models/final_avatar.obj";
     const link = document.createElement("a");
-    link.href = fileToDownload;
-    link.download = "final_avatar.obj";
+
+    if (!avatarValue) {
+      alert("No generated avatar is available to download.");
+      return;
+    }
+
+    link.href = avatarValue;
+
+    const cleanUrl = avatarValue.split("?")[0];
+    const fileName = cleanUrl.split("/").pop() || "generated_avatar.obj";
+
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

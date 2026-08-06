@@ -442,7 +442,7 @@ app.post(
     let sidePath = null;
 
     try {
-      const { height } = req.body;
+      const { height, gender } = req.body;
 
       const frontImage = req.files?.frontImage?.[0];
       const backImage = req.files?.backImage?.[0];
@@ -468,6 +468,12 @@ app.post(
         });
       }
 
+      if (!["male", "female"].includes(gender)) {
+        return res.status(400).json({
+          message: "Gender must be male or female",
+        });
+      }
+
       const timestamp = Date.now();
       const avatarFilename = `avatar_${timestamp}.obj`;
       const outputPath = path.join(GENERATED_AVATAR_DIR, avatarFilename);
@@ -487,7 +493,7 @@ app.post(
         "--height",
         String(numericHeight),
         "--body_model",
-        "neutral",
+        gender,
         "--output",
         outputPath,
         "--sample_obj",
