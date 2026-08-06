@@ -1,1 +1,17 @@
-stitch_aura_3d_virtual_fitting/
+# Node
+frontend/node_modules/
+backend/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+frontend/.env
+backend/.env
+
+# Generated avatars
+backend/generated-avatars/
+
+# Zip files
+*.zip
