@@ -68,7 +68,10 @@ export default function TryOn() {
     navigate('/');
   };
   const handleSave = async () => {
-    await fetch("http://localhost:3000/save-fit", {
+    const API_URL =
+      import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+    await fetch(`${API_URL}/save-fit`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -126,7 +129,9 @@ export default function TryOn() {
 
             <div className="avatar-card">
               <div className="avatar-placeholder" style={{ padding: 0, overflow: "hidden" }}>
-                <AvatarCanvas modelPath="/models/final_avatar.obj" />
+                <AvatarCanvas
+  modelPath={avatarUrl || "/models/final_avatar.obj"}
+/>
               </div>
 
               <div className="avatar-preview-bar">
