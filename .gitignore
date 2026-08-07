@@ -1,16 +1,25 @@
-# Node dependencies
+# ======================================
+# Node.js
+# ======================================
+
 frontend/node_modules/
 backend/node_modules/
 
-# Build outputs
 frontend/dist/
 backend/dist/
 
-# Python cache
+# ======================================
+# Python
+# ======================================
+
+.venv/
 __pycache__/
 *.py[cod]
 
-# Environment files
+# ======================================
+# Environment Variables
+# ======================================
+
 .env
 .env.*
 !.env.example
@@ -18,20 +27,72 @@ __pycache__/
 frontend/.env
 backend/.env
 
-# Generated uploads and avatars
+# ======================================
+# Avatar Generator
+# ======================================
+
+# Temporary uploads
+backend/tmp-uploads/
 backend/uploads/
+
+# Generated avatars
 backend/generated-avatars/
 
-# Temporary archives
+# Temporary processing
+backend/python/**/temporary_processing/
+
+# Test outputs
+backend/python/test_outputs/
+backend/python/test_preprocess_output/
+backend/python/test_pare_package_output/
+backend/python/test_postprocess_output/
+backend/python/test_avatar_generator_output/
+backend/python/pipeline_test_output/
+backend/python/cleanup_test/
+
+# ======================================
+# AI Models
+# ======================================
+
+backend/python/models/
+backend/python/PARE/
+
+*.ckpt
+*.pth
+*.pkl
+
+# ======================================
+# Colab / Jupyter
+# ======================================
+
+.ipynb_checkpoints/
+
+# ======================================
+# Blender
+# ======================================
+
+*.blend1
+
+# ======================================
+# Archives
+# ======================================
+
 *.zip
 
+# ======================================
 # Logs
-*.log
+# ======================================
+
+*.log*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# Editor and operating-system files
+# ======================================
+# IDE / OS
+# ======================================
+
 .vscode/
 .idea/
 .DS_Store
