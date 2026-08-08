@@ -130,6 +130,7 @@ function Navbar({ theme, setTheme }) {
       <div style={styles.linkGroup} className="desktop-nav-links">
         <span 
           style={styles.navLink}
+          onClick={() => navigate("/features")}
           onMouseEnter={(e) => handleLinkHover(e, true)}
           onMouseLeave={(e) => handleLinkHover(e, false)}
         >

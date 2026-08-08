@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 
 import LandingPage from "./LandingPage";
+import Features from "./Features";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import AvatarViewer from "./AvatarViewer";
@@ -21,6 +22,7 @@ export default function App() {
       */}
       <Route element={<Layout />}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/features" element={<Features />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
