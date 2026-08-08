@@ -1,0 +1,8 @@
+numpy
+joblib
+pillow
+opencv-python-headless
+trimesh
+smplx
+torch
+torchvision
