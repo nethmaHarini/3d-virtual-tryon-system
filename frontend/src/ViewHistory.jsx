@@ -94,7 +94,7 @@ function ViewHistory() {
         </div>
 
         <nav style={styles.sidebarSection}>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard")}>
+          <button type="button" style={styles.navButton} onClick={() => navigate("/profile") }>
             <span>◈</span>
             <span>Dashboard</span>
           </button>

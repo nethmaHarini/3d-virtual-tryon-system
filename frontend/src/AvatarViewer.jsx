@@ -524,7 +524,7 @@ function AvatarViewer() {
         </nav>
 
         <div style={styles.sidebarFooter}>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item">
+          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/profile")}>
             <span>◉</span>
             <span>Profile</span>
           </button>

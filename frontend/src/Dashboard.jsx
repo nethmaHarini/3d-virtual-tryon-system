@@ -1226,7 +1226,7 @@ function Dashboard() {
         </nav>
 
         <div style={styles.sidebarFooter}>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
+          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/profile") }>
             <span>◉</span>
             <span>Profile</span>
           </button>
