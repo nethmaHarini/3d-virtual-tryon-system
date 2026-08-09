@@ -6,6 +6,7 @@ import LandingPage from "./LandingPage";
 import Features from "./Features";
 import HowItWorks from "./HowItWorks";
 import FAQ from "./FAQ";
+import ContactUs from "./ContactUs";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import AvatarViewer from "./AvatarViewer";
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/features" element={<Features />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/contact" element={<ContactUs />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>

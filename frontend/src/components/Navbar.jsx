@@ -260,6 +260,19 @@ function Navbar({ theme, setTheme }) {
         >
           FAQ
         </span>
+
+        <span
+          style={styles.navLink}
+          onClick={() => navigate("/contact")}
+          onMouseEnter={(e) =>
+            handleLinkHover(e, true)
+          }
+          onMouseLeave={(e) =>
+            handleLinkHover(e, false)
+          }
+        >
+          Contact Us
+      </span>
       </div>
 
       {/* RIGHT */}
