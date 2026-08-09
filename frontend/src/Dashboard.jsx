@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API_URL from "./config";
+import DashboardSidebar from "./components/DashboardSidebar";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -21,7 +22,6 @@ function Dashboard() {
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
   const sideInputRef = useRef(null);
-  const username = localStorage.getItem("username");
   const email = localStorage.getItem("userEmail");
 
   const _regenQuery = new URLSearchParams(location.search).get("regen");
@@ -40,13 +40,6 @@ function Dashboard() {
       navigate("/login");
     }
   }, [navigate]);
-
-  const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
-  localStorage.removeItem("userEmail");
-  navigate("/login");
-  };
 
   // Clear generated avatar data and return to the photo upload portion of the dashboard
   const handleRegenerate = () => {
@@ -1195,66 +1188,7 @@ function Dashboard() {
         }
       `}</style>
 
-      <aside style={styles.sidebar} className="dashboard-sidebar">
-        <div>
-          <h1 style={styles.sidebarBrand}>VirtuFit 3D</h1>
-          <p style={styles.sidebarTag}>VirtuFit 3D</p>
-        </div>
-
-        <div style={styles.sidebarHeader}>Main Menu</div>
-        <nav style={styles.sidebarSection}>
-          <button type="button" style={{ ...styles.sidebarButtonBase, ...styles.sidebarButtonActive }} onClick={() => navigate("/dashboard") }>
-            <span>◈</span>
-            <span>Dashboard</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/avatar-viewer", { state: { avatarUrl: localStorage.getItem("avatarUrl") } })}>
-            <span>◌</span>
-            <span>View Avatar</span>
-          </button>
-          <button
-            type="button"
-            className="dash-nav-item"
-            style={styles.sidebarButtonBase}
-            onClick={() => navigate("/catalog")}
-          >
-            <span>◍</span>
-            <span>Garment Catalog</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/history") }>
-            <span>◎</span>
-            <span>View History</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
-            <span>◔</span>
-            <span>Notifications</span>
-            <span style={styles.notifyDot}>2</span>
-          </button>
-        </nav>
-
-        <div style={{ marginTop: 6, color: 'rgba(173,182,204,0.62)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Account</div>
-        <div style={styles.sidebarFooter}>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/profile") }>
-            <span>◉</span>
-            <span>Profile</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
-            <span>◒</span>
-            <span>Settings</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={handleLogout}>
-            <span>⎋</span>
-            <span>Logout</span>
-          </button>
-
-          <div style={styles.profilePill}>
-            <div style={styles.avatarMini}>AI</div>
-            <div>
-              <p style={styles.profileTitle}>{email || "VirtuFit 3D"}</p>
-              <p style={styles.profileSubtitle}>{hasGeneratedAvatar ? "Existing User" : "New Artisan"}</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main} className="dashboard-main">
         <div style={styles.mainInner} className="dashboard-main-inner">

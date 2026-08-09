@@ -14,6 +14,7 @@ import ViewHistory from "./ViewHistory";
 import Profile from "./Profile";
 import ResetPassword from "./ResetPassword";
 import ProtectedRoute from "./ProtectedRoute";
+import Settings from "./Settings";
 
 export default function App() {
   return (
@@ -39,6 +40,14 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/settings"
+        element={
+         <ProtectedRoute>
+          <Settings />
+         </ProtectedRoute>
+      }
+     />
 
       <Route
         path="/avatar-viewer"
