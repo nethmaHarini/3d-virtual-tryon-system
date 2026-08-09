@@ -44,35 +44,37 @@ function ViewHistory() {
       left: 26,
       top: 22,
       bottom: 22,
-      width: 292,
-      borderRadius: 28,
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      background: "rgba(21, 28, 38, 0.68)",
-      backdropFilter: "blur(24px)",
-      padding: 24,
+      width: 220,
+      borderRadius: 20,
+      border: "1px solid rgba(255, 255, 255, 0.06)",
+      background: "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))",
+      backdropFilter: "blur(18px)",
+      padding: 20,
       display: "flex",
       flexDirection: "column",
-      gap: 14,
+      gap: 12,
       zIndex: 20,
       boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
       boxSizing: "border-box",
     },
+      notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
     sidebarSection: { display: "flex", flexDirection: "column", gap: 6 },
+    sidebarHeader: { color: 'rgba(173,182,204,0.7)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
     navButton: {
       width: "100%",
       border: "1px solid transparent",
       borderRadius: 999,
-      padding: "12px 14px",
+      padding: "10px 12px",
       color: "#c3c0ff",
-      background: "rgba(255, 255, 255, 0.01)",
-      fontSize: "0.93rem",
-      fontWeight: 600,
+      background: "transparent",
+      fontSize: "0.95rem",
+      fontWeight: 700,
       display: "flex",
       alignItems: "center",
       gap: 10,
       textAlign: "left",
       cursor: "pointer",
-      transition: "all 220ms ease",
+      transition: "all 180ms ease",
     },
     main: { marginLeft: 346, marginRight: 26, paddingTop: 34, paddingBottom: 28, boxSizing: "border-box" },
     mainInner: { width: "100%", maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 },
@@ -93,6 +95,7 @@ function ViewHistory() {
           <p style={{ margin: "4px 0 18px 0", color: "rgba(195, 198, 208, 0.72)", fontSize: "0.66rem", fontWeight: 700 }}>VirtuFit 3D</p>
         </div>
 
+        <div style={styles.sidebarHeader}>Main Menu</div>
         <nav style={styles.sidebarSection}>
           <button type="button" style={styles.navButton} onClick={() => navigate("/profile") }>
             <span>◈</span>
@@ -110,13 +113,15 @@ function ViewHistory() {
             <span>◎</span>
             <span>View History</span>
           </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard")}>
+          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard") }>
             <span>◔</span>
             <span>Notifications</span>
+            <span style={styles.notifyDot}>2</span>
           </button>
         </nav>
 
-        <div style={{ marginTop: "auto", paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ marginTop: 6, color: 'rgba(173,182,204,0.62)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Account</div>
+        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.03)" }}>
           <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard")}>
             <span>◉</span>
             <span>Profile</span>
