@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import AvatarCanvas from "./components/AvatarCanvas";
 import "./TryOn.css";
+import { useAppTheme } from "./theme";
 
 const fitData = [
   { region: 'Chest', status: 'Tight', color: '#ff4d4f' },
@@ -12,11 +13,12 @@ const fitData = [
 
 export default function TryOn() {
   const location = useLocation();
+  const { isDark } = useAppTheme();
   const { garment, selectedSize, avatarUrl } = location.state || {};
   const navStyles = {
     nav: {
       width: "100%",
-      background: "rgba(10, 24, 51, 0.96)",
+      background: isDark ? "rgba(10, 24, 51, 0.96)" : "rgba(247, 249, 255, 0.96)",
       position: "sticky",
       top: 0,
       left: 0,
@@ -34,7 +36,7 @@ export default function TryOn() {
     appTitle: {
       fontSize: "2.5rem",
       fontWeight: 800,
-      color: "#7fd4ff",
+      color: isDark ? "#7fd4ff" : "#3b63ff",
       letterSpacing: "0.04em",
       fontFamily: "Segoe UI, Roboto, Arial, sans-serif",
       textShadow: "0 0 10px rgba(67, 193, 255, 0.5)",
@@ -48,16 +50,16 @@ export default function TryOn() {
     },
 
     logout: {
-      color: "#eaf6ff",
-      background: "rgba(6, 18, 52, 0.7)",
-      border: "1px solid rgba(127, 212, 255, 0.6)",
+      color: isDark ? "#eaf6ff" : "#152033",
+      background: isDark ? "rgba(6, 18, 52, 0.7)" : "rgba(255,255,255,0.9)",
+      border: isDark ? "1px solid rgba(127, 212, 255, 0.6)" : "1px solid rgba(18, 30, 52, 0.08)",
       borderRadius: 12,
       padding: "8px 18px",
       fontWeight: 700,
       fontSize: "0.95rem",
       fontFamily: "Segoe UI, Roboto, Arial, sans-serif",
       cursor: "pointer",
-      boxShadow: "0 2px 8px rgba(62, 166, 255, 0.14)",
+      boxShadow: isDark ? "0 2px 8px rgba(62, 166, 255, 0.14)" : "0 2px 12px rgba(83, 96, 117, 0.12)",
       letterSpacing: "0.02em",
       transition: "background 0.2s, border 0.2s, box-shadow 0.2s",
     },
@@ -129,9 +131,12 @@ export default function TryOn() {
 
             <div className="avatar-card">
               <div className="avatar-placeholder" style={{ padding: 0, overflow: "hidden" }}>
-                <AvatarCanvas
-  modelPath={avatarUrl || "/models/final_avatar.obj"}
-/>
+               <AvatarCanvas
+                 modelPath={avatarUrl ||"/models/final_avatar.obj"
+                }
+                 backgroundMode={localStorage.getItem("viewer-background") || "dark"
+        }
+                />
               </div>
 
               <div className="avatar-preview-bar">

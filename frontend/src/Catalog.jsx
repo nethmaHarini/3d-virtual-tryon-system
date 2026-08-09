@@ -4,9 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { useState } from "react";
 import DashboardSidebar from "./components/DashboardSidebar";
+import { useAppTheme } from "./theme";
 
 function Catalog() {
   const location = useLocation();
+  const { isDark } = useAppTheme();
   const avatarUrl = location.state?.avatarUrl || "/models/final_avatar.obj";
   // --- Styles ---
   const styles = {
@@ -14,8 +16,10 @@ function Catalog() {
       minHeight: "100vh",
       width: "100vw",
       background:
-        "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)",
-      color: "#dce3f0",
+        isDark
+          ? "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)"
+          : "radial-gradient(circle at 12% 14%, rgba(78, 107, 255, 0.16) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 44%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 46%, #eaf0fb 100%)",
+      color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       padding: 0,
       margin: 0,
@@ -29,10 +33,10 @@ function Catalog() {
       bottom: 22,
       width: 220,
       borderRadius: 20,
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      background: "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
       backdropFilter: "blur(18px)",
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
+      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
       padding: 20,
       boxSizing: "border-box",
       display: "flex",
@@ -43,7 +47,7 @@ function Catalog() {
     brand: {
       margin: 0,
       fontSize: "1.2rem",
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       fontWeight: 800,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
       letterSpacing: "-0.01em",
@@ -51,7 +55,7 @@ function Catalog() {
     brandTag: {
       margin: "4px 0 18px 0",
       fontSize: "0.66rem",
-      color: "rgba(195, 198, 208, 0.72)",
+      color: isDark ? "rgba(195, 198, 208, 0.72)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.2em",
       textTransform: "uppercase",
       fontWeight: 700,
@@ -62,7 +66,7 @@ function Catalog() {
       borderRadius: 999,
       padding: "10px 12px",
       background: "transparent",
-      color: "#c3c0ff",
+      color: isDark ? "#c3c0ff" : "#425277",
       fontSize: "0.95rem",
       fontWeight: 700,
       textAlign: "left",
@@ -72,9 +76,9 @@ function Catalog() {
       transition: "all 180ms ease",
     },
     navPillActive: {
-      background: "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)",
+      background: isDark ? "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)" : "linear-gradient(90deg, #4e6bff 0%, #8a5cff 100%)",
       color: "#ffffff",
-      boxShadow: "0 10px 30px rgba(111,58,242,0.18)",
+      boxShadow: isDark ? "0 10px 30px rgba(111,58,242,0.18)" : "0 10px 30px rgba(78,107,255,0.18)",
     },
     sidebarSection: {
       display: "flex",
@@ -84,7 +88,7 @@ function Catalog() {
     sidebarFooter: {
       marginTop: "auto",
       paddingTop: 12,
-      borderTop: "1px solid rgba(255, 255, 255, 0.03)",
+      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.03)" : "1px solid rgba(18, 30, 52, 0.06)",
       display: "flex",
       flexDirection: "column",
       gap: 8,
@@ -95,10 +99,10 @@ function Catalog() {
       display: "flex",
       alignItems: "center",
       gap: 10,
-      background: "rgba(8, 15, 24, 0.9)",
+      background: isDark ? "rgba(8, 15, 24, 0.9)" : "rgba(255, 255, 255, 0.92)",
       borderRadius: 16,
       padding: "10px 12px",
-      border: "1px solid rgba(255, 255, 255, 0.06)",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
       boxSizing: "border-box",
     },
     avatarMini: {
@@ -108,7 +112,7 @@ function Catalog() {
       background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
       display: "grid",
       placeItems: "center",
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       fontSize: "0.76rem",
       fontWeight: 700,
       letterSpacing: "0.04em",
@@ -123,7 +127,7 @@ function Catalog() {
     profileSubtitle: {
       margin: "2px 0 0 0",
       fontSize: "0.62rem",
-      color: "rgba(195, 198, 208, 0.78)",
+      color: isDark ? "rgba(195, 198, 208, 0.78)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.16em",
       textTransform: "uppercase",
       fontWeight: 700,

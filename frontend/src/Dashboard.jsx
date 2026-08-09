@@ -2,10 +2,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import API_URL from "./config";
 import DashboardSidebar from "./components/DashboardSidebar";
+import { useAppTheme } from "./theme";
 
 function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isDark } = useAppTheme();
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
   const [sideImage, setSideImage] = useState(null);
@@ -197,8 +199,10 @@ function Dashboard() {
     page: {
       minHeight: "100vh",
       background:
-        "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)",
-      color: "#dce3f0",
+        isDark
+          ? "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)"
+          : "radial-gradient(circle at 12% 16%, rgba(78, 107, 255, 0.16) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 48%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 48%, #eaf0fb 100%)",
+      color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       position: "relative",
       overflowX: "hidden",
@@ -210,28 +214,28 @@ function Dashboard() {
       bottom: 22,
       width: 220,
       borderRadius: 20,
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      background: "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
       backdropFilter: "blur(18px)",
       padding: 20,
       display: "flex",
       flexDirection: "column",
       gap: 12,
       zIndex: 20,
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
+      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
       boxSizing: "border-box",
     },
     sidebarBrand: {
       margin: 0,
       fontSize: "1.22rem",
       fontWeight: 800,
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       letterSpacing: "-0.01em",
     },
     sidebarTag: {
       margin: "4px 0 18px 0",
       fontSize: "0.66rem",
-      color: "rgba(195, 198, 208, 0.72)",
+      color: isDark ? "rgba(195, 198, 208, 0.72)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.2em",
       textTransform: "uppercase",
       fontWeight: 700,
@@ -241,13 +245,13 @@ function Dashboard() {
       flexDirection: "column",
       gap: 6,
     },
-    sidebarHeader: { color: 'rgba(173,182,204,0.7)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
+    sidebarHeader: { color: isDark ? 'rgba(173,182,204,0.7)' : 'rgba(83, 96, 117, 0.72)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
     sidebarButtonBase: {
       width: "100%",
       border: "1px solid transparent",
       borderRadius: 999,
       padding: "10px 12px",
-      color: "#c3c0ff",
+      color: isDark ? "#c3c0ff" : "#425277",
       background: "transparent",
       fontSize: "0.95rem",
       fontWeight: 700,
@@ -259,16 +263,16 @@ function Dashboard() {
       transition: "all 180ms ease",
     },
     sidebarButtonActive: {
-      background: "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)",
+      background: isDark ? "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)" : "linear-gradient(90deg, #4e6bff 0%, #8a5cff 100%)",
       color: "#ffffff",
-      boxShadow: "0 10px 30px rgba(111,58,242,0.18)",
+      boxShadow: isDark ? "0 10px 30px rgba(111,58,242,0.18)" : "0 10px 30px rgba(78,107,255,0.18)",
       paddingLeft: 12,
       paddingRight: 12,
     },
     sidebarFooter: {
       marginTop: "auto",
       paddingTop: 12,
-      borderTop: "1px solid rgba(255, 255, 255, 0.03)",
+      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.03)" : "1px solid rgba(18, 30, 52, 0.06)",
       display: "flex",
       flexDirection: "column",
       gap: 8,
@@ -278,10 +282,10 @@ function Dashboard() {
       display: "flex",
       alignItems: "center",
       gap: 10,
-      background: "rgba(8, 15, 24, 0.9)",
+      background: isDark ? "rgba(8, 15, 24, 0.9)" : "rgba(255, 255, 255, 0.92)",
       borderRadius: 16,
       padding: "10px 12px",
-      border: "1px solid rgba(255, 255, 255, 0.06)",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
       boxSizing: "border-box",
     },
     avatarMini: {
@@ -300,13 +304,13 @@ function Dashboard() {
     profileTitle: {
       margin: 0,
       fontSize: "0.82rem",
-      color: "#f3f6ff",
+      color: isDark ? "#f3f6ff" : "#152033",
       fontWeight: 700,
     },
     profileSubtitle: {
       margin: "2px 0 0 0",
       fontSize: "0.62rem",
-      color: "rgba(195, 198, 208, 0.78)",
+      color: isDark ? "rgba(195, 198, 208, 0.78)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.16em",
       textTransform: "uppercase",
       fontWeight: 700,

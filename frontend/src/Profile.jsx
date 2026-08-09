@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
+import { useAppTheme } from "./theme";
 
 function Profile() {
   const navigate = useNavigate();
+  const { isDark } = useAppTheme();
   const [generatedAvatar, setGeneratedAvatar] = useState("");
   const [viewHistoryCount, setViewHistoryCount] = useState(0);
   const [usernameState, setUsernameState] = useState("");
@@ -87,8 +89,10 @@ function Profile() {
       minHeight: "100vh",
       width: "100vw",
       background:
-        "radial-gradient(circle at 14% 14%, rgba(54, 38, 206, 0.24) 0%, transparent 32%), radial-gradient(circle at 84% 16%, rgba(95, 11, 126, 0.18) 0%, transparent 30%), radial-gradient(circle at 78% 84%, rgba(76, 176, 255, 0.14) 0%, transparent 34%), linear-gradient(155deg, #090f17 0%, #0c1320 45%, #111a27 100%)",
-      color: "#dce3f0",
+        isDark
+          ? "radial-gradient(circle at 14% 14%, rgba(54, 38, 206, 0.24) 0%, transparent 32%), radial-gradient(circle at 84% 16%, rgba(95, 11, 126, 0.18) 0%, transparent 30%), radial-gradient(circle at 78% 84%, rgba(76, 176, 255, 0.14) 0%, transparent 34%), linear-gradient(155deg, #090f17 0%, #0c1320 45%, #111a27 100%)"
+          : "radial-gradient(circle at 14% 14%, rgba(78, 107, 255, 0.16) 0%, transparent 32%), radial-gradient(circle at 84% 16%, rgba(138, 92, 255, 0.12) 0%, transparent 30%), radial-gradient(circle at 78% 84%, rgba(76, 176, 255, 0.10) 0%, transparent 34%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 45%, #eaf0fb 100%)",
+      color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       overflowX: "hidden",
       boxSizing: "border-box",
@@ -100,14 +104,14 @@ function Profile() {
       bottom: 22,
       width: 220,
       borderRadius: 20,
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      background: "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
       backdropFilter: "blur(18px)",
       padding: 20,
       display: "flex",
       flexDirection: "column",
       gap: 12,
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
+      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
       boxSizing: "border-box",
     },
     sidebarSection: { display: "flex", flexDirection: "column", gap: 6 },
@@ -117,7 +121,7 @@ function Profile() {
       border: "1px solid transparent",
       borderRadius: 999,
       padding: "12px 14px",
-      color: "#c3c0ff",
+      color: isDark ? "#c3c0ff" : "#425277",
       background: "rgba(255, 255, 255, 0.01)",
       fontSize: "0.93rem",
       fontWeight: 600,
@@ -129,14 +133,14 @@ function Profile() {
       transition: "all 220ms ease",
     },
     activeButton: {
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
+      background: isDark ? "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)" : "linear-gradient(135deg, #4e6bff 0%, #8a5cff 100%)",
       color: "#fff",
       boxShadow: "0 16px 30px rgba(31, 22, 81, 0.32)",
     },
     profileCard: {
       marginTop: "auto",
       paddingTop: 16,
-      borderTop: "1px solid rgba(255,255,255,0.06)",
+      borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
     },
     profilePill: {
       display: "flex",
