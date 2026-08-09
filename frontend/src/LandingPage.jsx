@@ -274,7 +274,7 @@ function LandingPage() {
                 type="button"
                 style={styles.primaryButton}
                 className="landing-cta"
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/login?mode=signup")}
               >
                 Get Started
               </button>
@@ -282,9 +282,9 @@ function LandingPage() {
                 type="button"
                 style={styles.secondaryButton}
                 className="landing-ghost"
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/features")}
               >
-                Explore App
+              Explore Features
               </button>
             </div>
 
