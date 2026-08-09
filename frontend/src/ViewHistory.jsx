@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
+import { useAppTheme } from "./theme";
 
 function ViewHistory() {
   const navigate = useNavigate();
+  const { isDark } = useAppTheme();
   const email = localStorage.getItem("userEmail");
 
   const [historyItems, setHistoryItems] = useState([]);
@@ -32,8 +34,10 @@ function ViewHistory() {
       minHeight: "100vh",
       width: "100vw",
       background:
-        "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)",
-      color: "#dce3f0",
+        isDark
+          ? "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)"
+          : "radial-gradient(circle at 12% 16%, rgba(78, 107, 255, 0.16) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 48%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 48%, #eaf0fb 100%)",
+      color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       padding: 0,
       margin: 0,
@@ -47,15 +51,15 @@ function ViewHistory() {
       bottom: 22,
       width: 220,
       borderRadius: 20,
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      background: "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
       backdropFilter: "blur(18px)",
       padding: 20,
       display: "flex",
       flexDirection: "column",
       gap: 12,
       zIndex: 20,
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
+      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
       boxSizing: "border-box",
     },
       notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
@@ -79,13 +83,13 @@ function ViewHistory() {
     },
     main: { marginLeft: 346, marginRight: 26, paddingTop: 34, paddingBottom: 28, boxSizing: "border-box" },
     mainInner: { width: "100%", maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 },
-    headerTitle: { margin: 0, fontSize: "1.86rem", color: "#ffffff", fontWeight: 800 },
-    card: { padding: 20, borderRadius: 18, background: "rgba(21,28,38,0.66)", border: "1px solid rgba(255,255,255,0.06)", boxSizing: "border-box" },
-    listItem: { padding: 12, borderRadius: 12, background: "rgba(8,15,24,0.72)", border: "1px solid rgba(255,255,255,0.04)", display: "flex", justifyContent: "space-between", gap: 12 },
-    empty: { padding: 28, borderRadius: 14, textAlign: "center", color: "#aab8cd" },
+    headerTitle: { margin: 0, fontSize: "1.86rem", color: isDark ? "#ffffff" : "#152033", fontWeight: 800 },
+    card: { padding: 20, borderRadius: 18, background: isDark ? "rgba(21,28,38,0.66)" : "rgba(255,255,255,0.9)", border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(18, 30, 52, 0.08)", boxSizing: "border-box" },
+    listItem: { padding: 12, borderRadius: 12, background: isDark ? "rgba(8,15,24,0.72)" : "rgba(247,249,255,0.95)", border: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(18, 30, 52, 0.06)", display: "flex", justifyContent: "space-between", gap: 12 },
+    empty: { padding: 28, borderRadius: 14, textAlign: "center", color: isDark ? "#aab8cd" : "#5b6880" },
     actionsRow: { display: "flex", gap: 10, marginTop: 12 },
-    primaryButton: { border: "none", borderRadius: 999, padding: "10px 14px", background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)", color: "#fff", cursor: "pointer" },
-    ghostButton: { border: "1px solid rgba(255,255,255,0.08)", borderRadius: 999, padding: "10px 14px", background: "rgba(8,15,24,0.75)", color: "#c3c6d0", cursor: "pointer" },
+    primaryButton: { border: "none", borderRadius: 999, padding: "10px 14px", background: isDark ? "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)" : "linear-gradient(135deg, #4e6bff 0%, #8a5cff 100%)", color: "#fff", cursor: "pointer" },
+    ghostButton: { border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(18, 30, 52, 0.08)", borderRadius: 999, padding: "10px 14px", background: isDark ? "rgba(8,15,24,0.75)" : "rgba(255,255,255,0.85)", color: isDark ? "#c3c6d0" : "#425277", cursor: "pointer" },
   };
 
   return (

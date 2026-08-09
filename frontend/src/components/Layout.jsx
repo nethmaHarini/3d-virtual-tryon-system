@@ -1,29 +1,25 @@
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
-
-const THEME_STORAGE_KEY = "landing-theme";
-
-function getInitialTheme() {
-  if (typeof window === "undefined") {
-    return "dark";
-  }
-
-  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (savedTheme === "light" || savedTheme === "dark") {
-    return savedTheme;
-  }
-
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
+import { applyTheme, getResolvedTheme, getStoredThemeMode, subscribeToThemeChanges } from "../theme";
 
 function Layout() {
-  const [theme, setTheme] = useState(getInitialTheme);
-  const isDark = theme === "dark";
+  const [themeState, setThemeState] = useState(() => ({
+    themeMode: getStoredThemeMode(),
+    resolvedTheme: getResolvedTheme(),
+  }));
+
+  const isDark = themeState.resolvedTheme === "dark";
 
   useEffect(() => {
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
+    return subscribeToThemeChanges((themeMode, resolvedTheme) => {
+      setThemeState({ themeMode, resolvedTheme });
+    });
+  }, []);
+
+  useEffect(() => {
+    applyTheme(themeState.themeMode);
+  }, [themeState.themeMode]);
 
   return (
     <div
@@ -33,12 +29,12 @@ function Layout() {
         transition: "background-color 240ms ease",
       }}
     >
-      <Navbar theme={theme} setTheme={setTheme} />
+      <Navbar theme={themeState.resolvedTheme} setTheme={applyTheme} />
       {/* Padding top ensures the page content isn't hidden 
         behind the fixed navbar (72px height + spacing)
       */}
       <div style={{ paddingTop: "72px" }}>
-        <Outlet context={{ theme, isDark }} />
+        <Outlet context={{ theme: themeState.resolvedTheme, isDark }} />
       </div>
     </div>
   );
