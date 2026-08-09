@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import DashboardSidebar from "./components/DashboardSidebar";
 
 function Profile() {
   const navigate = useNavigate();
@@ -80,13 +81,6 @@ function Profile() {
     // clear input value so same file can be picked again
     e.target.value = '';
   }
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("userEmail");
-    navigate("/login");
-  };
 
   const styles = {
     page: {
@@ -485,61 +479,7 @@ function Profile() {
 
   return (
     <div style={styles.page}>
-      <aside style={styles.sidebar}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: "1.22rem", fontWeight: 800, color: "#fff" }}>VirtuFit 3D</h1>
-          <p style={{ margin: "4px 0 18px 0", color: "rgba(195, 198, 208, 0.72)", fontSize: "0.66rem", fontWeight: 700 }}>Account Center</p>
-        </div>
-
-        <div style={styles.sidebarHeader}>Main Menu</div>
-        <nav style={styles.sidebarSection}>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard") }>
-            <span>◔</span>
-            <span>Notifications</span>
-            <span style={styles.notifyDot}>2</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/avatar-viewer")}>
-            <span>◌</span>
-            <span>View Avatar</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/catalog")}>
-            <span>◍</span>
-            <span>Garment Catalog</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/history")}>
-            <span>◎</span>
-            <span>View History</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard")}>
-            <span>◔</span>
-            <span>Notifications</span>
-          </button>
-        </nav>
-
-        <div style={{ marginTop: 6, color: 'rgba(173,182,204,0.62)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Account</div>
-        <div style={styles.profileCard}>
-          <button type="button" style={{ ...styles.navButton, ...styles.activeButton }}>
-            <span>◉</span>
-            <span>Profile</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/profile")}>
-            <span>◒</span>
-            <span>Settings</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={handleLogout}>
-            <span>⎋</span>
-            <span>Logout</span>
-          </button>
-
-          <div style={styles.profilePill}>
-            <div style={styles.avatarMini}>{initials}</div>
-            <div>
-              <p style={styles.profileTitle}>{displayName}</p>
-              <p style={styles.profileSubtitle}>{avatarLabel}</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main}>
         <div style={styles.mainInner}>

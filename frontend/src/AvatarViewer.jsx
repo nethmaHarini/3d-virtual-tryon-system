@@ -1,6 +1,7 @@
 import AvatarCanvas from "./components/AvatarCanvas";
 import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import DashboardSidebar from "./components/DashboardSidebar";
 
 function AvatarViewer() {
   const navigate = useNavigate();
@@ -430,11 +431,6 @@ function AvatarViewer() {
     },
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
   const handleSelectGarment = () => {
     navigate("/catalog", {
       state: {
@@ -491,66 +487,7 @@ function AvatarViewer() {
         }
       `}</style>
 
-      <aside style={styles.sidebar} className="avatar-sidebar">
-        <div>
-          <h1 style={styles.sidebarBrand}>VirtuFit 3D</h1>
-          <p style={styles.sidebarTag}>Virtual Atelier</p>
-        </div>
-
-        <div style={styles.sidebarHeader}>Main Menu</div>
-        <nav style={styles.sidebarSection}>
-          <button
-            type="button"
-            style={styles.sidebarButtonBase}
-            className="avatar-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◈</span>
-            <span>Dashboard</span>
-          </button>
-          <button type="button" style={{ ...styles.sidebarButtonBase, ...styles.sidebarButtonActive }}>
-            <span>◌</span>
-            <span>View Avatar</span>
-          </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/catalog", { state: { avatarUrl: avatarValue } }) }>
-            <span>◍</span>
-            <span>Garment Catalog</span>
-          </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/history") }>
-            <span>◎</span>
-            <span>View History</span>
-          </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/dashboard") }>
-            <span>◔</span>
-            <span>Notifications</span>
-            <span style={styles.notifyDot}>2</span>
-          </button>
-        </nav>
-
-        <div style={{ marginTop: 6, color: 'rgba(173,182,204,0.62)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Account</div>
-        <div style={styles.sidebarFooter}>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item" onClick={() => navigate("/profile")}>
-            <span>◉</span>
-            <span>Profile</span>
-          </button>
-          <button type="button" style={styles.sidebarButtonBase} className="avatar-nav-item">
-            <span>◒</span>
-            <span>Settings</span>
-          </button>
-          <button type="button" onClick={handleLogout} style={styles.sidebarButtonBase} className="avatar-nav-item">
-            <span>⎋</span>
-            <span>Logout</span>
-          </button>
-
-          <div style={styles.profilePill}>
-            <div style={styles.avatarMini}>AI</div>
-            <div>
-              <p style={styles.profileTitle}>Avatar Session</p>
-              <p style={styles.profileSubtitle}>View Mode</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main} className="avatar-main">
         <div style={styles.mainInner}>

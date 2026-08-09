@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DashboardSidebar from "./components/DashboardSidebar";
 
 function ViewHistory() {
   const navigate = useNavigate();
@@ -89,61 +90,7 @@ function ViewHistory() {
 
   return (
     <div style={styles.page}>
-      <aside style={styles.sidebar} className="history-sidebar">
-        <div>
-          <h1 style={{ margin: 0, fontSize: "1.22rem", fontWeight: 800, color: "#fff" }}>VirtuFit 3D</h1>
-          <p style={{ margin: "4px 0 18px 0", color: "rgba(195, 198, 208, 0.72)", fontSize: "0.66rem", fontWeight: 700 }}>VirtuFit 3D</p>
-        </div>
-
-        <div style={styles.sidebarHeader}>Main Menu</div>
-        <nav style={styles.sidebarSection}>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/profile") }>
-            <span>◈</span>
-            <span>Dashboard</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/avatar-viewer")}>
-            <span>◌</span>
-            <span>View Avatar</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/catalog")}>
-            <span>◍</span>
-            <span>Garment Catalog</span>
-          </button>
-          <button type="button" style={{ ...styles.navButton, ...{ background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)", color: "#fff" } }}>
-            <span>◎</span>
-            <span>View History</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard") }>
-            <span>◔</span>
-            <span>Notifications</span>
-            <span style={styles.notifyDot}>2</span>
-          </button>
-        </nav>
-
-        <div style={{ marginTop: 6, color: 'rgba(173,182,204,0.62)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Account</div>
-        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.03)" }}>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard")}>
-            <span>◉</span>
-            <span>Profile</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => navigate("/dashboard")}>
-            <span>◒</span>
-            <span>Settings</span>
-          </button>
-          <button type="button" style={styles.navButton} onClick={() => { localStorage.removeItem("token"); navigate("/login"); }}>
-            <span>⎋</span>
-            <span>Logout</span>
-          </button>
-
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 12 }}>
-            <div style={{ width: 34, height: 34, borderRadius: "999px", background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)", display: "grid", placeItems: "center", color: "#fff" }}>AI</div>
-            <div>
-              <p style={{ margin: 0, fontSize: "0.82rem", color: "#f3f6ff", fontWeight: 700 }}>{email || "VirtuFit 3D"}</p>
-              <p style={{ margin: "2px 0 0 0", fontSize: "0.62rem", color: "rgba(195,198,208,0.78)", textTransform: "uppercase", fontWeight: 700 }}>History</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main} className="history-main">
         <div style={styles.mainInner}>

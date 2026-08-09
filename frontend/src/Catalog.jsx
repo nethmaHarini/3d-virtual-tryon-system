@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { useState } from "react";
+import DashboardSidebar from "./components/DashboardSidebar";
 
 function Catalog() {
   const location = useLocation();
@@ -344,10 +345,6 @@ function Catalog() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("tshirts");
   const email = localStorage.getItem("userEmail");
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
 
   // Demo product data (static)
   const tshirts = [
@@ -460,86 +457,7 @@ function Catalog() {
         }
       `}</style>
 
-      <aside style={styles.sidebar} className="catalog-sidebar">
-        <div>
-          <h1 style={styles.brand}>VirtuFit 3D</h1>
-          <p style={styles.brandTag}>VirtuFit 3D</p>
-        </div>
-
-        <div style={styles.sidebarHeader}>Main Menu</div>
-        <nav style={styles.sidebarSection}>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◈</span><span>Dashboard</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/avatar-viewer", { state: { avatarUrl } })}
-          >
-            <span>◌</span><span>View Avatar</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase, ...styles.navPillActive }}
-            onClick={() => navigate("/catalog", { state: { avatarUrl } })}
-          >
-            <span>◍</span><span>Garment Catalog</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/history")}
-          >
-            <span>◎</span><span>View History</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◔</span><span>Notifications</span><span style={styles.notifyDot}>2</span>
-          </button>
-        </nav>
-
-        <div style={{ marginTop: 6, color: 'rgba(173,182,204,0.62)', fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Account</div>
-        <div style={styles.sidebarFooter}>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◉</span><span>Profile</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◒</span><span>Settings</span>
-          </button>
-          <button type="button" style={{ ...styles.navPillBase }} className="catalog-nav-item" onClick={handleLogout}>
-            <span>⎋</span><span>Logout</span>
-          </button>
-
-          <div style={styles.profilePill}>
-            <div style={styles.avatarMini}>AI</div>
-            <div>
-              <p style={styles.profileTitle}>{email || "VirtuFit 3D"}</p>
-              <p style={styles.profileSubtitle}>Catalog User</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main} className="catalog-main">
         <div style={styles.mainInner}>
