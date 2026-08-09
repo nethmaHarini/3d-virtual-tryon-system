@@ -136,8 +136,9 @@ function Navbar({ theme, setTheme }) {
         >
           Features
         </span>
-        <span 
+        <span
           style={styles.navLink}
+          onClick={() => navigate("/how-it-works")}
           onMouseEnter={(e) => handleLinkHover(e, true)}
           onMouseLeave={(e) => handleLinkHover(e, false)}
         >

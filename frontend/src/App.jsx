@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 
 import LandingPage from "./LandingPage";
 import Features from "./Features";
+import HowItWorks from "./HowItWorks";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import AvatarViewer from "./AvatarViewer";
@@ -24,6 +25,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<LandingPage />} />
         <Route path="/features" element={<Features />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
