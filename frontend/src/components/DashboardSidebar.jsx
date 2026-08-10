@@ -147,11 +147,18 @@ function DashboardSidebar() {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("userEmail");
-    navigate("/login");
-  };
+  const confirmed = window.confirm("Are you sure you want to log out? Click on OK to confirm.");
+
+  if (!confirmed) {
+    return;
+  }
+
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  localStorage.removeItem("userEmail");
+
+  navigate("/");
+};
 
   return (
     <aside style={styles.sidebar} className="dashboard-sidebar">
