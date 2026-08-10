@@ -145,24 +145,36 @@ app.post("/register", async (req, res) => {
     });
   }
 
-  try {
-    const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1 OR username = $2",
-      [email, username],
-    );
+// ...existing code...
+try {
+  // check username first
+  const userByUsername = await pool.query(
+    "SELECT 1 FROM users WHERE username = $1",
+    [username],
+  );
 
-    if (existingUser.rows.length > 0) {
-      return res.status(400).json({
-        message: "Email or username already exists",
-      });
-    }
+  if (userByUsername.rows.length > 0) {
+    return res.status(409).json({ field: "username", message: "user name already taken" });
+  }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  // check email
+  const userByEmail = await pool.query(
+    "SELECT 1 FROM users WHERE email = $1",
+    [email],
+  );
 
-    await pool.query(
-      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
-      [username, email, hashedPassword],
-    );
+  if (userByEmail.rows.length > 0) {
+    return res.status(409).json({ field: "email", message: "email already registered" });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  await pool.query(
+    "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+    [username, email, hashedPassword],
+  );
+
+// ...existing code...
 
     res.json({ message: "Registration successful" });
   } catch (error) {
@@ -600,7 +612,7 @@ app.post("/save-fit", async (req, res) => {
   res.json({ message: "Fit analysis saved" });
 });
 
-app.use("/generated-avatars", express.static("generated-avatars"));
+//app.use("/generated-avatars", express.static("generated-avatars"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
