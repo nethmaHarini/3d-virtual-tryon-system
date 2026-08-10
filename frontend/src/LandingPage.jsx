@@ -288,20 +288,6 @@ function LandingPage() {
               </button>
             </div>
 
-            <div style={styles.statsRow}>
-              <div style={styles.statCard}>
-                <p style={styles.statValue}>3D</p>
-                <p style={styles.statLabel}>Avatar Engine</p>
-              </div>
-              <div style={styles.statCard}>
-                <p style={styles.statValue}>360°</p>
-                <p style={styles.statLabel}>Garment Preview</p>
-              </div>
-              <div style={styles.statCard}>
-                <p style={styles.statValue}>AI Fit</p>
-                <p style={styles.statLabel}>Size Insights</p>
-              </div>
-            </div>
           </section>
 
           <section style={styles.visualWrap} className="landing-visual">
