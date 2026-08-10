@@ -266,7 +266,7 @@ function LandingPage() {
           <section>
             <h2 style={styles.title}> Experience the Future of Couture </h2>
             <p style={styles.subtitle}>
-              Step into your digital wardrobe. Generate your personalized 3D avatar and try on garments with precision fit analysis.
+              Step into your digital wardrobe. Generate your personalized 3D avatar and try on garments with precision fit analysis..
             </p>
 
             <div style={styles.actionRow}>
