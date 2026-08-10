@@ -1,37 +1,146 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API_URL from "./config";
-import DashboardSidebar from "./components/DashboardSidebar";
+import "./Dashboard.css";
+
+function Icon({ name, size = 20 }) {
+  const common = {
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+  };
+
+  const icons = {
+    dashboard: (
+      <svg {...common}>
+        <rect x="3" y="3" width="7" height="7" rx="2" />
+        <rect x="14" y="3" width="7" height="7" rx="2" />
+        <rect x="3" y="14" width="7" height="7" rx="2" />
+        <rect x="14" y="14" width="7" height="7" rx="2" />
+      </svg>
+    ),
+    avatar: (
+      <svg {...common}>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4.5 21c.7-4.2 3.2-6.4 7.5-6.4s6.8 2.2 7.5 6.4" />
+      </svg>
+    ),
+    catalog: (
+      <svg {...common}>
+        <path d="M9 5.5 12 3l3 2.5" />
+        <path d="M12 3v4.2" />
+        <path d="M5 10.5 12 7l7 3.5-7 3.5-7-3.5Z" />
+        <path d="M5 10.5V17l7 4 7-4v-6.5" />
+      </svg>
+    ),
+    history: (
+      <svg {...common}>
+        <path d="M3 12a9 9 0 1 0 3-6.7" />
+        <path d="M3 4v5h5" />
+        <path d="M12 7v5l3 2" />
+      </svg>
+    ),
+    bell: (
+      <svg {...common}>
+        <path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+        <path d="M10 21h4" />
+      </svg>
+    ),
+    profile: (
+      <svg {...common}>
+        <circle cx="12" cy="8" r="3.4" />
+        <path d="M5.5 20c.8-3.6 3-5.4 6.5-5.4s5.7 1.8 6.5 5.4" />
+      </svg>
+    ),
+    settings: (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.8 1.8 0 0 0 .4 2l.1.1-2.8 2.8-.1-.1a1.8 1.8 0 0 0-2-.4 1.8 1.8 0 0 0-1.1 1.6V21H10v-.1A1.8 1.8 0 0 0 8.9 19a1.8 1.8 0 0 0-2 .4l-.1.1L4 16.7l.1-.1a1.8 1.8 0 0 0 .4-2A1.8 1.8 0 0 0 3 13.5H3v-4h.1A1.8 1.8 0 0 0 4.7 8a1.8 1.8 0 0 0-.4-2l-.1-.1L7 3.1l.1.1a1.8 1.8 0 0 0 2 .4A1.8 1.8 0 0 0 10.2 2H14v.1a1.8 1.8 0 0 0 1.1 1.6 1.8 1.8 0 0 0 2-.4l.1-.1L20 6l-.1.1a1.8 1.8 0 0 0-.4 2A1.8 1.8 0 0 0 21 9.5h.1v4H21a1.8 1.8 0 0 0-1.6 1.5Z" />
+      </svg>
+    ),
+    logout: (
+      <svg {...common}>
+        <path d="M10 17l5-5-5-5" />
+        <path d="M15 12H3" />
+        <path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5" />
+      </svg>
+    ),
+    camera: (
+      <svg {...common}>
+        <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6H8l1.3-1.6c.4-.5.9-.7 1.6-.7h2.2c.7 0 1.2.2 1.6.7L16 6h2.5A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-9Z" />
+        <circle cx="12" cy="13" r="3.5" />
+      </svg>
+    ),
+    help: (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.8 9a2.3 2.3 0 1 1 3.4 2c-.8.5-1.2.9-1.2 1.9" />
+        <path d="M12 17h.01" />
+      </svg>
+    ),
+    sun: (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+      </svg>
+    ),
+    arrow: (
+      <svg {...common}>
+        <path d="M5 12h14" />
+        <path d="m14 7 5 5-5 5" />
+      </svg>
+    ),
+    shield: (
+      <svg {...common}>
+        <path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6l-7-3Z" />
+        <path d="m9.5 12 1.7 1.7 3.6-4" />
+      </svg>
+    ),
+  };
+
+  return icons[name] || null;
+}
 
 function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
   const [sideImage, setSideImage] = useState(null);
   const [height, setHeight] = useState("");
   const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
+
   const [frontPreview, setFrontPreview] = useState("");
   const [backPreview, setBackPreview] = useState("");
   const [sidePreview, setSidePreview] = useState("");
-  const [hoveredTile, setHoveredTile] = useState("");
-  const [isGenerateHovered, setIsGenerateHovered] = useState(false);
+
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
   const sideInputRef = useRef(null);
+
+  const username = localStorage.getItem("username");
   const email = localStorage.getItem("userEmail");
 
-  const _regenQuery = new URLSearchParams(location.search).get("regen");
-  const regenRequested = _regenQuery === "true" || (location.state && location.state.regen === true);
+  const regenQuery = new URLSearchParams(location.search).get("regen");
+  const regenRequested =
+    regenQuery === "true" || (location.state && location.state.regen === true);
 
-  const hasGeneratedAvatar = !regenRequested && (
-    Boolean(localStorage.getItem("avatar_file")) ||
-    Boolean(localStorage.getItem("avatarUrl")) ||
-    Boolean(localStorage.getItem("generatedAvatar"))
-  );
+  const hasGeneratedAvatar =
+    !regenRequested &&
+    (Boolean(localStorage.getItem("avatar_file")) ||
+      Boolean(localStorage.getItem("avatarUrl")) ||
+      Boolean(localStorage.getItem("generatedAvatar")));
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -41,86 +150,74 @@ function Dashboard() {
     }
   }, [navigate]);
 
-  // Clear generated avatar data and return to the photo upload portion of the dashboard
+  useEffect(() => {
+    return () => {
+      if (frontPreview) URL.revokeObjectURL(frontPreview);
+      if (backPreview) URL.revokeObjectURL(backPreview);
+      if (sidePreview) URL.revokeObjectURL(sidePreview);
+    };
+  }, [frontPreview, backPreview, sidePreview]);
+
+  useEffect(() => {
+    if (!success) return undefined;
+    const timer = setTimeout(() => setSuccess(""), 4000);
+    return () => clearTimeout(timer);
+  }, [success]);
+
+  useEffect(() => {
+    if (!error) return undefined;
+    const timer = setTimeout(() => setError(""), 4000);
+    return () => clearTimeout(timer);
+  }, [error]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("userEmail");
+    navigate("/login");
+  };
+
   const handleRegenerate = () => {
     try {
       localStorage.removeItem("avatar_file");
       localStorage.removeItem("avatarUrl");
       localStorage.removeItem("generatedAvatar");
-      // If there are other avatar-related keys they can be cleared here as well
     } catch (e) {
       console.warn("Error clearing avatar data:", e);
     }
-    // Navigate to dashboard and include a query param that forces the upload UI to show
+
     navigate("/dashboard?regen=true", { replace: true });
   };
 
-  // Navigate to the try-on page
   const handleTryOn = () => {
     navigate("/try-on");
   };
 
-  useEffect(() => {
-    return () => {
-      if (frontPreview) {
-        URL.revokeObjectURL(frontPreview);
-      }
-      if (backPreview) {
-        URL.revokeObjectURL(backPreview);
-      }
-      if (sidePreview) {
-        URL.revokeObjectURL(sidePreview);
-      }
-    };
-  }, [frontPreview, backPreview, sidePreview]);
-
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(""), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(""), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
   const updateImageState = (position, file) => {
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file");
+      setError("Please select a valid image file");
       return;
     }
 
     const nextPreview = URL.createObjectURL(file);
 
     if (position === "front") {
-      if (frontPreview) {
-        URL.revokeObjectURL(frontPreview);
-      }
+      if (frontPreview) URL.revokeObjectURL(frontPreview);
       setFrontImage(file);
       setFrontPreview(nextPreview);
       return;
     }
 
     if (position === "back") {
-      if (backPreview) {
-        URL.revokeObjectURL(backPreview);
-      }
+      if (backPreview) URL.revokeObjectURL(backPreview);
       setBackImage(file);
       setBackPreview(nextPreview);
       return;
     }
 
-    if (sidePreview) {
-      URL.revokeObjectURL(sidePreview);
-    }
+    if (sidePreview) URL.revokeObjectURL(sidePreview);
     setSideImage(file);
     setSidePreview(nextPreview);
   };
@@ -142,6 +239,7 @@ function Dashboard() {
 
     try {
       const formData = new FormData();
+
       formData.append("frontImage", frontImage);
       formData.append("backImage", backImage);
       formData.append("sideImage", sideImage);
@@ -149,17 +247,20 @@ function Dashboard() {
       formData.append("gender", gender);
 
       const token = localStorage.getItem("token");
+
       const response = await fetch(`${API_URL}/generate-avatar`, {
         method: "POST",
         body: formData,
-        headers: { Authorization: token ? "Bearer " + token : undefined },
+        headers: {
+          Authorization: token ? "Bearer " + token : undefined,
+        },
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess(data.message);
-        console.log("Uploaded data:", data);
+        setSuccess(data.message || "Avatar generated successfully");
+
         const avatarUrl =
           data?.avatarUrl ||
           data?.avatar?.avatarUrl ||
@@ -183,7 +284,7 @@ function Dashboard() {
           },
         });
       } else {
-        setError(data.message);
+        setError(data.message || "Avatar generation failed");
       }
     } catch (fetchError) {
       console.error(fetchError);
@@ -193,1296 +294,560 @@ function Dashboard() {
     }
   };
 
-  const styles = {
-    page: {
-      minHeight: "100vh",
-      background:
-        "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)",
-      color: "#dce3f0",
-      fontFamily: "'Manrope', 'Segoe UI', sans-serif",
-      position: "relative",
-      overflowX: "hidden",
-    },
-    sidebar: {
-      position: "fixed",
-      left: 26,
-      top: 22,
-      bottom: 22,
-      width: 220,
-      borderRadius: 20,
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      background: "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))",
-      backdropFilter: "blur(18px)",
-      padding: 20,
-      display: "flex",
-      flexDirection: "column",
-      gap: 12,
-      zIndex: 20,
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
-      boxSizing: "border-box",
-    },
-    sidebarBrand: {
-      margin: 0,
-      fontSize: "1.22rem",
-      fontWeight: 800,
-      color: "#ffffff",
-      letterSpacing: "-0.01em",
-    },
-    sidebarTag: {
-      margin: "4px 0 18px 0",
-      fontSize: "0.66rem",
-      color: "rgba(195, 198, 208, 0.72)",
-      letterSpacing: "0.2em",
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
-    sidebarSection: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 6,
-    },
-    sidebarHeader: { color: 'rgba(173,182,204,0.7)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
-    sidebarButtonBase: {
-      width: "100%",
-      border: "1px solid transparent",
-      borderRadius: 999,
-      padding: "10px 12px",
-      color: "#c3c0ff",
-      background: "transparent",
-      fontSize: "0.95rem",
-      fontWeight: 700,
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      textAlign: "left",
-      cursor: "pointer",
-      transition: "all 180ms ease",
-    },
-    sidebarButtonActive: {
-      background: "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)",
-      color: "#ffffff",
-      boxShadow: "0 10px 30px rgba(111,58,242,0.18)",
-      paddingLeft: 12,
-      paddingRight: 12,
-    },
-    sidebarFooter: {
-      marginTop: "auto",
-      paddingTop: 12,
-      borderTop: "1px solid rgba(255, 255, 255, 0.03)",
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
-    },
-    notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
-    profilePill: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      background: "rgba(8, 15, 24, 0.9)",
-      borderRadius: 16,
-      padding: "10px 12px",
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      boxSizing: "border-box",
-    },
-    avatarMini: {
-      width: 34,
-      height: 34,
-      borderRadius: "999px",
-      background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
-      display: "grid",
-      placeItems: "center",
-      color: "#ffffff",
-      fontSize: "0.76rem",
-      fontWeight: 700,
-      letterSpacing: "0.04em",
-      flexShrink: 0,
-    },
-    profileTitle: {
-      margin: 0,
-      fontSize: "0.82rem",
-      color: "#f3f6ff",
-      fontWeight: 700,
-    },
-    profileSubtitle: {
-      margin: "2px 0 0 0",
-      fontSize: "0.62rem",
-      color: "rgba(195, 198, 208, 0.78)",
-      letterSpacing: "0.16em",
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
-    main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 30,
-      paddingBottom: 30,
-      minHeight: "100vh",
-      boxSizing: "border-box",
-    },
-    mainInner: {
-      width: "100%",
-      maxWidth: 1320,
-      margin: "0 auto",
-      display: "flex",
-      flexDirection: "column",
-      gap: 22,
-    },
-    pageHeader: {
-      marginBottom: 0,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "end",
-      gap: 22,
-      flexWrap: "wrap",
-    },
-    headerTitle: {
-      margin: 0,
-      fontSize: "2.25rem",
-      color: "#ffffff",
-      letterSpacing: "-0.02em",
-      lineHeight: 1.1,
-      fontWeight: 800,
-      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
-    },
-    headerSub: {
-      margin: "8px 0 0 0",
-      fontSize: "0.97rem",
-      color: "#c3c6d0",
-      lineHeight: 1.5,
-      maxWidth: 640,
-    },
-    statusBadge: {
-      padding: "9px 14px",
-      borderRadius: 999,
-      border: "1px solid rgba(255, 255, 255, 0.08)",
-      background: "rgba(21, 28, 38, 0.72)",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      fontSize: "0.7rem",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: "0.1em",
-      color: "#c3c6d0",
-    },
-    dot: {
-      width: 8,
-      height: 8,
-      borderRadius: "999px",
-      background: "#a4c9fc",
-      boxShadow: "0 0 10px rgba(164, 201, 252, 0.8)",
-      animation: "dashPulse 1.4s ease-in-out infinite",
-    },
-    newGrid: {
-      display: "grid",
-      gridTemplateColumns: "minmax(0, 1.95fr) minmax(320px, 1fr)",
-      gap: 22,
-      alignItems: "stretch",
-    },
-    existingGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
-      gap: 20,
-      gridAutoRows: "208px",
-    },
-    glassCard: {
-      background: "rgba(21, 28, 38, 0.65)",
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      borderRadius: 22,
-      backdropFilter: "blur(24px)",
-      boxShadow: "0 22px 44px rgba(5, 12, 22, 0.34)",
-      boxSizing: "border-box",
-    },
-    creatorSection: {
-      padding: 30,
-      position: "relative",
-      overflow: "hidden",
-    },
-    sectionHeading: {
-      margin: 0,
-      fontSize: "1.52rem",
-      fontWeight: 800,
-      color: "#ffffff",
-      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
-      letterSpacing: "-0.01em",
-    },
-    sectionSub: {
-      margin: "6px 0 0 0",
-      color: "#c3c6d0",
-      fontSize: "0.9rem",
-      lineHeight: 1.45,
-    },
-    feedbackText: {
-      margin: "12px 0 0 0",
-      padding: "10px 12px",
-      borderRadius: 12,
-      fontSize: "0.9rem",
-      fontWeight: 600,
-      textAlign: "center",
-    },
-    uploadRow: {
-      marginTop: 22,
-      display: "grid",
-      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-      gap: 16,
-    },
-    uploadTile: {
-      minHeight: 188,
-      borderRadius: 18,
-      background: "rgba(8, 15, 24, 0.9)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 12,
-      color: "#c3c6d0",
-      fontWeight: 700,
-      letterSpacing: "0.03em",
-      padding: 12,
-      boxSizing: "border-box",
-      textAlign: "center",
-      cursor: "pointer",
-      overflow: "hidden",
-      transition: "box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease, background 0.24s ease",
-    },
-    iconWrap: {
-      width: 44,
-      height: 44,
-      borderRadius: 12,
-      display: "grid",
-      placeItems: "center",
-      border: "1px solid rgba(141, 145, 153, 0.46)",
-      background: "rgba(36, 42, 52, 0.75)",
-    },
-    hiddenInput: {
-      display: "none",
-    },
-    previewImage: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      borderRadius: 12,
-    },
-    controlsRow: {
-      marginTop: 24,
-      paddingTop: 18,
-      borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-      display: "grid",
-      gridTemplateColumns: "1.1fr auto",
-      gap: 20,
-      alignItems: "end",
-    },
-    measurementFields: {
-      display: "grid",
-      gridTemplateColumns: "minmax(0, 1fr) minmax(170px, 0.8fr)",
-      gap: 12,
-      alignItems: "end",
-    },
-    measurementField: {
-      minWidth: 0,
-    },
-    inputLabel: {
-      display: "block",
-      fontSize: "0.72rem",
-      color: "#c3c6d0",
-      letterSpacing: "0.12em",
-      marginBottom: 8,
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
-    heightInput: {
-      width: "100%",
-      boxSizing: "border-box",
-      padding: "13px 14px",
-      borderRadius: 14,
-      border: "1px solid rgba(141, 145, 153, 0.34)",
-      background: "rgba(8, 15, 24, 0.9)",
-      color: "#ffffff",
-      outline: "none",
-      fontSize: "0.96rem",
-      transition: "all 220ms ease",
-    },
-    selectInput: {
-      width: "100%",
-      boxSizing: "border-box",
-      padding: "13px 14px",
-      borderRadius: 14,
-      border: "1px solid rgba(141, 145, 153, 0.34)",
-      background: "rgba(8, 15, 24, 0.9)",
-      color: "#ffffff",
-      outline: "none",
-      fontSize: "0.96rem",
-      transition: "all 220ms ease",
-      appearance: "none",
-      WebkitAppearance: "none",
-      MozAppearance: "none",
-      cursor: "pointer",
-    },
-    generateButton: {
-      border: "none",
-      borderRadius: 999,
-      padding: "14px 26px",
-      cursor: "pointer",
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
-      color: "#ffffff",
-      fontWeight: 700,
-      letterSpacing: "0.04em",
-      fontSize: "0.9rem",
-      boxShadow: "0 12px 26px rgba(40, 30, 104, 0.46)",
-      transition: "all 250ms ease",
-      minWidth: 190,
-      minHeight: 50,
-    },
-    helperTips: {
-      marginTop: 22,
-      display: "grid",
-      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-      gap: 14,
-    },
-    tipCard: {
-      padding: "14px 14px",
-      borderRadius: 16,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(8, 15, 24, 0.75)",
-      display: "flex",
-      gap: 10,
-      alignItems: "flex-start",
-    },
-    tipBadge: {
-      width: 28,
-      height: 28,
-      borderRadius: "999px",
-      flexShrink: 0,
-      display: "grid",
-      placeItems: "center",
-      color: "#ffffff",
-      fontSize: "0.72rem",
-      fontWeight: 800,
-      background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
-    },
-    tipTitle: {
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "0.84rem",
-      fontWeight: 700,
-    },
-    tipText: {
-      margin: "4px 0 0 0",
-      color: "#c3c6d0",
-      fontSize: "0.74rem",
-      lineHeight: 1.45,
-    },
-    rightRail: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 18,
-    },
-    sideCard: {
-      padding: 22,
-      borderRadius: 22,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(21, 28, 38, 0.66)",
-      backdropFilter: "blur(24px)",
-      minHeight: 184,
-      boxSizing: "border-box",
-    },
-    sideCardHeader: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 14,
-    },
-    sideCardTitle: {
-      margin: 0,
-      fontSize: "1rem",
-      color: "#ffffff",
-      fontWeight: 800,
-      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
-    },
-    emptyWrap: {
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10,
-      textAlign: "center",
-      minHeight: 100,
-      color: "#c3c6d0",
-    },
-    emptyIcon: {
-      width: 52,
-      height: 52,
-      borderRadius: "999px",
-      display: "grid",
-      placeItems: "center",
-      border: "1px solid rgba(255, 255, 255, 0.08)",
-      background: "rgba(8, 15, 24, 0.82)",
-      color: "#8d9199",
-      fontSize: "1.2rem",
-      fontWeight: 700,
-    },
-    featureCard: {
-      borderRadius: 22,
-      minHeight: 184,
-      padding: 20,
-      display: "flex",
-      alignItems: "end",
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background:
-        "linear-gradient(155deg, rgba(54, 38, 206, 0.28) 0%, rgba(95, 11, 126, 0.22) 40%, rgba(13, 20, 29, 0.9) 100%)",
-      boxSizing: "border-box",
-    },
-    featureKicker: {
-      margin: 0,
-      fontSize: "0.62rem",
-      letterSpacing: "0.16em",
-      color: "#a4c9fc",
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
-    featureTitle: {
-      margin: "6px 0 0 0",
-      fontSize: "1.06rem",
-      color: "#ffffff",
-      fontWeight: 800,
-    },
-    existingAvatarCard: {
-      gridColumn: "span 8",
-      gridRow: "span 2",
-      position: "relative",
-      overflow: "hidden",
-      padding: 24,
-    },
-    avatarPlaceholder: {
-      position: "absolute",
-      inset: 0,
-      background:
-        "radial-gradient(circle at 30% 20%, rgba(164, 201, 252, 0.18) 0%, transparent 34%), radial-gradient(circle at 70% 78%, rgba(237, 177, 255, 0.2) 0%, transparent 40%), linear-gradient(160deg, rgba(26, 35, 51, 0.95) 0%, rgba(12, 20, 32, 0.96) 100%)",
-    },
-    avatarGridLines: {
-      position: "absolute",
-      inset: 0,
-      backgroundImage:
-        "linear-gradient(rgba(164, 201, 252, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(164, 201, 252, 0.06) 1px, transparent 1px)",
-      backgroundSize: "26px 26px",
-      opacity: 0.45,
-    },
-    avatarContent: {
-      position: "relative",
-      zIndex: 2,
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-    },
-    avatarBadge: {
-      width: "fit-content",
-      padding: "7px 12px",
-      borderRadius: 999,
-      border: "1px solid rgba(164, 201, 252, 0.35)",
-      background: "rgba(8, 15, 24, 0.65)",
-      color: "#a4c9fc",
-      fontSize: "0.62rem",
-      letterSpacing: "0.14em",
-      textTransform: "uppercase",
-      fontWeight: 800,
-    },
-    avatarTitle: {
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "1.86rem",
-      fontWeight: 800,
-      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
-      lineHeight: 1.1,
-      letterSpacing: "-0.02em",
-    },
-    avatarText: {
-      margin: "8px 0 0 0",
-      color: "#c3c6d0",
-      fontSize: "0.92rem",
-    },
-    actionRow: {
-      marginTop: 16,
-      display: "flex",
-      flexWrap: "wrap",
-      gap: 10,
-    },
-    actionGhost: {
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      borderRadius: 999,
-      background: "rgba(8, 15, 24, 0.65)",
-      color: "#ffffff",
-      fontSize: "0.78rem",
-      fontWeight: 700,
-      padding: "10px 16px",
-      cursor: "pointer",
-      transition: "all 220ms ease",
-    },
-    actionPrimary: {
-      border: "none",
-      borderRadius: 999,
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
-      color: "#ffffff",
-      fontSize: "0.78rem",
-      fontWeight: 700,
-      padding: "10px 16px",
-      cursor: "pointer",
-      boxShadow: "0 12px 22px rgba(40, 30, 104, 0.42)",
-      transition: "all 220ms ease",
-    },
-    statCard: {
-      gridColumn: "span 4",
-      borderRadius: 22,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(21, 28, 38, 0.66)",
-      padding: 22,
-      boxSizing: "border-box",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      backdropFilter: "blur(24px)",
-    },
-    statTitle: {
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "1rem",
-      fontWeight: 800,
-      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
-    },
-    statValue: {
-      margin: "6px 0 0 0",
-      color: "#a4c9fc",
-      fontSize: "1.9rem",
-      fontWeight: 800,
-      lineHeight: 1,
-    },
-    statDesc: {
-      margin: "8px 0 0 0",
-      fontSize: "0.78rem",
-      color: "#c3c6d0",
-      lineHeight: 1.4,
-    },
-    historyCard: {
-      gridColumn: "span 4",
-      gridRow: "span 2",
-      borderRadius: 22,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(21, 28, 38, 0.66)",
-      padding: 22,
-      boxSizing: "border-box",
-      backdropFilter: "blur(24px)",
-    },
-    historyList: {
-      marginTop: 14,
-      display: "flex",
-      flexDirection: "column",
-      gap: 12,
-    },
-    historyItem: {
-      borderRadius: 12,
-      border: "1px solid rgba(255, 255, 255, 0.06)",
-      padding: "10px 12px",
-      background: "rgba(8, 15, 24, 0.72)",
-    },
-    historyMain: {
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "0.82rem",
-      fontWeight: 700,
-    },
-    historySub: {
-      margin: "4px 0 0 0",
-      color: "#c3c6d0",
-      fontSize: "0.72rem",
-      lineHeight: 1.4,
-    },
-    catalogWrap: {
-      gridColumn: "span 8",
-      gridRow: "span 2",
-      borderRadius: 22,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(21, 28, 38, 0.66)",
-      padding: 22,
-      boxSizing: "border-box",
-      backdropFilter: "blur(24px)",
-      display: "flex",
-      flexDirection: "column",
-      gap: 14,
-    },
-    catalogGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-      gap: 14,
-      flex: 1,
-    },
-    garmentCard: {
-      borderRadius: 14,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(8, 15, 24, 0.82)",
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-      minHeight: 170,
-    },
-    garmentImage: {
-      height: 88,
-      background:
-        "linear-gradient(145deg, rgba(54, 38, 206, 0.42) 0%, rgba(95, 11, 126, 0.36) 42%, rgba(13, 20, 29, 0.95) 100%)",
-      position: "relative",
-    },
-    garmentDot: {
-      position: "absolute",
-      top: 8,
-      right: 8,
-      width: 10,
-      height: 10,
-      borderRadius: "999px",
-      background: "#a4c9fc",
-      boxShadow: "0 0 10px rgba(164, 201, 252, 0.9)",
-    },
-    garmentBody: {
-      padding: 10,
-      display: "flex",
-      flexDirection: "column",
-      gap: 6,
-    },
-    garmentKicker: {
-      margin: 0,
-      fontSize: "0.58rem",
-      letterSpacing: "0.16em",
-      color: "#8d9199",
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
-    garmentTitle: {
-      margin: 0,
-      fontSize: "0.78rem",
-      color: "#ffffff",
-      fontWeight: 700,
-      lineHeight: 1.35,
-    },
-    garmentFit: {
-      margin: 0,
-      fontSize: "0.68rem",
-      color: "#a4c9fc",
-      fontWeight: 700,
-    },
-    disclaimer: {
-      marginTop: "10px",
-      fontSize: "0.7rem",
-      color: "#8d9199",
-      textAlign: "left",
-      lineHeight: 1.5,
-    },
-  };
+  const initials = (() => {
+    const value = username || email || "AI";
+    const parts = value
+      .replace(/@.*/, "")
+      .split(/[._\-\s]+/)
+      .filter(Boolean);
 
-  const renderUploadTile = (label, keyName, preview, inputRef) => {
-    const isSelected = Boolean(preview);
-    const isHovered = hoveredTile === keyName;
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
 
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        key={keyName}
-        onClick={() => inputRef.current?.click()}
-        onMouseEnter={() => setHoveredTile(keyName)}
-        onMouseLeave={() => setHoveredTile("")}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        style={{
-          ...styles.uploadTile,
-          border: isSelected
-            ? "1px solid rgba(164, 201, 252, 0.95)"
-            : "1px solid rgba(133, 172, 255, 0.24)",
-          boxShadow: isSelected
-            ? "0 0 0 1px rgba(164, 201, 252, 0.4), 0 0 22px rgba(164, 201, 252, 0.3)"
-            : isHovered
-              ? "0 12px 28px rgba(24, 80, 182, 0.4)"
-              : "none",
-          transform: isHovered ? "translateY(-2px)" : "translateY(0)",
-          background: isHovered ? "rgba(17, 25, 38, 0.95)" : styles.uploadTile.background,
-        }}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          style={styles.hiddenInput}
-          onChange={(event) => updateImageState(keyName, event.target.files?.[0])}
-        />
+    return value.slice(0, 2).toUpperCase();
+  })();
 
-        {preview ? (
-          <img src={preview} alt={`${label} preview`} style={styles.previewImage} />
-        ) : (
-          <>
-            <div style={styles.iconWrap}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M3 8.5C3 7.12 4.12 6 5.5 6H8L9.3 4.4C9.68 3.93 10.25 3.66 10.85 3.66H13.15C13.75 3.66 14.32 3.93 14.7 4.4L16 6H18.5C19.88 6 21 7.12 21 8.5V17.5C21 18.88 19.88 20 18.5 20H5.5C4.12 20 3 18.88 3 17.5V8.5Z"
-                  stroke="#9fd2ff"
-                  strokeWidth="1.6"
-                />
-                <circle cx="12" cy="13" r="3.5" stroke="#9fd2ff" strokeWidth="1.6" />
-              </svg>
+  const renderUploadCard = ({
+    label,
+    description,
+    position,
+    preview,
+    inputRef,
+    tone,
+  }) => (
+    <button
+      type="button"
+      className={`vf-upload-card vf-upload-${tone} ${preview ? "has-image" : ""}`}
+      onClick={() => inputRef.current?.click()}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="vf-hidden-input"
+        onChange={(event) =>
+          updateImageState(position, event.target.files?.[0])
+        }
+      />
+
+      {preview ? (
+        <>
+          <img
+            src={preview}
+            alt={`${label} preview`}
+            className="vf-upload-preview"
+          />
+          <div className="vf-upload-preview-overlay">
+            <span className="vf-replace-icon">
+              <Icon name="camera" size={22} />
+            </span>
+            <strong>{label}</strong>
+            <small>Click to replace image</small>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="vf-upload-orbit">
+            <div className="vf-upload-camera">
+              <Icon name="camera" size={30} />
             </div>
-            <span>{label}</span>
-          </>
-        )}
-      </div>
-    );
-  };
+          </div>
+
+          <div className="vf-upload-copy">
+            <h3>{label}</h3>
+            <p>{description}</p>
+          </div>
+
+          <span className="vf-wave vf-wave-one" />
+          <span className="vf-wave vf-wave-two" />
+        </>
+      )}
+    </button>
+  );
 
   return (
-    <div style={styles.page}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
+    <div className="vf-dashboard">
+      <aside className="vf-sidebar">
+        <div>
+          <div className="vf-brand">
+            <div className="vf-logo-mark" aria-hidden="true">
+              <span />
+              <span />
+            </div>
 
-        .dash-nav-item:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(164, 201, 252, 0.24);
-          transform: translateX(4px);
-        }
-        .dash-input-focus:hover {
-          border-color: rgba(164, 201, 252, 0.46);
-        }
-        .dash-input-focus:focus {
-          border-color: rgba(164, 201, 252, 0.76);
-          box-shadow: 0 0 0 3px rgba(164, 201, 252, 0.16);
-        }
-        .dash-select-focus:hover {
-          border-color: rgba(164, 201, 252, 0.46);
-        }
-        .dash-select-focus:focus {
-          border-color: rgba(164, 201, 252, 0.76);
-          box-shadow: 0 0 0 3px rgba(164, 201, 252, 0.16);
-        }
-        .dash-generate-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 18px 30px rgba(40, 30, 104, 0.55), 0 0 20px rgba(164, 201, 252, 0.18);
-          filter: brightness(1.05);
-        }
-        .dash-generate-btn:active:not(:disabled) {
-          transform: scale(0.985);
-        }
-        .dash-action-btn:hover {
-          transform: translateY(-1px);
-          background: rgba(255, 255, 255, 0.08);
-        }
-        .dash-action-primary:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.05);
-          box-shadow: 0 16px 28px rgba(40, 30, 104, 0.56);
-        }
-        .dash-card-lift {
-          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
-        }
-        .dash-card-lift:hover {
-          transform: translateY(-2px);
-          border-color: rgba(164, 201, 252, 0.24);
-          box-shadow: 0 24px 44px rgba(5, 12, 22, 0.42);
-        }
-        .guidelines-inline {
-          margin: 8px 0 0 0;
-          font-size: 0.78rem;
-          color: #aab8cd;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
-        }
-        .guidelines-link {
-          color: #a4c9fc;
-          text-decoration: none;
-          font-weight: 700;
-          letter-spacing: 0.01em;
-          border-bottom: 1px solid rgba(164, 201, 252, 0.45);
-          transition: color 200ms ease, border-color 200ms ease, text-shadow 200ms ease;
-        }
-        .guidelines-link:hover {
-          color: #d9ebff;
-          border-color: rgba(217, 235, 255, 0.85);
-          text-shadow: 0 0 14px rgba(164, 201, 252, 0.45);
-        }
-        .guidelines-modal {
-          position: fixed;
-          inset: 0;
-          background: rgba(4, 10, 18, 0.72);
-          backdrop-filter: blur(8px);
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 220ms ease;
-          z-index: 110;
-          display: grid;
-          place-items: center;
-          padding: 20px;
-          box-sizing: border-box;
-        }
-        .guidelines-modal:target {
-          opacity: 1;
-          pointer-events: auto;
-        }
-        .guidelines-dialog {
-          width: min(760px, 100%);
-          max-height: 86vh;
-          overflow: auto;
-          border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: linear-gradient(160deg, rgba(17, 26, 39, 0.92) 0%, rgba(10, 18, 30, 0.95) 100%);
-          box-shadow: 0 28px 56px rgba(5, 12, 22, 0.58), 0 0 0 1px rgba(164, 201, 252, 0.14) inset;
-          padding: 22px 22px 18px 22px;
-          box-sizing: border-box;
-        }
-        .guidelines-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 14px;
-          margin-bottom: 14px;
-        }
-        .guidelines-title {
-          margin: 0;
-          color: #ffffff;
-          font-size: 1.16rem;
-          font-weight: 800;
-          letter-spacing: -0.01em;
-          font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
-        }
-        .guidelines-sub {
-          margin: 6px 0 0 0;
-          color: #c3c6d0;
-          font-size: 0.82rem;
-          line-height: 1.45;
-        }
-        .guidelines-close {
-          flex-shrink: 0;
-          width: 32px;
-          height: 32px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          color: #dce3f0;
-          text-decoration: none;
-          display: grid;
-          place-items: center;
-          font-size: 1rem;
-          background: rgba(255, 255, 255, 0.03);
-          transition: all 200ms ease;
-        }
-        .guidelines-close:hover {
-          background: rgba(255, 255, 255, 0.09);
-          border-color: rgba(164, 201, 252, 0.42);
-          color: #ffffff;
-        }
-        .guidelines-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
-        }
-        .guidelines-item {
-          border-radius: 14px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(8, 15, 24, 0.7);
-          padding: 11px 12px;
-        }
-        .guidelines-item h5 {
-          margin: 0;
-          color: #ffffff;
-          font-size: 0.82rem;
-          font-weight: 700;
-        }
-        .guidelines-item p {
-          margin: 6px 0 0 0;
-          color: #c3c6d0;
-          font-size: 0.72rem;
-          line-height: 1.45;
-        }
-        .guidelines-avoid {
-          margin-top: 10px;
-          border-radius: 14px;
-          border: 1px solid rgba(255, 154, 154, 0.26);
-          background: rgba(60, 18, 24, 0.34);
-          padding: 11px 12px;
-        }
-        .guidelines-avoid h5 {
-          margin: 0;
-          color: #ffd0d0;
-          font-size: 0.82rem;
-          font-weight: 700;
-        }
-        .guidelines-avoid ul {
-          margin: 8px 0 0 0;
-          padding-left: 16px;
-          color: #f6c3c3;
-          font-size: 0.72rem;
-          line-height: 1.5;
-        }
-        .guidelines-protip {
-          margin-top: 10px;
-          border-radius: 14px;
-          border: 1px solid rgba(164, 201, 252, 0.26);
-          background: rgba(18, 30, 46, 0.46);
-          padding: 10px 12px;
-          color: #b8d7ff;
-          font-size: 0.74rem;
-          line-height: 1.45;
-        }
-        @keyframes dashPulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
-        }
-        @media (max-width: 1220px) {
-          .dashboard-sidebar {
-            position: static !important;
-            width: auto !important;
-            margin: 18px;
-          }
-          .dashboard-main {
-            margin-left: 18px !important;
-            margin-right: 18px !important;
-            padding-top: 4px !important;
-          }
-          .dashboard-main-inner {
-            max-width: none !important;
-          }
-        }
-        @media (max-width: 1100px) {
-          .new-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .existing-grid {
-            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-            grid-auto-rows: auto !important;
-          }
-          .existing-span,
-          .existing-span-small,
-          .existing-span-history,
-          .existing-span-catalog {
-            grid-column: span 1 !important;
-            grid-row: span 1 !important;
-          }
-          .upload-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .controls-row {
-            grid-template-columns: 1fr !important;
-          }
-          .helper-grid,
-          .catalog-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @media (max-width: 780px) {
-          .measurement-fields {
-            grid-template-columns: 1fr !important;
-          }
-          .guidelines-grid {
-            grid-template-columns: 1fr;
-          }
-          .guidelines-dialog {
-            padding: 16px 16px 14px 16px;
-          }
-        }
-      `}</style>
-
-      <DashboardSidebar />
-
-      <main style={styles.main} className="dashboard-main">
-        <div style={styles.mainInner} className="dashboard-main-inner">
-        <header style={styles.pageHeader}>
-          <div>
-            <h2 style={styles.headerTitle}>
-              Hello !,  Welcome to VirtuFit 3D
-            </h2>
-            <p style={styles.headerSub}>
-              {hasGeneratedAvatar
-                ? "Your digital silhouette is ready for styling, fitting, and curated recommendations."
-                : "Your digital wardrobe journey starts by generating a precise avatar profile."}
-            </p>
+            <div>
+              <h1>VirtuFit 3D</h1>
+              <p>3D VIRTUAL TRY-ON</p>
+            </div>
           </div>
-          <div style={styles.statusBadge}>
-            <span style={styles.dot} />
-            <span>AI Engine Online</span>
+
+          <div className="vf-menu-label">MAIN MENU</div>
+
+          <nav className="vf-nav">
+            <button
+              type="button"
+              className="vf-nav-button active"
+              onClick={() => navigate("/dashboard")}
+            >
+              <Icon name="dashboard" />
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={() =>
+                navigate("/avatar-viewer", {
+                  state: { avatarUrl: localStorage.getItem("avatarUrl") },
+                })
+              }
+            >
+              <Icon name="avatar" />
+              <span>View Avatar</span>
+            </button>
+
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={() => navigate("/catalog")}
+            >
+              <Icon name="catalog" />
+              <span>Garment Catalog</span>
+            </button>
+
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={() => navigate("/history")}
+            >
+                          <Icon name="history" />
+              <span>View History</span>
+            </button>
+
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={() => navigate("/dashboard")}
+            >
+              <Icon name="bell" />
+              <span>Notifications</span>
+              <span className="vf-notification-badge">2</span>
+            </button>
+          </nav>
+
+          <div className="vf-menu-label vf-account-label">ACCOUNT</div>
+
+          <nav className="vf-nav">
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={() => navigate("/dashboard")}
+            >
+              <Icon name="profile" />
+              <span>Profile</span>
+            </button>
+
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={() => navigate("/dashboard")}
+            >
+              <Icon name="settings" />
+              <span>Settings</span>
+            </button>
+
+            <button
+              type="button"
+              className="vf-nav-button"
+              onClick={handleLogout}
+            >
+              <Icon name="logout" />
+              <span>Logout</span>
+            </button>
+          </nav>
+        </div>
+
+        <div className="vf-profile-card">
+          <div className="vf-profile-avatar">
+            {initials}
+            <span />
           </div>
-        </header>
 
-        {!hasGeneratedAvatar && (
-          <div style={styles.newGrid} className="new-grid">
-            <section style={{ ...styles.glassCard, ...styles.creatorSection }} className="dash-card-lift">
-              <h3 style={styles.sectionHeading}>Create Your Avatar</h3>
-              <p style={styles.sectionSub}>
-                Upload front, side, and back images with your height to build your 3D fitting profile.
-              </p>
-              <p className="guidelines-inline">
-                Need help before uploading?
-                <a href="#photo-upload-guidelines" className="guidelines-link">Photo Upload Guidelines</a>
-              </p>
+          <div className="vf-profile-info">
+            <strong>{username || email || "VirtuFit User"}</strong>
+            <small>{hasGeneratedAvatar ? "EXISTING USER" : "NEW ARTISAN"}</small>
+          </div>
+        </div>
+      </aside>
 
-              {success && (
-                <p
-                  style={{
-                    ...styles.feedbackText,
-                    color: "#4ade80",
-                    background: "rgba(74, 222, 128, 0.08)",
-                    border: "1px solid rgba(74, 222, 128, 0.32)",
-                  }}
-                >
-                  ✓ {success}
+      <main className="vf-main">
+        {!hasGeneratedAvatar ? (
+          <section className="vf-create-shell">
+            <div className="vf-top-actions">
+              <a
+                href="#photo-upload-guidelines"
+                className="vf-round-action"
+                aria-label="Help"
+              >
+                <Icon name="help" size={21} />
+              </a>
+
+              <span className="vf-action-divider" />
+
+              <button
+                type="button"
+                className="vf-round-action"
+                aria-label="Theme"
+              >
+                <Icon name="sun" size={21} />
+              </button>
+
+              <div className="vf-header-avatar">{initials}</div>
+            </div>
+
+            <div className="vf-create-hero">
+              <div className="vf-create-copy">
+                <div className="vf-welcome-chip">WELCOME BACK</div>
+
+                <h2>
+                  Create Your <span>Avatar</span>
+                </h2>
+
+                <p>
+                  Upload front, side, and back images with your height to
+                  build your 3D fitting profile.
                 </p>
-              )}
 
-              {error && (
-                <p
-                  style={{
-                    ...styles.feedbackText,
-                    color: "#ff9a9a",
-                    background: "rgba(255, 107, 107, 0.08)",
-                    border: "1px solid rgba(255, 107, 107, 0.32)",
-                  }}
-                >
-                  ✗ {error}
-                </p>
-              )}
-
-              <div style={styles.uploadRow} className="upload-grid">
-                {renderUploadTile("Front View", "front", frontPreview, frontInputRef)}
-                {renderUploadTile("Side Profile", "side", sidePreview, sideInputRef)}
-                {renderUploadTile("Back View", "back", backPreview, backInputRef)}
+                <div className="vf-guideline-inline">
+                  <span>Need help before uploading?</span>
+                  <a href="#photo-upload-guidelines">
+                    Photo Upload Guidelines
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
               </div>
 
-              <div style={styles.controlsRow} className="controls-row">
-                <div>
-                  <div style={styles.measurementFields} className="measurement-fields">
-                    <div style={styles.measurementField}>
-                      <label htmlFor="height" style={styles.inputLabel}>Measurement: Height (cm)</label>
-                      <input
-                        id="height"
-                        type="number"
-                        value={height}
-                        onChange={(event) => setHeight(event.target.value)}
-                        min="100"
-                        max="230"
-                        placeholder="e.g. 175"
-                        style={styles.heightInput}
-                        className="dash-input-focus"
-                      />
-                    </div>
-                    <div style={styles.measurementField}>
-                      <label htmlFor="gender" style={styles.inputLabel}>Gender</label>
-                      <select
-                        id="gender"
-                        value={gender}
-                        onChange={(event) => setGender(event.target.value)}
-                        style={styles.selectInput}
-                        className="dash-select-focus"
-                      >
-                        <option value="" disabled>
-                          Select gender
-                        </option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                      </select>
-                    </div>
+              <div className="vf-hologram" aria-hidden="true">
+                <span className="vf-orbit vf-orbit-one" />
+                <span className="vf-orbit vf-orbit-two" />
+                <span className="vf-orbit-dot vf-dot-one" />
+                <span className="vf-orbit-dot vf-dot-two" />
+
+                <img
+                 src="images/dashboard_avatar.png"
+                 alt=""
+                className="vf-hologram-avatar"
+               />
+              </div>
+            </div>
+
+            {(success || error) && (
+              <div
+                className={`vf-message ${success ? "success" : "error"}`}
+              >
+                {success ? `✓ ${success}` : `✕ ${error}`}
+              </div>
+            )}
+
+            <div className="vf-upload-grid">
+              {renderUploadCard({
+                label: "Front View",
+                description: "Upload a clear front view image",
+                position: "front",
+                preview: frontPreview,
+                inputRef: frontInputRef,
+                tone: "purple",
+              })}
+
+              {renderUploadCard({
+                label: "Side Profile",
+                description: "Upload a clear side profile image",
+                position: "side",
+                preview: sidePreview,
+                inputRef: sideInputRef,
+                tone: "blue",
+              })}
+
+              {renderUploadCard({
+                label: "Back View",
+                description: "Upload a clear back view image",
+                position: "back",
+                preview: backPreview,
+                inputRef: backInputRef,
+                tone: "pink",
+              })}
+            </div>
+
+            <div className="vf-form-panel">
+              <div className="vf-form-grid">
+                <div className="vf-field">
+                  <label htmlFor="height">MEASUREMENT: HEIGHT (CM)</label>
+
+                  <div className="vf-input-wrap">
+                    <input
+                      id="height"
+                      type="number"
+                      value={height}
+                      onChange={(event) => setHeight(event.target.value)}
+                      min="100"
+                      max="230"
+                      placeholder="e.g. 175"
+                    />
+                    <span className="vf-input-icon">⌁</span>
                   </div>
-                  <p style={styles.disclaimer}>
-                    By clicking generate, you agree to our Terms of Service and Privacy Policy regarding biometric data processing.
-                  </p>
+                </div>
+
+                <div className="vf-field">
+                  <label htmlFor="gender">GENDER</label>
+
+                  <div className="vf-select-wrap">
+                    <select
+                      id="gender"
+                      value={gender}
+                      onChange={(event) => setGender(event.target.value)}
+                    >
+                      <option value="" disabled>
+                        Select gender
+                      </option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+
+                    <span>⌄</span>
+                  </div>
                 </div>
 
                 <button
                   type="button"
-                  style={{
-                    ...styles.generateButton,
-                    opacity: loading ? 0.68 : 1,
-                    cursor: loading ? "not-allowed" : "pointer",
-                    background: loading
-                      ? "linear-gradient(135deg, #2a6ac4 0%, #2b8fba 100%)"
-                      : isGenerateHovered
-                        ? "linear-gradient(135deg, #4a36e1 0%, #70159a 100%)"
-                        : styles.generateButton.background,
-                  }}
-                  className="dash-generate-btn"
-                  onMouseEnter={() => setIsGenerateHovered(true)}
-                  onMouseLeave={() => setIsGenerateHovered(false)}
+                  className="vf-generate-button"
                   onClick={handleGenerateAvatar}
                   disabled={loading}
                 >
-                  {loading ? "Processing..." : "Generate Avatar"}
+                  <span>
+                    {loading ? "Processing..." : "Generate Avatar"}
+                  </span>
+                  {!loading && <Icon name="arrow" size={24} />}
                 </button>
               </div>
 
-              <div style={styles.helperTips} className="helper-grid">
-                <div style={styles.tipCard}>
-                  <div style={styles.tipBadge}>L</div>
-                  <div>
-                    <p style={styles.tipTitle}>Lighting Matters</p>
-                    <p style={styles.tipText}>Use bright, even light and keep your full body visible for better scanning quality.</p>
-                  </div>
-                </div>
-                <div style={styles.tipCard}>
-                  <div style={styles.tipBadge}>F</div>
-                  <div>
-                    <p style={styles.tipTitle}>Form-Fitting Outfit</p>
-                    <p style={styles.tipText}>Wear closer-fit clothing so body edges are easier for the AI to measure accurately.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <div id="photo-upload-guidelines" className="guidelines-modal" aria-hidden="true">
-              <div className="guidelines-dialog" role="dialog" aria-modal="true" aria-labelledby="guidelines-title">
-                <div className="guidelines-header">
-                  <div>
-                    <h4 id="guidelines-title" className="guidelines-title">Photo Upload Guidelines (For Best Avatar Accuracy)</h4>
-                    <p className="guidelines-sub">Follow these quick capture rules before uploading front, side, and back images.</p>
-                  </div>
-                  <a href="#" className="guidelines-close" aria-label="Close guidelines">x</a>
-                </div>
-
-                <div className="guidelines-grid">
-                  <article className="guidelines-item">
-                    <h5>1. Body Position</h5>
-                    <p>Stand straight and upright. Keep arms slightly away. Face the camera directly and avoid bending, leaning, or twisting.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>2. Required Photos</h5>
-                    <p>Front view, side profile, and back view. Make sure your entire body is visible in all images.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>3. Clothing</h5>
-                    <p>Wear tight or fitted clothes. Avoid loose, baggy, layered outfits, coats, jackets, and long dresses.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>4. Lighting</h5>
-                    <p>Use bright, even lighting. Avoid shadows and backlighting. Natural daylight works best.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>5. Background</h5>
-                    <p>Use a plain, uncluttered background. Avoid objects around you. A solid wall is ideal.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>6. Camera Setup</h5>
-                    <p>Keep camera at waist or chest height. Keep full body in frame and use a stable camera to avoid blur.</p>
-                  </article>
-                </div>
-
-                <section className="guidelines-avoid">
-                  <h5>7. Avoid These Mistakes</h5>
-                  <ul>
-                    <li>Cropped body parts</li>
-                    <li>Blurry or low-quality images</li>
-                    <li>Dark lighting</li>
-                    <li>Busy background</li>
-                    <li>Wearing loose clothes</li>
-                  </ul>
-                </section>
-
-                <p className="guidelines-protip">
-                  Pro Tip: The better your photos, the more accurate your 3D avatar will be.
+              <div className="vf-privacy-line">
+                <Icon name="shield" size={18} />
+                <p>
+                  By clicking generate, you agree to our{" "}
+                  <span>Terms of Service</span> and{" "}
+                  <span>Privacy Policy</span> regarding biometric data
+                  processing.
                 </p>
               </div>
             </div>
 
-          </div>
-        )}
-
-        {hasGeneratedAvatar && (
-          <div style={styles.existingGrid} className="existing-grid">
-            <section style={{ ...styles.glassCard, ...styles.existingAvatarCard }} className="existing-span dash-card-lift">
-              <div style={styles.avatarPlaceholder} />
-              <div style={styles.avatarGridLines} />
-              <div style={styles.avatarContent}>
-                <div style={styles.avatarBadge}>Avatar Preview</div>
+            <div className="vf-tips-panel">
+              <article className="vf-tip">
+                <div className="vf-tip-badge purple">L</div>
                 <div>
-                  <h3 style={styles.avatarTitle}>Digital Fitting Canvas</h3>
-                  <p style={styles.avatarText}>SMPL preview is coming soon. This placeholder represents your personalized 3D avatar zone.</p>
-                  <div style={styles.actionRow}>
-                    <button type="button" style={styles.actionGhost} className="dash-action-btn" onClick={handleRegenerate}>Regenerate</button>
-                    <button type="button" style={styles.actionPrimary} className="dash-action-primary" onClick={handleTryOn}>Try-On Now</button>
-                  </div>
+                  <h3>Lighting Matters</h3>
+                  <p>
+                    Use bright, even light and keep your full body visible
+                    for better scanning quality.
+                  </p>
                 </div>
-              </div>
-            </section>
+              </article>
 
-            <section style={styles.statCard} className="existing-span-small dash-card-lift">
+              <span className="vf-tip-divider" />
+
+              <article className="vf-tip">
+                <div className="vf-tip-badge pink">F</div>
+                <div>
+                  <h3>Form-Fitting Outfit</h3>
+                  <p>
+                    Wear closer-fit clothing so body edges are easier for
+                    the AI to measure accurately.
+                  </p>
+                </div>
+              </article>
+            </div>
+          </section>
+        ) : (
+          <section className="vf-existing-shell">
+            <div className="vf-existing-header">
               <div>
-                <p style={styles.statTitle}>Silhouette Accuracy</p>
-                <p style={styles.statValue}>94%</p>
+                <div className="vf-welcome-chip">AVATAR READY</div>
+                <h2>
+                  Your Digital <span>Fitting Profile</span>
+                </h2>
+                <p>
+                  Your avatar is ready for styling, fitting, and virtual
+                  try-on.
+                </p>
               </div>
-              <p style={styles.statDesc}>Measurement sync remains stable across your latest fitting sessions.</p>
-            </section>
 
-            <section style={styles.statCard} className="existing-span-small dash-card-lift">
-              <div>
-                <p style={styles.statTitle}>New Alerts</p>
-                <p style={styles.statValue}>2</p>
+              <div className="vf-engine-badge">
+                <span />
+                AI ENGINE ONLINE
               </div>
-              <p style={styles.statDesc}>Limited drops and AI texture updates are available for your profile.</p>
-            </section>
+            </div>
 
-            <section style={styles.historyCard} className="existing-span-history dash-card-lift">
-              <h4 style={styles.sideCardTitle}>Process History</h4>
-              <div style={styles.historyList}>
-                <div style={styles.historyItem}>
-                  <p style={styles.historyMain}>Avatar Recalibration</p>
-                  <p style={styles.historySub}>Shoulder width updated. Today, 10:42 AM</p>
+            <div className="vf-existing-grid">
+              <article className="vf-avatar-stage">
+                <div className="vf-stage-grid" />
+                <div className="vf-stage-glow" />
+
+                <div className="vf-stage-top">
+                  <span>AVATAR PREVIEW</span>
                 </div>
-                <div style={styles.historyItem}>
-                  <p style={styles.historyMain}>Fabric Simulation</p>
-                  <p style={styles.historySub}>Cyber-wool texture preview generated yesterday.</p>
-                </div>
-                <div style={styles.historyItem}>
-                  <p style={styles.historyMain}>AR Export</p>
-                  <p style={styles.historySub}>Preview package exported 3 days ago.</p>
-                </div>
-              </div>
-            </section>
 
-            <section style={styles.catalogWrap} className="existing-span-catalog dash-card-lift">
-              <div style={styles.sideCardHeader}>
-                <h4 style={styles.sideCardTitle}>Curated Selection</h4>
-                <span style={{ color: "#a4c9fc", fontSize: "0.72rem", fontWeight: 700 }}>Explore All</span>
-              </div>
+                <div className="vf-stage-human" aria-hidden="true">
+                  <span className="vf-stage-head" />
+                  <span className="vf-stage-neck" />
+                  <span className="vf-stage-body" />
+                </div>
 
-              <div style={styles.catalogGrid} className="catalog-grid">
-                <article style={styles.garmentCard}>
-                  <div style={styles.garmentImage}><span style={styles.garmentDot} /></div>
-                  <div style={styles.garmentBody}>
-                    <p style={styles.garmentKicker}>Avant-Garde</p>
-                    <p style={styles.garmentTitle}>Glass-Carbon Blazer</p>
-                    <p style={styles.garmentFit}>Perfect Match • 98% Fit</p>
+                <div className="vf-stage-copy">
+                  <h3>Digital Fitting Canvas</h3>
+                  <p>
+                    Your personalized avatar is ready for the next fitting
+                    experience.
+                  </p>
+
+                  <div className="vf-stage-actions">
+                    <button
+                      type="button"
+                      className="vf-secondary-button"
+                      onClick={handleRegenerate}
+                    >
+                      Regenerate
+                    </button>
+
+                    <button
+                      type="button"
+                      className="vf-primary-button"
+                      onClick={handleTryOn}
+                    >
+                      Try-On Now
+                      <Icon name="arrow" size={20} />
+                    </button>
                   </div>
+                </div>
+              </article>
+
+              <div className="vf-existing-side">
+                <article className="vf-info-card">
+                  <span className="vf-info-kicker">STATUS</span>
+                  <h3>Avatar Generated</h3>
+                  <p>
+                    Your saved avatar is available from the View Avatar
+                    section.
+                  </p>
                 </article>
 
-                <article style={styles.garmentCard}>
-                  <div style={styles.garmentImage}><span style={styles.garmentDot} /></div>
-                  <div style={styles.garmentBody}>
-                    <p style={styles.garmentKicker}>Urban Nomad</p>
-                    <p style={styles.garmentTitle}>Fluid-Motion Trousers</p>
-                    <p style={styles.garmentFit}>Adaptive Fabric • 92% Fit</p>
-                  </div>
-                </article>
-
-                <article style={styles.garmentCard}>
-                  <div style={styles.garmentImage}><span style={styles.garmentDot} /></div>
-                  <div style={styles.garmentBody}>
-                    <p style={styles.garmentKicker}>Essentials</p>
-                    <p style={styles.garmentTitle}>Loom-AI Base Layer</p>
-                    <p style={styles.garmentFit}>Recommended for Layering</p>
-                  </div>
+                <article className="vf-info-card highlight">
+                  <span className="vf-info-kicker">NEXT STEP</span>
+                  <h3>Start Virtual Try-On</h3>
+                  <p>
+                    Choose garments from the catalog and continue to your
+                    fitting experience.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/catalog")}
+                  >
+                    Browse Catalog
+                    <Icon name="arrow" size={18} />
+                  </button>
                 </article>
               </div>
-            </section>
-          </div>
+            </div>
+          </section>
         )}
-        </div>
       </main>
+
+      <div
+        id="photo-upload-guidelines"
+        className="vf-guidelines-modal"
+        aria-hidden="true"
+      >
+        <div
+          className="vf-guidelines-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="guidelines-title"
+        >
+          <div className="vf-guidelines-header">
+            <div>
+              <h3 id="guidelines-title">Photo Upload Guidelines</h3>
+              <p>
+                Follow these capture rules for better avatar generation
+                accuracy.
+              </p>
+            </div>
+
+            <a href="#" aria-label="Close guidelines">
+              ×
+            </a>
+          </div>
+
+          <div className="vf-guidelines-grid">
+            <article>
+              <strong>1. Body Position</strong>
+              <p>
+                Stand straight and upright. Keep arms slightly away from
+                your body and avoid leaning or twisting.
+              </p>
+            </article>
+
+            <article>
+              <strong>2. Required Photos</strong>
+              <p>
+                Upload front, side, and back views with your entire body
+                visible in every image.
+              </p>
+            </article>
+
+            <article>
+              <strong>3. Clothing</strong>
+              <p>
+                Wear fitted clothing. Avoid loose, layered, oversized
+                clothing, coats, and long dresses.
+              </p>
+            </article>
+
+            <article>
+              <strong>4. Lighting</strong>
+              <p>
+                Use bright and even lighting. Avoid strong shadows and
+                backlighting.
+              </p>
+            </article>
+
+            <article>
+              <strong>5. Background</strong>
+              <p>
+                Use a plain and uncluttered background. A clean solid wall
+                works best.
+              </p>
+            </article>
+
+            <article>
+              <strong>6. Camera Setup</strong>
+              <p>
+                Keep the camera stable around waist or chest height and
+                avoid blurry images.
+              </p>
+            </article>
+          </div>
+
+          <div className="vf-guidelines-warning">
+            <strong>Avoid</strong>
+            <p>
+              Cropped body parts, blurry images, dark lighting, busy
+              backgrounds, and loose clothing.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
 export default Dashboard;
-
