@@ -31,12 +31,7 @@ function AvatarModel({
     const clonedObject =
       loadedObject.clone(true);
 
-    // -------------------------------------------------
-    // IMPORTANT:
-    // Do NOT rotate the SMPL avatar 180 degrees.
-    // The generated OBJ already uses Y as its vertical axis.
-    // -------------------------------------------------
-
+    // Keep original generated geometry orientation
     clonedObject.rotation.set(
       0,
       0,
@@ -47,10 +42,9 @@ function AvatarModel({
       true
     );
 
-    // -------------------------------------------------
-    // Avatar material
-    // -------------------------------------------------
-
+    // -----------------------------------------
+    // Material
+    // -----------------------------------------
     clonedObject.traverse(
       (child) => {
         if (child.isMesh) {
@@ -59,19 +53,18 @@ function AvatarModel({
 
           child.material =
             new THREE.MeshStandardMaterial({
-              color: 0xd6d9df,
-              roughness: 0.72,
-              metalness: 0.02,
+              color: 0xc9cdd4,
+              roughness: 0.82,
+              metalness: 0.0,
               side: THREE.DoubleSide,
             });
         }
       }
     );
 
-    // -------------------------------------------------
-    // Calculate original bounding box
-    // -------------------------------------------------
-
+    // -----------------------------------------
+    // Calculate original dimensions
+    // -----------------------------------------
     let boundingBox =
       new THREE.Box3().setFromObject(
         clonedObject
@@ -84,12 +77,11 @@ function AvatarModel({
       originalSize
     );
 
-    // -------------------------------------------------
-    // Scale avatar for viewer
-    // -------------------------------------------------
-
+    // -----------------------------------------
+    // Scale for consistent viewer size
+    // -----------------------------------------
     const targetDisplayHeight =
-      2.0;
+      2.35;
 
     if (originalSize.y > 0) {
       const scaleFactor =
@@ -105,10 +97,9 @@ function AvatarModel({
       true
     );
 
-    // -------------------------------------------------
-    // Bounding box after scaling
-    // -------------------------------------------------
-
+    // -----------------------------------------
+    // Recalculate bounds
+    // -----------------------------------------
     boundingBox =
       new THREE.Box3().setFromObject(
         clonedObject
@@ -121,22 +112,17 @@ function AvatarModel({
       center
     );
 
-    // -------------------------------------------------
-    // Center avatar horizontally
-    // -------------------------------------------------
-
+    // -----------------------------------------
+    // Center avatar
+    // -----------------------------------------
     clonedObject.position.x -=
       center.x;
 
-    clonedObject.position.z -=
-      center.z;
-
-    // -------------------------------------------------
-    // Center avatar vertically
-    // -------------------------------------------------
-
     clonedObject.position.y -=
       center.y;
+
+    clonedObject.position.z -=
+      center.z;
 
     clonedObject.updateMatrixWorld(
       true
@@ -179,9 +165,13 @@ function AvatarModel({
 
 function LoadingAvatar() {
   return (
-    <mesh position={[0, 0, 0]}>
+    <mesh>
       <sphereGeometry
-        args={[0.08, 24, 24]}
+        args={[
+          0.07,
+          24,
+          24,
+        ]}
       />
 
       <meshStandardMaterial
@@ -193,13 +183,13 @@ function LoadingAvatar() {
 
 const viewerBackgrounds = {
   dark:
-    "radial-gradient(circle at 50% 30%, #18233a 0%, #0a111d 58%, #050a12 100%)",
+    "radial-gradient(circle at 50% 32%, #263247 0%, #111927 55%, #080d15 100%)",
 
   neutral:
-    "radial-gradient(circle at 50% 30%, #777d88 0%, #505660 58%, #353a42 100%)",
+    "radial-gradient(circle at 50% 32%, #a1a7b0 0%, #737983 58%, #4b5058 100%)",
 
   light:
-    "radial-gradient(circle at 50% 30%, #ffffff 0%, #edf1f6 58%, #d8dee7 100%)",
+    "radial-gradient(circle at 50% 32%, #ffffff 0%, #eef2f7 56%, #d7dde6 100%)",
 };
 
 export default function AvatarCanvas({
@@ -223,6 +213,10 @@ export default function AvatarCanvas({
     ] ||
     viewerBackgrounds.dark;
 
+  const isLight =
+    selectedBackground ===
+    "light";
+
   return (
     <div
       style={{
@@ -243,65 +237,95 @@ export default function AvatarCanvas({
         camera={{
           position: [
             0,
-            0,
-            4.2,
+            0.05,
+            4.0,
           ],
-
-          fov: 32,
+          fov: 30,
           near: 0.1,
           far: 100,
         }}
         shadows
+        gl={{
+          antialias: true,
+        }}
       >
-        {/* AMBIENT LIGHT */}
-
-        <hemisphereLight
+        {/* General ambient light */}
+        <ambientLight
           intensity={
-            selectedBackground ===
-            "light"
-              ? 1.15
-              : 0.9
-          }
-          groundColor={
-            selectedBackground ===
-            "light"
-              ? 0x777777
-              : 0x202020
+            isLight
+              ? 0.28
+              : 0.22
           }
         />
 
-        {/* MAIN LIGHT */}
+        {/* Soft environment-style light */}
+        <hemisphereLight
+          intensity={
+            isLight
+              ? 0.55
+              : 0.42
+          }
+          skyColor={
+            isLight
+              ? 0xffffff
+              : 0xb8c8e8
+          }
+          groundColor={
+            isLight
+              ? 0x767676
+              : 0x141820
+          }
+        />
 
+        {/* Main light from upper-left */}
         <directionalLight
           position={[
-            3,
+            3.8,
+            5.5,
             5,
-            4,
           ]}
-          intensity={1.4}
+          intensity={1.15}
           castShadow
         />
 
-        {/* FILL LIGHT */}
-
+        {/* Side contour light */}
         <directionalLight
           position={[
-            -3,
-            2,
-            2,
+            -4,
+            1.8,
+            1.5,
           ]}
-          intensity={0.7}
+          intensity={0.48}
         />
 
-        {/* FRONT LIGHT */}
+        {/* Opposite side contour */}
+        <directionalLight
+          position={[
+            4,
+            0.8,
+            -1,
+          ]}
+          intensity={0.26}
+        />
 
+        {/* Front fill — intentionally weaker */}
         <directionalLight
           position={[
             0,
-            2,
+            1.5,
             5,
           ]}
-          intensity={0.6}
+          intensity={0.32}
+        />
+
+        {/* Slight overhead definition */}
+        <directionalLight
+          position={[
+            0,
+            6,
+            0.5,
+          ]}
+          intensity={0.24}
         />
 
         <Suspense
@@ -324,9 +348,9 @@ export default function AvatarCanvas({
           enablePan={false}
           enableDamping
           dampingFactor={0.08}
-          rotateSpeed={0.75}
-          zoomSpeed={0.85}
-          minDistance={2}
+          rotateSpeed={0.7}
+          zoomSpeed={0.8}
+          minDistance={2.4}
           maxDistance={6}
           minPolarAngle={
             Math.PI / 8
