@@ -14,11 +14,12 @@ require("dotenv").config();
 
 const app = express();
 
-// =====================================================
-// CONFIGURATION
-// =====================================================
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
-const SECRET = process.env.JWT_SECRET || "your_secret_key";
+const SECRET =
+  process.env.JWT_SECRET || "your_secret_key";
 
 const FRONTEND_URL =
   process.env.FRONTEND_URL || "http://localhost:5173";
@@ -36,17 +37,26 @@ const TMP_UPLOAD_DIR = path.join(
   "tmp-uploads"
 );
 
-// AWS Avatar Generation Server
-const AWS_AVATAR_HOST = process.env.AWS_AVATAR_HOST;
-const AWS_AVATAR_USER = process.env.AWS_AVATAR_USER;
-const AWS_AVATAR_KEY_PATH = process.env.AWS_AVATAR_KEY_PATH;
+/* =========================================================
+   AWS CONFIGURATION
+========================================================= */
+
+const AWS_AVATAR_HOST =
+  process.env.AWS_AVATAR_HOST;
+
+const AWS_AVATAR_USER =
+  process.env.AWS_AVATAR_USER;
+
+const AWS_AVATAR_KEY_PATH =
+  process.env.AWS_AVATAR_KEY_PATH;
 
 const AWS_PARE_DIR =
-  process.env.AWS_PARE_DIR ||
-  process.env.AWS_AVATAR_PROJECT_DIR ||
-  "/home/ubuntu/PARE";
+  process.env.AWS_PARE_DIR || "/home/ubuntu/PARE";
 
-// Create required local directories
+/* =========================================================
+   CREATE REQUIRED DIRECTORIES
+========================================================= */
+
 fs.mkdirSync(GENERATED_AVATAR_DIR, {
   recursive: true,
 });
@@ -55,9 +65,9 @@ fs.mkdirSync(TMP_UPLOAD_DIR, {
   recursive: true,
 });
 
-// =====================================================
-// HELPER FUNCTIONS
-// =====================================================
+/* =========================================================
+   TEMP FILE HELPERS
+========================================================= */
 
 const saveTempBufferToFile = (buffer, filename) => {
   const fullPath = path.join(
@@ -86,68 +96,72 @@ const removeFileIfExists = (filePath) => {
   }
 };
 
-// Run command and wait for completion
+/* =========================================================
+   COMMAND RUNNER
+========================================================= */
+
 const runCommand = (
   command,
   args,
   options = {}
 ) => {
-  return new Promise(
-    (resolve, reject) => {
-      const child = spawn(
-        command,
-        args,
-        options
-      );
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      command,
+      args,
+      options
+    );
 
-      let stdout = "";
-      let stderr = "";
+    let stdout = "";
+    let stderr = "";
 
-      child.stdout?.on(
-        "data",
-        (data) => {
-          stdout += data.toString();
+    child.stdout?.on(
+      "data",
+      (data) => {
+        stdout += data.toString();
+      }
+    );
+
+    child.stderr?.on(
+      "data",
+      (data) => {
+        stderr += data.toString();
+      }
+    );
+
+    child.on(
+      "error",
+      (error) => {
+        reject(error);
+      }
+    );
+
+    child.on(
+      "close",
+      (code) => {
+        if (code !== 0) {
+          return reject(
+            new Error(
+              stderr ||
+                stdout ||
+                `${command} exited with code ${code}`
+            )
+          );
         }
-      );
 
-      child.stderr?.on(
-        "data",
-        (data) => {
-          stderr += data.toString();
-        }
-      );
-
-      child.on(
-        "error",
-        (error) => {
-          reject(error);
-        }
-      );
-
-      child.on(
-        "close",
-        (code) => {
-          if (code !== 0) {
-            return reject(
-              new Error(
-                stderr ||
-                  stdout ||
-                  `${command} exited with code ${code}`
-              )
-            );
-          }
-
-          resolve({
-            stdout: stdout.trim(),
-            stderr: stderr.trim(),
-          });
-        }
-      );
-    }
-  );
+        resolve({
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+        });
+      }
+    );
+  });
 };
 
-// Upload a local file to AWS
+/* =========================================================
+   AWS SCP UPLOAD HELPER
+========================================================= */
+
 const uploadFileToAWS = async (
   localPath,
   remotePath
@@ -160,36 +174,8 @@ const uploadFileToAWS = async (
   ]);
 };
 
-// Remove temporary files from AWS
-const removeAWSFiles = async (
-  remoteFiles = []
-) => {
-  if (remoteFiles.length === 0) {
-    return;
-  }
-
-  try {
-    const command = `rm -f ${remoteFiles.join(
-      " "
-    )}`;
-
-    await runCommand("ssh", [
-      "-i",
-      AWS_AVATAR_KEY_PATH,
-      `${AWS_AVATAR_USER}@${AWS_AVATAR_HOST}`,
-      command,
-    ]);
-  } catch (error) {
-    console.error(
-      "AWS temporary file cleanup failed:",
-      error.message
-    );
-  }
-};
-
-// =====================================================
-// EMAIL CONFIGURATION
-// =====================================================
+/* =========================================================
+   EMAIL
 
 const transporter =
   nodemailer.createTransport({
@@ -201,9 +187,9 @@ const transporter =
     },
   });
 
-// =====================================================
-// EXPRESS MIDDLEWARE
-// =====================================================
+/* =========================================================
+   EXPRESS MIDDLEWARE
+========================================================= */
 
 app.use(
   cors({
@@ -213,21 +199,22 @@ app.use(
 
 app.use(express.json());
 
-// Serve generated OBJ avatars
 app.use(
   "/generated-avatars",
-  express.static(
-    GENERATED_AVATAR_DIR
-  )
+  express.static(GENERATED_AVATAR_DIR)
 );
 
-// =====================================================
-// FILE UPLOAD CONFIGURATION
-// =====================================================
+/* =========================================================
+   MULTER IMAGE UPLOAD
+========================================================= */
 
-// Images initially stay in memory.
-// They are written temporarily only while processing.
 const storage = multer.memoryStorage();
+
+const allowedImageTypes = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+];
 
 const upload = multer({
   storage,
@@ -236,41 +223,30 @@ const upload = multer({
     fileSize: 5 * 1024 * 1024,
   },
 
-  // Photo upload format
-  fileFilter: (req, file, cb) => {
-    const allowedMimeTypes = [
-      "image/jpeg",
-      "image/png",
-    ];
-
-    const allowedExtensions = [
-      ".jpg",
-      ".jpeg",
-      ".png",
-    ];
-
-    const extension = path
-      .extname(file.originalname)
-      .toLowerCase();
-
+  fileFilter: (
+    req,
+    file,
+    callback
+  ) => {
     if (
-      allowedMimeTypes.includes(file.mimetype) &&
-      allowedExtensions.includes(extension)
+      allowedImageTypes.includes(
+        file.mimetype
+      )
     ) {
-      cb(null, true);
-    } else {
-      cb(
-        new Error(
-          "Only JPG, JPEG and PNG image files are allowed."
-        )
-      );
+      return callback(null, true);
     }
+
+    callback(
+      new Error(
+        "Only JPG, JPEG and PNG images are allowed"
+      )
+    );
   },
 });
 
-// =====================================================
-// ROOT TEST ROUTE
-// =====================================================
+/* =========================================================
+   ROOT
+========================================================= */
 
 app.get("/", (req, res) => {
   res.send(
@@ -278,9 +254,9 @@ app.get("/", (req, res) => {
   );
 });
 
-// =====================================================
-// VALIDATION HELPERS
-// =====================================================
+/* =========================================================
+   VALIDATION HELPERS
+========================================================= */
 
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
@@ -308,11 +284,8 @@ const normalizeUsername = (value) => {
   return `${base}user`.slice(0, 20);
 };
 
-const createUniqueUsername = async (
-  seed
-) => {
-  const base =
-    normalizeUsername(seed);
+const createUniqueUsername = async (seed) => {
+  const base = normalizeUsername(seed);
 
   let candidate = base;
   let attempts = 0;
@@ -334,13 +307,14 @@ const createUniqueUsername = async (
       1000 + Math.random() * 9000
     ).toString();
 
-    candidate = `${base.slice(
-      0,
-      Math.max(
-        3,
-        20 - suffix.length
-      )
-    )}${suffix}`;
+    candidate =
+      `${base.slice(
+        0,
+        Math.max(
+          3,
+          20 - suffix.length
+        )
+      )}${suffix}`;
 
     attempts += 1;
   }
@@ -366,9 +340,9 @@ const createAuthToken = (user) => {
   );
 };
 
-// =====================================================
-// REGISTER
-// =====================================================
+/* =========================================================
+   REGISTER
+========================================================= */
 
 app.post(
   "/register",
@@ -484,9 +458,9 @@ app.post(
   }
 );
 
-// =====================================================
-// LOGIN
-// =====================================================
+/* =========================================================
+   LOGIN
+========================================================= */
 
 app.post(
   "/login",
@@ -514,17 +488,6 @@ app.post(
         });
     }
 
-    if (
-      !isStrongPassword(password)
-    ) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Password must be at least 6 characters",
-        });
-    }
-
     try {
       const result =
         await pool.query(
@@ -547,8 +510,7 @@ app.post(
           });
       }
 
-      const user =
-        result.rows[0];
+      const user = result.rows[0];
 
       const isMatch =
         await bcrypt.compare(
@@ -569,15 +531,13 @@ app.post(
         createAuthToken(user);
 
       return res.json({
-        message:
-          "Login successful",
+        message: "Login successful",
 
         token,
 
         user: {
           id: user.id,
-          username:
-            user.username,
+          username: user.username,
           email: user.email,
         },
       });
@@ -596,9 +556,9 @@ app.post(
   }
 );
 
-// =====================================================
-// GOOGLE LOGIN
-// =====================================================
+/* =========================================================
+   GOOGLE AUTH
+========================================================= */
 
 app.post(
   "/auth/google",
@@ -627,25 +587,24 @@ app.post(
             },
 
             body:
-              new URLSearchParams(
-                {
-                  client_id:
-                    process.env
-                      .GOOGLE_CLIENT_ID,
+              new URLSearchParams({
+                client_id:
+                  process.env
+                    .GOOGLE_CLIENT_ID,
 
-                  client_secret:
-                    process.env
-                      .GOOGLE_CLIENT_SECRET,
+                client_secret:
+                  process.env
+                    .GOOGLE_CLIENT_SECRET,
 
-                  code,
+                code,
 
-                  grant_type:
-                    "authorization_code",
+                grant_type:
+                  "authorization_code",
 
-                  redirect_uri:
-                    `${process.env.FRONTEND_URL}`,
-                }
-              ),
+                redirect_uri:
+                  process.env
+                    .FRONTEND_URL,
+              }),
           }
         );
 
@@ -689,9 +648,7 @@ app.post(
           }
         );
 
-      if (
-        !googleResponse.ok
-      ) {
+      if (!googleResponse.ok) {
         return res
           .status(401)
           .json({
@@ -731,8 +688,7 @@ app.post(
         );
 
       if (
-        existingUser.rows.length >
-        0
+        existingUser.rows.length > 0
       ) {
         const user =
           existingUser.rows[0];
@@ -748,8 +704,7 @@ app.post(
 
           user: {
             id: user.id,
-            username:
-              user.username,
+            username: user.username,
             email: user.email,
           },
         });
@@ -758,9 +713,7 @@ app.post(
       const generatedUsername =
         await createUniqueUsername(
           googleUser?.name ||
-            googleEmail.split(
-              "@"
-            )[0]
+            googleEmail.split("@")[0]
         );
 
       const generatedPassword =
@@ -780,10 +733,7 @@ app.post(
           INSERT INTO users
           (username, email, password)
           VALUES ($1, $2, $3)
-          RETURNING
-            id,
-            username,
-            email
+          RETURNING id, username, email
           `,
           [
             generatedUsername,
@@ -796,9 +746,7 @@ app.post(
         insertedUser.rows[0];
 
       const token =
-        createAuthToken(
-          newUser
-        );
+        createAuthToken(newUser);
 
       return res
         .status(201)
@@ -825,9 +773,9 @@ app.post(
   }
 );
 
-// =====================================================
-// FORGOT PASSWORD
-// =====================================================
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
 
 app.post(
   "/forgot-password",
@@ -979,17 +927,9 @@ app.post(
           "Reset your password",
 
         html: `
-          <p>
-            You requested to reset your password.
-          </p>
-
-          <p>
-            Click the link below to continue:
-          </p>
-
-          <a href="${resetLink}">
-            ${resetLink}
-          </a>
+          <p>You requested to reset your password.</p>
+          <p>Click the link below to continue:</p>
+          <a href="${resetLink}">${resetLink}</a>
         `,
       });
 
@@ -1013,9 +953,9 @@ app.post(
   }
 );
 
-// =====================================================
-// RESET PASSWORD
-// =====================================================
+/* =========================================================
+   RESET PASSWORD
+========================================================= */
 
 app.post(
   "/reset-password/:token",
@@ -1077,9 +1017,8 @@ app.post(
       await pool.query(
         `
         UPDATE users
-        SET
-          password = $1,
-          reset_token = NULL
+        SET password = $1,
+            reset_token = NULL
         WHERE id = $2
         `,
         [
@@ -1108,9 +1047,9 @@ app.post(
   }
 );
 
-// =====================================================
-// TEMPORARY AWS SSH TEST
-// =====================================================
+/* =========================================================
+   AWS SSH TEST
+========================================================= */
 
 app.get(
   "/test-aws-avatar",
@@ -1131,16 +1070,17 @@ app.get(
 
       return res.json({
         success: true,
-        output:
-          result.stdout,
+        output: result.stdout,
       });
     } catch (error) {
       return res
         .status(500)
         .json({
           success: false,
+
           message:
             "AWS connection failed",
+
           error:
             error.message,
         });
@@ -1148,9 +1088,9 @@ app.get(
   }
 );
 
-// =====================================================
-// TEMPORARY AWS SCP TEST
-// =====================================================
+/* =========================================================
+   AWS SCP TEST
+========================================================= */
 
 app.get(
   "/test-aws-scp",
@@ -1161,21 +1101,21 @@ app.get(
         "aws_scp_test.txt"
       );
 
-    const remotePath =
-      `${AWS_PARE_DIR}/aws_scp_test.txt`;
-
     try {
       fs.writeFileSync(
         testFile,
         `AWS SCP test successful - ${new Date().toISOString()}`
       );
 
+      const remotePath =
+        `${AWS_PARE_DIR}/aws_scp_test.txt`;
+
       await uploadFileToAWS(
         testFile,
         remotePath
       );
 
-      const result =
+      const verifyResult =
         await runCommand(
           "ssh",
           [
@@ -1184,41 +1124,39 @@ app.get(
 
             `${AWS_AVATAR_USER}@${AWS_AVATAR_HOST}`,
 
-            `test -f ${remotePath} && echo SCP_UPLOAD_OK`,
+            `test -f "${remotePath}" && echo SCP_UPLOAD_OK`,
           ]
         );
-
-      removeFileIfExists(
-        testFile
-      );
 
       return res.json({
         success: true,
         output:
-          result.stdout,
+          verifyResult.stdout,
         remotePath,
       });
     } catch (error) {
-      removeFileIfExists(
-        testFile
-      );
-
       return res
         .status(500)
         .json({
           success: false,
+
           message:
-            "AWS SCP test failed",
+            "SCP upload failed",
+
           error:
             error.message,
         });
+    } finally {
+      removeFileIfExists(
+        testFile
+      );
     }
   }
 );
 
-// =====================================================
-// GENERATE AVATAR
-// =====================================================
+/* =========================================================
+   GENERATE AVATAR
+========================================================= */
 
 app.post(
   "/generate-avatar",
@@ -1228,10 +1166,12 @@ app.post(
       name: "frontImage",
       maxCount: 1,
     },
+
     {
       name: "backImage",
       maxCount: 1,
     },
+
     {
       name: "sideImage",
       maxCount: 1,
@@ -1242,12 +1182,9 @@ app.post(
     let frontPath = null;
     let backPath = null;
     let sidePath = null;
+
     let localMeasurementsPath =
       null;
-
-    let remoteFront = null;
-    let remoteBack = null;
-    let remoteSide = null;
 
     try {
       const {
@@ -1258,17 +1195,21 @@ app.post(
       console.log(
         "================================="
       );
+
       console.log(
         "Avatar generation request"
       );
+
       console.log(
         "Height received:",
         height
       );
+
       console.log(
         "Gender received:",
         gender
       );
+
       console.log(
         "================================="
       );
@@ -1285,9 +1226,9 @@ app.post(
         req.files
           ?.sideImage?.[0];
 
-      // -----------------------------------------------
-      // Validate images
-      // -----------------------------------------------
+      /* -------------------------------
+         VALIDATE PHOTOS
+      -------------------------------- */
 
       if (
         !frontImage ||
@@ -1302,9 +1243,9 @@ app.post(
           });
       }
 
-      // -----------------------------------------------
-      // Validate height
-      // -----------------------------------------------
+      /* -------------------------------
+         VALIDATE HEIGHT
+      -------------------------------- */
 
       if (!height) {
         return res
@@ -1333,9 +1274,9 @@ app.post(
           });
       }
 
-      // -----------------------------------------------
-      // Validate gender
-      // -----------------------------------------------
+      /* -------------------------------
+         VALIDATE GENDER
+      -------------------------------- */
 
       if (
         ![
@@ -1351,14 +1292,9 @@ app.post(
           });
       }
 
-      // NOTE:
-      // The current AWS SMPL pipeline uses gender="neutral".
-      // Gender is still validated because your frontend
-      // currently sends it.
-
-      // -----------------------------------------------
-      // Create unique filenames
-      // -----------------------------------------------
+      /* -------------------------------
+         CREATE OUTPUT FILE
+      -------------------------------- */
 
       const timestamp =
         Date.now();
@@ -1372,9 +1308,9 @@ app.post(
           avatarFilename
         );
 
-      // -----------------------------------------------
-      // Save temporary local images
-      // -----------------------------------------------
+      /* -------------------------------
+         SAVE TEMP PHOTOS
+      -------------------------------- */
 
       frontPath =
         saveTempBufferToFile(
@@ -1394,22 +1330,18 @@ app.post(
           `side_${timestamp}.jpg`
         );
 
-      // -----------------------------------------------
-      // AWS temporary image paths
-      // -----------------------------------------------
+      /* -------------------------------
+         AWS FILE PATHS
+      -------------------------------- */
 
-      remoteFront =
+      const remoteFront =
         `${AWS_PARE_DIR}/incoming_front_${timestamp}.jpg`;
 
-      remoteBack =
-        `${AWS_PARE_DIR}/incoming_back_${timestamp}.jpg`;
-
-      remoteSide =
+      const remoteSide =
         `${AWS_PARE_DIR}/incoming_side_${timestamp}.jpg`;
 
-      // -----------------------------------------------
-      // Upload images to AWS
-      // -----------------------------------------------
+      const remoteBack =
+        `${AWS_PARE_DIR}/incoming_back_${timestamp}.jpg`;
 
       console.log(
         "Uploading avatar images to AWS..."
@@ -1421,32 +1353,41 @@ app.post(
       );
 
       await uploadFileToAWS(
-        backPath,
-        remoteBack
+        sidePath,
+        remoteSide
       );
 
       await uploadFileToAWS(
-        sidePath,
-        remoteSide
+        backPath,
+        remoteBack
       );
 
       console.log(
         "Uploaded avatar images to AWS successfully"
       );
 
-      // -----------------------------------------------
-      // Run PARE + multi-view fusion + SMPL pipeline
-      // -----------------------------------------------
+      /* =====================================================
+         IMPORTANT:
+         Correct AWS command with && separators
+         and gender support
+      ===================================================== */
 
       const remoteCommand = [
         `source ~/virtufit-env/bin/activate`,
-        `cd ${AWS_PARE_DIR}`,
+
+        `cd "${AWS_PARE_DIR}"`,
+
         [
           `python scripts/generate_avatar_pipeline.py`,
+
           `--front "${remoteFront}"`,
+
           `--side "${remoteSide}"`,
+
           `--back "${remoteBack}"`,
+
           `--height ${numericHeight}`,
+
           `--gender ${gender}`,
         ].join(" "),
       ].join(" && ");
@@ -1479,16 +1420,16 @@ app.post(
         );
 
       console.log(
-        "AWS avatar pipeline completed successfully"
-      );
-
-      console.log(
         awsResult.stdout
       );
 
-      // -----------------------------------------------
-      // AWS generated output paths
-      // -----------------------------------------------
+      console.log(
+        "AWS avatar pipeline completed successfully"
+      );
+
+      /* -------------------------------
+         REMOTE OUTPUT PATHS
+      -------------------------------- */
 
       const remoteAvatarPath =
         `${AWS_PARE_DIR}/pipeline_final_output/avatar.obj`;
@@ -1496,9 +1437,9 @@ app.post(
       const remoteMeasurementsPath =
         `${AWS_PARE_DIR}/pipeline_final_output/measurements.json`;
 
-      // -----------------------------------------------
-      // Download avatar.obj
-      // -----------------------------------------------
+      /* -------------------------------
+         DOWNLOAD AVATAR
+      -------------------------------- */
 
       console.log(
         "Downloading generated avatar..."
@@ -1520,9 +1461,9 @@ app.post(
         "Avatar downloaded successfully"
       );
 
-      // -----------------------------------------------
-      // Download measurements.json
-      // -----------------------------------------------
+      /* -------------------------------
+         DOWNLOAD MEASUREMENTS
+      -------------------------------- */
 
       localMeasurementsPath =
         path.join(
@@ -1542,10 +1483,6 @@ app.post(
         ]
       );
 
-      // -----------------------------------------------
-      // Read body measurements
-      // -----------------------------------------------
-
       const measurements =
         JSON.parse(
           fs.readFileSync(
@@ -1559,9 +1496,9 @@ app.post(
         measurements
       );
 
-      // -----------------------------------------------
-      // Local cleanup
-      // -----------------------------------------------
+      /* -------------------------------
+         CLEAN TEMP LOCAL FILES
+      -------------------------------- */
 
       removeFileIfExists(
         localMeasurementsPath
@@ -1586,19 +1523,9 @@ app.post(
       backPath = null;
       sidePath = null;
 
-      // -----------------------------------------------
-      // AWS temporary cleanup
-      // -----------------------------------------------
-
-      await removeAWSFiles([
-        remoteFront,
-        remoteBack,
-        remoteSide,
-      ]);
-
-      // -----------------------------------------------
-      // Build public avatar URL
-      // -----------------------------------------------
+      /* -------------------------------
+         BUILD AVATAR URL
+      -------------------------------- */
 
       const avatarBaseUrl =
         BACKEND_PUBLIC_URL.replace(
@@ -1609,9 +1536,9 @@ app.post(
       const avatarUrl =
         `${avatarBaseUrl}/generated-avatars/${avatarFilename}`;
 
-      // -----------------------------------------------
-      // Return generated avatar + measurements
-      // -----------------------------------------------
+      /* -------------------------------
+         SEND RESPONSE
+      -------------------------------- */
 
       return res
         .status(200)
@@ -1637,9 +1564,10 @@ app.post(
           },
         });
     } catch (error) {
-      // -----------------------------------------------
-      // Local cleanup after error
-      // -----------------------------------------------
+      console.error(
+        "Generate avatar error:",
+        error
+      );
 
       removeFileIfExists(
         frontPath
@@ -1657,23 +1585,6 @@ app.post(
         localMeasurementsPath
       );
 
-      // -----------------------------------------------
-      // AWS cleanup after error
-      // -----------------------------------------------
-
-      await removeAWSFiles(
-        [
-          remoteFront,
-          remoteBack,
-          remoteSide,
-        ].filter(Boolean)
-      );
-
-      console.error(
-        "Generate avatar error:",
-        error
-      );
-
       return res
         .status(500)
         .json({
@@ -1687,53 +1598,8 @@ app.post(
   }
 );
 
-// =====================================================
-// MULTER / IMAGE UPLOAD ERROR HANDLER
-// =====================================================
-
-app.use(
-  (err, req, res, next) => {
-    if (
-      err instanceof
-      multer.MulterError
-    ) {
-      if (
-        err.code ===
-        "LIMIT_FILE_SIZE"
-      ) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Image size must be less than 5 MB.",
-          });
-      }
-
-      return res
-        .status(400)
-        .json({
-          message:
-            err.message,
-        });
-    }
-
-    if (err) {
-      return res
-        .status(400)
-        .json({
-          message:
-            err.message ||
-            "Invalid image file.",
-        });
-    }
-
-    next();
-  }
-);
-
-// =====================================================
-// MOCK FIT ANALYSIS
-// =====================================================
+/* =========================================================
+   FIT ANALYSIS
 
 app.post(
   "/fit-analysis",
@@ -1744,10 +1610,12 @@ app.post(
           name: "Chest",
           status: "Tight",
         },
+
         {
           name: "Waist",
           status: "Perfect",
         },
+
         {
           name: "Hip",
           status: "Loose",
@@ -1760,9 +1628,9 @@ app.post(
   }
 );
 
-// =====================================================
-// SAVE FIT ANALYSIS
-// =====================================================
+/* =========================================================
+   SAVE FIT
+========================================================= */
 
 app.post(
   "/save-fit",
@@ -1775,8 +1643,6 @@ app.post(
       recommendation,
     } = req.body;
 
-    // Temporary log.
-    // Later this can be stored in PostgreSQL.
     console.log({
       userId,
       chest,
@@ -1792,9 +1658,60 @@ app.post(
   }
 );
 
-// =====================================================
-// START SERVER
-// =====================================================
+/* =========================================================
+   MULTER ERROR HANDLER
+========================================================= */
+
+app.use(
+  (
+    error,
+    req,
+    res,
+    next
+  ) => {
+    if (
+      error instanceof
+      multer.MulterError
+    ) {
+      if (
+        error.code ===
+        "LIMIT_FILE_SIZE"
+      ) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Each image must be 5 MB or smaller",
+          });
+      }
+
+      return res
+        .status(400)
+        .json({
+          message:
+            error.message,
+        });
+    }
+
+    if (
+      error?.message ===
+      "Only JPG, JPEG and PNG images are allowed"
+    ) {
+      return res
+        .status(400)
+        .json({
+          message:
+            error.message,
+        });
+    }
+
+    next(error);
+  }
+);
+
+/* =========================================================
+   START SERVER
+========================================================= */
 
 const PORT =
   process.env.PORT || 3000;
