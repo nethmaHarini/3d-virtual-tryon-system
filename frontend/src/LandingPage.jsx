@@ -38,7 +38,6 @@ function LandingPage() {
     };
 
     window.addEventListener("scroll", handleScroll);
-
     handleScroll();
 
     return () => {
@@ -101,6 +100,15 @@ function LandingPage() {
 
             ambientRight:
               "rgba(95, 11, 126, 0.24)",
+
+            footerBackground:
+              "rgba(7, 13, 22, 0.9)",
+
+            footerBorder:
+              "rgba(255,255,255,0.08)",
+
+            footerMuted:
+              "rgba(195,204,225,0.62)",
           }
         : {
             pageBackground:
@@ -138,6 +146,15 @@ function LandingPage() {
 
             ambientRight:
               "rgba(183, 97, 234, 0.16)",
+
+            footerBackground:
+              "rgba(248, 250, 255, 0.95)",
+
+            footerBorder:
+              "rgba(18,30,52,0.10)",
+
+            footerMuted:
+              "#6b7487",
           },
     [isDark]
   );
@@ -202,17 +219,13 @@ function LandingPage() {
       border: "none",
       borderRadius: 999,
       padding: "12px 24px",
-
       background:
         "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
-
       color: "#ffffff",
       fontWeight: 700,
       cursor: "pointer",
-
       boxShadow:
         "0 14px 28px rgba(31, 22, 81, 0.45)",
-
       transition: "all 240ms ease",
     },
 
@@ -220,62 +233,44 @@ function LandingPage() {
       border: `1px solid ${colors.secondaryButtonBorder}`,
       borderRadius: 999,
       padding: "11px 23px",
-
-      background:
-        colors.secondaryButtonBackground,
-
-      color:
-        colors.secondaryButtonText,
-
+      background: colors.secondaryButtonBackground,
+      color: colors.secondaryButtonText,
       fontWeight: 600,
       cursor: "pointer",
-
       transition: "all 240ms ease",
     },
 
     visualWrap: {
       position: "relative",
       minHeight: 420,
-
       display: "grid",
       placeItems: "center",
     },
 
     glowRing: {
       position: "absolute",
-
       width: "min(70vw, 420px)",
       height: "min(70vw, 420px)",
-
       borderRadius: "999px",
-
       border: colors.ringBorder,
       boxShadow: colors.ringShadow,
     },
 
     visualCard: {
       position: "relative",
-
       width: "min(88%, 440px)",
-
       borderRadius: 24,
-
       border: colors.visualBorder,
       background: colors.visualBackground,
-
       backdropFilter: "blur(16px)",
-
       overflow: "hidden",
-
       boxShadow: colors.visualShadow,
     },
 
     visualImage: {
       width: "100%",
       height: 550,
-
       objectFit: "cover",
-
       display: "block",
     },
 
@@ -285,6 +280,27 @@ function LandingPage() {
 
     ambientRight: {
       background: colors.ambientRight,
+    },
+
+    footer: {
+      width: "100%",
+      padding: "20px 6%",
+      boxSizing: "border-box",
+      borderTop: `1px solid ${colors.footerBorder}`,
+      background: colors.footerBackground,
+      backdropFilter: "blur(16px)",
+      WebkitBackdropFilter: "blur(16px)",
+    },
+
+    footerInner: {
+      maxWidth: 1200,
+      margin: "0 auto",
+    },
+
+    footerCopyright: {
+      margin: 0,
+      fontSize: "0.82rem",
+      color: colors.footerMuted,
     },
   };
 
@@ -316,13 +332,10 @@ function LandingPage() {
         .landing-ambient-left {
           width: 44vw;
           height: 44vw;
-
           min-width: 260px;
           min-height: 260px;
-
           max-width: 620px;
           max-height: 620px;
-
           left: -16vw;
           top: -18vw;
         }
@@ -330,13 +343,10 @@ function LandingPage() {
         .landing-ambient-right {
           width: 42vw;
           height: 42vw;
-
           min-width: 260px;
           min-height: 260px;
-
           max-width: 580px;
           max-height: 580px;
-
           right: -16vw;
           top: 420px;
         }
@@ -348,9 +358,7 @@ function LandingPage() {
 
         .landing-ghost:hover {
           transform: translateY(-2px);
-
-          border-color:
-            rgba(103, 121, 165, 0.55);
+          border-color: rgba(103, 121, 165, 0.55);
         }
 
         .back-to-top-btn:hover {
@@ -360,31 +368,21 @@ function LandingPage() {
 
         @media (max-width: 980px) {
           .landing-hero {
-            grid-template-columns:
-              1fr !important;
-
+            grid-template-columns: 1fr !important;
             padding-top: 30px;
           }
 
           .landing-visual {
-            min-height:
-              360px !important;
+            min-height: 360px !important;
           }
         }
 
         @media (max-width: 640px) {
           .back-to-top-btn {
-            right:
-              16px !important;
-
-            bottom:
-              18px !important;
-
-            width:
-              46px !important;
-
-            height:
-              46px !important;
+            right: 16px !important;
+            bottom: 18px !important;
+            width: 46px !important;
+            height: 46px !important;
           }
         }
       `}</style>
@@ -496,26 +494,32 @@ function LandingPage() {
         >
           <ContactUs />
         </section>
+
+        {/* MINIMAL FOOTER */}
+        <footer style={styles.footer}>
+          <div style={styles.footerInner}>
+            <p style={styles.footerCopyright}>
+              © {new Date().getFullYear()} VirtuFit 3D.
+              All rights reserved.
+            </p>
+          </div>
+        </footer>
       </main>
 
+      {/* BACK TO TOP */}
       {showBackToTop && (
         <button
           type="button"
           aria-label="Back to top"
           title="Back to top"
           className="back-to-top-btn"
-          onClick={() =>
-            scrollToSection("home")
-          }
+          onClick={() => scrollToSection("home")}
           style={{
             position: "fixed",
-
             right: 24,
             bottom: 24,
-
             width: 50,
             height: 50,
-
             borderRadius: "50%",
 
             border: isDark
