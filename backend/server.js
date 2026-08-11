@@ -21,7 +21,7 @@ const app = express();
 const SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 const FRONTEND_URL =
-  process.env.FRONTEND_URL || "http://localhost:5174";
+  process.env.FRONTEND_URL || "http://localhost:5173";
 
 const BACKEND_PUBLIC_URL =
   process.env.BACKEND_PUBLIC_URL || "http://localhost:3000";
@@ -155,9 +155,7 @@ const uploadFileToAWS = async (
   await runCommand("scp", [
     "-i",
     AWS_AVATAR_KEY_PATH,
-
     localPath,
-
     `${AWS_AVATAR_USER}@${AWS_AVATAR_HOST}:${remotePath}`,
   ]);
 };
@@ -178,9 +176,7 @@ const removeAWSFiles = async (
     await runCommand("ssh", [
       "-i",
       AWS_AVATAR_KEY_PATH,
-
       `${AWS_AVATAR_USER}@${AWS_AVATAR_HOST}`,
-
       command,
     ]);
   } catch (error) {
@@ -239,9 +235,10 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024,
   },
-  //photo upload format
- fileFilter: (req, file, cb) => {
-     const allowedMimeTypes = [
+
+  // Photo upload format
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
       "image/jpeg",
       "image/png",
     ];
@@ -252,7 +249,9 @@ const upload = multer({
       ".png",
     ];
 
-    const extension = path.extname(file.originalname).toLowerCase();
+    const extension = path
+      .extname(file.originalname)
+      .toLowerCase();
 
     if (
       allowedMimeTypes.includes(file.mimetype) &&
@@ -260,9 +259,13 @@ const upload = multer({
     ) {
       cb(null, true);
     } else {
-      cb(new Error("Only JPG , JPEG and PNG image files are allowed."));
+      cb(
+        new Error(
+          "Only JPG, JPEG and PNG image files are allowed."
+        )
+      );
     }
-  }, 
+  },
 });
 
 // =====================================================
@@ -829,8 +832,7 @@ app.post(
 app.post(
   "/forgot-password",
   async (req, res) => {
-    const { email } =
-      req.body;
+    const { email } = req.body;
 
     if (!email) {
       return res
@@ -886,8 +888,86 @@ app.post(
         [token, email]
       );
 
+      // Get the frontend that sent this request.
+      // This supports localhost, Codespaces and Vercel.
+      const requestOrigin =
+        req.get("origin");
+
+      let frontendUrl =
+        FRONTEND_URL;
+
+      if (requestOrigin) {
+        try {
+          const originUrl =
+            new URL(requestOrigin);
+
+          const hostname =
+            originUrl.hostname;
+
+          const isLocalhost =
+            hostname === "localhost" ||
+            hostname === "127.0.0.1";
+
+          const isCodespace =
+            hostname.endsWith(
+              ".app.github.dev"
+            );
+
+          const isVercel =
+            hostname ===
+            "3d-virtual-tryon-system.vercel.app";
+
+          if (
+            isLocalhost ||
+            isCodespace ||
+            isVercel
+          ) {
+            frontendUrl =
+              requestOrigin;
+          }
+        } catch (error) {
+          console.error(
+            "Invalid frontend origin:",
+            requestOrigin
+          );
+        }
+      }
+
+      frontendUrl =
+        frontendUrl.replace(
+          /\/$/,
+          ""
+        );
+
       const resetLink =
-        `${FRONTEND_URL}/reset-password/${token}`;
+        `${frontendUrl}/reset-password/${token}`;
+
+      console.log(
+        "================================="
+      );
+
+      console.log(
+        "Password reset requested"
+      );
+
+      console.log(
+        "Request origin:",
+        requestOrigin
+      );
+
+      console.log(
+        "Frontend URL:",
+        frontendUrl
+      );
+
+      console.log(
+        "Reset URL:",
+        resetLink
+      );
+
+      console.log(
+        "================================="
+      );
 
       await transporter.sendMail({
         from:
@@ -899,8 +979,14 @@ app.post(
           "Reset your password",
 
         html: `
-          <p>You requested to reset your password.</p>
-          <p>Click the link below to continue:</p>
+          <p>
+            You requested to reset your password.
+          </p>
+
+          <p>
+            Click the link below to continue:
+          </p>
+
           <a href="${resetLink}">
             ${resetLink}
           </a>
@@ -920,7 +1006,8 @@ app.post(
       return res
         .status(500)
         .json({
-          message: "Server error",
+          message:
+            "Server error",
         });
     }
   }
@@ -1014,7 +1101,8 @@ app.post(
       return res
         .status(500)
         .json({
-          message: "Server error",
+          message:
+            "Server error",
         });
     }
   }
@@ -1166,11 +1254,24 @@ app.post(
         height,
         gender,
       } = req.body;
-      console.log("=================================");
-console.log("Avatar generation request");
-console.log("Height received:", height);
-console.log("Gender received:", gender);
-console.log("=================================");
+
+      console.log(
+        "================================="
+      );
+      console.log(
+        "Avatar generation request"
+      );
+      console.log(
+        "Height received:",
+        height
+      );
+      console.log(
+        "Gender received:",
+        gender
+      );
+      console.log(
+        "================================="
+      );
 
       const frontImage =
         req.files
@@ -1252,7 +1353,8 @@ console.log("=================================");
 
       // NOTE:
       // The current AWS SMPL pipeline uses gender="neutral".
-      // Gender is still validated because your frontend currently sends it.
+      // Gender is still validated because your frontend
+      // currently sends it.
 
       // -----------------------------------------------
       // Create unique filenames
@@ -1336,25 +1438,29 @@ console.log("=================================");
       // Run PARE + multi-view fusion + SMPL pipeline
       // -----------------------------------------------
 
-     const remoteCommand = [
-  `source ~/virtufit-env/bin/activate`,
-  `cd ${AWS_PARE_DIR}`,
-  [
-    `python scripts/generate_avatar_pipeline.py`,
-    `--front "${remoteFront}"`,
-    `--side "${remoteSide}"`,
-    `--back "${remoteBack}"`,
-    `--height ${numericHeight}`,
-    `--gender ${gender}`,
-  ].join(" "),
-].join(" && ");
+      const remoteCommand = [
+        `source ~/virtufit-env/bin/activate`,
+        `cd ${AWS_PARE_DIR}`,
+        [
+          `python scripts/generate_avatar_pipeline.py`,
+          `--front "${remoteFront}"`,
+          `--side "${remoteSide}"`,
+          `--back "${remoteBack}"`,
+          `--height ${numericHeight}`,
+          `--gender ${gender}`,
+        ].join(" "),
+      ].join(" && ");
 
-console.log("Gender being sent to AWS:", gender);
-console.log("AWS command:", remoteCommand);
-console.log("Running AWS avatar pipeline...");
+      console.log(
+        "Gender being sent to AWS:",
+        gender
+      );
 
-console.log("Gender being sent to AWS:", gender);
-console.log("AWS command:", remoteCommand);
+      console.log(
+        "AWS command:",
+        remoteCommand
+      );
+
       console.log(
         "Running AWS avatar pipeline..."
       );
@@ -1580,35 +1686,50 @@ console.log("AWS command:", remoteCommand);
     }
   }
 );
+
+// =====================================================
 // MULTER / IMAGE UPLOAD ERROR HANDLER
 // =====================================================
 
-app.use((err, req, res, next) => {
+app.use(
+  (err, req, res, next) => {
+    if (
+      err instanceof
+      multer.MulterError
+    ) {
+      if (
+        err.code ===
+        "LIMIT_FILE_SIZE"
+      ) {
+        return res
+          .status(400)
+          .json({
+            message:
+              "Image size must be less than 5 MB.",
+          });
+      }
 
-  if (err instanceof multer.MulterError) {
-
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({
-        message:
-          "Image size must be less than 5 MB.",
-      });
+      return res
+        .status(400)
+        .json({
+          message:
+            err.message,
+        });
     }
 
-    return res.status(400).json({
-      message: err.message,
-    });
-  }
+    if (err) {
+      return res
+        .status(400)
+        .json({
+          message:
+            err.message ||
+            "Invalid image file.",
+        });
+    }
 
-  if (err) {
-    return res.status(400).json({
-      message:
-        err.message ||
-        "Invalid image file.",
-    });
+    next();
   }
-
-  next();
-});
+);
 
 // =====================================================
 // MOCK FIT ANALYSIS
