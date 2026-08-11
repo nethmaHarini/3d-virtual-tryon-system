@@ -1,12 +1,39 @@
-import { useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 function Navbar({ theme, setTheme }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const isDark = theme === "dark";
+
+  const isLandingPage =
+    location.pathname === "/";
+
+  const scrollToSection = (sectionId) => {
+    if (isLandingPage) {
+      const section =
+        document.getElementById(sectionId);
+
+      if (section) {
+        section.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
+        return;
+      }
+    }
+
+    navigate(`/#${sectionId}`);
+  };
 
   const styles = {
     nav: {
       position: "fixed",
+
       top: 0,
       left: 0,
 
@@ -14,10 +41,14 @@ function Navbar({ theme, setTheme }) {
       height: "76px",
 
       display: "grid",
-      gridTemplateColumns: "1fr auto 1fr",
+
+      gridTemplateColumns:
+        "1fr auto 1fr",
+
       alignItems: "center",
 
       padding: "0 6%",
+
       boxSizing: "border-box",
 
       background: isDark
@@ -25,7 +56,9 @@ function Navbar({ theme, setTheme }) {
         : "rgba(245, 248, 255, 0.94)",
 
       backdropFilter: "blur(24px)",
-      WebkitBackdropFilter: "blur(24px)",
+
+      WebkitBackdropFilter:
+        "blur(24px)",
 
       borderBottom: isDark
         ? "1px solid rgba(255,255,255,0.08)"
@@ -40,12 +73,15 @@ function Navbar({ theme, setTheme }) {
       fontFamily:
         "'Plus Jakarta Sans', 'Manrope', sans-serif",
 
-      transition: "all 220ms ease",
+      transition:
+        "all 220ms ease",
     },
 
     leftZone: {
       justifySelf: "start",
+
       display: "flex",
+
       alignItems: "center",
     },
 
@@ -57,9 +93,11 @@ function Navbar({ theme, setTheme }) {
         : "#1a2542",
 
       fontSize: "1.45rem",
+
       fontWeight: 800,
 
-      letterSpacing: "-0.02em",
+      letterSpacing:
+        "-0.02em",
 
       cursor: "pointer",
 
@@ -67,13 +105,15 @@ function Navbar({ theme, setTheme }) {
         ? "0 0 20px rgba(164,201,252,0.3)"
         : "none",
 
-      transition: "all 0.3s ease",
+      transition:
+        "all 0.3s ease",
     },
 
     linkGroup: {
       justifySelf: "center",
 
       display: "flex",
+
       alignItems: "center",
 
       gap: "40px",
@@ -85,6 +125,7 @@ function Navbar({ theme, setTheme }) {
         : "#425277",
 
       fontSize: "0.9rem",
+
       fontWeight: 600,
 
       cursor: "pointer",
@@ -99,6 +140,7 @@ function Navbar({ theme, setTheme }) {
       justifySelf: "end",
 
       display: "flex",
+
       alignItems: "center",
     },
 
@@ -125,8 +167,11 @@ function Navbar({ theme, setTheme }) {
       cursor: "pointer",
 
       display: "inline-flex",
+
       alignItems: "center",
-      justifyContent: "center",
+
+      justifyContent:
+        "center",
 
       transition:
         "transform 0.22s ease, filter 0.22s ease",
@@ -136,10 +181,10 @@ function Navbar({ theme, setTheme }) {
   };
 
   const handleLinkHover = (
-    e,
+    event,
     isHovering
   ) => {
-    e.currentTarget.style.color =
+    event.currentTarget.style.color =
       isHovering
         ? isDark
           ? "#ffffff"
@@ -148,7 +193,7 @@ function Navbar({ theme, setTheme }) {
           ? "#c3cce1"
           : "#425277";
 
-    e.currentTarget.style.textShadow =
+    event.currentTarget.style.textShadow =
       isHovering && isDark
         ? "0 0 12px rgba(255,255,255,0.4)"
         : "none";
@@ -161,7 +206,7 @@ function Navbar({ theme, setTheme }) {
         <h2
           style={styles.logo}
           onClick={() =>
-            navigate("/")
+            scrollToSection("home")
           }
         >
           VirtuFit 3D
@@ -176,17 +221,17 @@ function Navbar({ theme, setTheme }) {
         <span
           style={styles.navLink}
           onClick={() =>
-            navigate("/")
+            scrollToSection("home")
           }
-          onMouseEnter={(e) =>
+          onMouseEnter={(event) =>
             handleLinkHover(
-              e,
+              event,
               true
             )
           }
-          onMouseLeave={(e) =>
+          onMouseLeave={(event) =>
             handleLinkHover(
-              e,
+              event,
               false
             )
           }
@@ -197,19 +242,17 @@ function Navbar({ theme, setTheme }) {
         <span
           style={styles.navLink}
           onClick={() =>
-            navigate(
-              "/features"
-            )
+            scrollToSection("features")
           }
-          onMouseEnter={(e) =>
+          onMouseEnter={(event) =>
             handleLinkHover(
-              e,
+              event,
               true
             )
           }
-          onMouseLeave={(e) =>
+          onMouseLeave={(event) =>
             handleLinkHover(
-              e,
+              event,
               false
             )
           }
@@ -220,19 +263,19 @@ function Navbar({ theme, setTheme }) {
         <span
           style={styles.navLink}
           onClick={() =>
-            navigate(
-              "/how-it-works"
+            scrollToSection(
+              "how-it-works"
             )
           }
-          onMouseEnter={(e) =>
+          onMouseEnter={(event) =>
             handleLinkHover(
-              e,
+              event,
               true
             )
           }
-          onMouseLeave={(e) =>
+          onMouseLeave={(event) =>
             handleLinkHover(
-              e,
+              event,
               false
             )
           }
@@ -243,17 +286,17 @@ function Navbar({ theme, setTheme }) {
         <span
           style={styles.navLink}
           onClick={() =>
-            navigate("/faq")
+            scrollToSection("faq")
           }
-          onMouseEnter={(e) =>
+          onMouseEnter={(event) =>
             handleLinkHover(
-              e,
+              event,
               true
             )
           }
-          onMouseLeave={(e) =>
+          onMouseLeave={(event) =>
             handleLinkHover(
-              e,
+              event,
               false
             )
           }
@@ -263,25 +306,31 @@ function Navbar({ theme, setTheme }) {
 
         <span
           style={styles.navLink}
-          onClick={() => navigate("/contact")}
-          onMouseEnter={(e) =>
-            handleLinkHover(e, true)
+          onClick={() =>
+            scrollToSection("contact")
           }
-          onMouseLeave={(e) =>
-            handleLinkHover(e, false)
+          onMouseEnter={(event) =>
+            handleLinkHover(
+              event,
+              true
+            )
+          }
+          onMouseLeave={(event) =>
+            handleLinkHover(
+              event,
+              false
+            )
           }
         >
           Contact Us
-      </span>
+        </span>
       </div>
 
       {/* RIGHT */}
       <div style={styles.actionGroup}>
         <button
           type="button"
-          style={
-            styles.themeToggleBtn
-          }
+          style={styles.themeToggleBtn}
           aria-label={`Switch to ${
             isDark
               ? "light"
@@ -299,16 +348,18 @@ function Navbar({ theme, setTheme }) {
                 : "dark"
             )
           }
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform =
+          onMouseEnter={(event) => {
+            event.currentTarget.style.transform =
               "translateY(-2px)";
-            e.currentTarget.style.filter =
+
+            event.currentTarget.style.filter =
               "brightness(1.05)";
           }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform =
+          onMouseLeave={(event) => {
+            event.currentTarget.style.transform =
               "translateY(0)";
-            e.currentTarget.style.filter =
+
+            event.currentTarget.style.filter =
               "brightness(1)";
           }}
         >

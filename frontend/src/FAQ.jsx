@@ -38,13 +38,14 @@ function FAQ() {
   ];
 
   const toggleFAQ = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
+    setOpenIndex((currentIndex) =>
+      currentIndex === index ? null : index
+    );
   };
 
   return (
     <div className="faq-page">
       <style>{`
-
         /* ==============================
            PAGE
         ============================== */
@@ -52,21 +53,24 @@ function FAQ() {
         .faq-page {
           min-height: 100vh;
 
-          padding: 42px 24px 80px;
+          padding: 55px 24px 80px;
 
           background:
             radial-gradient(
-              circle at 10% 15%,
-              rgba(73, 48, 190, 0.34),
-              transparent 42%
+              circle at 15% 20%,
+              rgba(92, 60, 255, 0.20),
+              transparent 40%
             ),
             linear-gradient(
               145deg,
-              #0b1020,
-              #0a111d
+              #080e18,
+              #111827
             );
 
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family:
+            'Plus Jakarta Sans',
+            sans-serif;
+
           color: #ffffff;
 
           box-sizing: border-box;
@@ -74,6 +78,7 @@ function FAQ() {
 
         .faq-container {
           width: 100%;
+
           max-width: 1100px;
 
           margin: 0 auto;
@@ -86,6 +91,7 @@ function FAQ() {
 
         .faq-hero {
           position: relative;
+
           overflow: hidden;
 
           padding: 48px 52px;
@@ -100,18 +106,11 @@ function FAQ() {
             );
 
           border:
-            1px solid rgba(255, 255, 255, 0.10);
-
-          box-shadow:
-            0 20px 50px rgba(0, 0, 0, 0.16);
+            1px solid
+            rgba(255, 255, 255, 0.10);
 
           margin-bottom: 32px;
         }
-
-
-        /* ==============================
-           FAQ LABEL
-        ============================== */
 
         .faq-label {
           display: inline-block;
@@ -129,11 +128,6 @@ function FAQ() {
           text-transform: uppercase;
         }
 
-
-        /* ==============================
-           HERO HEADING
-        ============================== */
-
         .faq-hero h1 {
           max-width: 650px;
 
@@ -146,13 +140,9 @@ function FAQ() {
 
           font-weight: 800;
 
-          letter-spacing: -0.03em;
+          letter-spacing:
+            -0.03em;
         }
-
-
-        /* ==============================
-           HERO DESCRIPTION
-        ============================== */
 
         .faq-hero p {
           max-width: 650px;
@@ -168,21 +158,24 @@ function FAQ() {
 
 
         /* ==============================
-           QUESTION MARK DECORATION
+           HERO DECORATION
         ============================== */
 
         .faq-decoration {
           position: absolute;
 
           right: 60px;
+
           top: 50%;
 
           width: 115px;
+
           height: 115px;
 
           display: flex;
 
           align-items: center;
+
           justify-content: center;
 
           border-radius: 28px;
@@ -194,14 +187,13 @@ function FAQ() {
               #7d1399
             );
 
-          color: #ffffff;
-
           font-size: 4rem;
 
           font-weight: 800;
 
           box-shadow:
-            0 20px 60px rgba(93, 46, 232, 0.30);
+            0 20px 60px
+            rgba(93, 46, 232, 0.30);
 
           transform:
             translateY(-50%)
@@ -222,29 +214,25 @@ function FAQ() {
             rgba(18, 27, 42, 0.82);
 
           border:
-            1px solid rgba(255, 255, 255, 0.10);
+            1px solid
+            rgba(255, 255, 255, 0.10);
 
           box-shadow:
-            0 20px 50px rgba(0, 0, 0, 0.22);
-
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+            0 20px 50px
+            rgba(0, 0, 0, 0.22);
         }
 
-
-        /* ==============================
-           FAQ SECTION HEADING
-        ============================== */
-
         .faq-section h2 {
-          margin: 0 0 28px;
+          margin:
+            0 0 28px;
 
           font-size:
             clamp(1.8rem, 3vw, 2.4rem);
 
           font-weight: 800;
 
-          letter-spacing: -0.02em;
+          letter-spacing:
+            -0.02em;
         }
 
 
@@ -254,7 +242,8 @@ function FAQ() {
 
         .faq-item {
           border-bottom:
-            1px solid rgba(255, 255, 255, 0.09);
+            1px solid
+            rgba(255, 255, 255, 0.09);
         }
 
         .faq-item:last-child {
@@ -275,11 +264,13 @@ function FAQ() {
 
           align-items: center;
 
-          justify-content: space-between;
+          justify-content:
+            space-between;
 
           gap: 20px;
 
-          background: transparent;
+          background:
+            transparent;
 
           border: none;
 
@@ -299,6 +290,9 @@ function FAQ() {
 
           transition:
             color 0.25s ease;
+
+          box-sizing:
+            border-box;
         }
 
         .faq-question:hover {
@@ -307,18 +301,20 @@ function FAQ() {
 
 
         /* ==============================
-           PLUS ICON
+           + ICON
         ============================== */
 
         .faq-icon {
           flex-shrink: 0;
 
           width: 36px;
+
           height: 36px;
 
           display: flex;
 
           align-items: center;
+
           justify-content: center;
 
           border-radius: 10px;
@@ -339,7 +335,8 @@ function FAQ() {
         }
 
         .faq-icon.open {
-          transform: rotate(45deg);
+          transform:
+            rotate(45deg);
 
           background:
             rgba(109, 61, 255, 0.25);
@@ -353,9 +350,8 @@ function FAQ() {
         ============================== */
 
         .faq-answer {
-          max-height: 0;
-
-          overflow: hidden;
+          padding:
+            0 60px 24px 0;
 
           color: #c5cee0;
 
@@ -365,16 +361,23 @@ function FAQ() {
 
           line-height: 1.75;
 
-          transition:
-            max-height 0.35s ease,
-            padding 0.35s ease;
+          animation:
+            faqAnswerOpen
+            0.24s ease;
         }
 
-        .faq-answer.open {
-          max-height: 250px;
+        @keyframes faqAnswerOpen {
+          from {
+            opacity: 0;
+            transform:
+              translateY(-6px);
+          }
 
-          padding:
-            0 60px 24px 0;
+          to {
+            opacity: 1;
+            transform:
+              translateY(0);
+          }
         }
 
 
@@ -383,10 +386,9 @@ function FAQ() {
         ============================== */
 
         @media (max-width: 850px) {
-
           .faq-page {
             padding:
-              38px 22px 70px;
+              45px 22px 70px;
           }
 
           .faq-hero {
@@ -403,6 +405,7 @@ function FAQ() {
             right: 35px;
 
             width: 90px;
+
             height: 90px;
 
             font-size: 3rem;
@@ -420,10 +423,9 @@ function FAQ() {
         ============================== */
 
         @media (max-width: 640px) {
-
           .faq-page {
             padding:
-              28px 16px 55px;
+              30px 16px 55px;
           }
 
           .faq-hero {
@@ -437,7 +439,11 @@ function FAQ() {
             max-width: 100%;
 
             font-size:
-              clamp(2rem, 10vw, 2.7rem);
+              clamp(
+                2rem,
+                10vw,
+                2.7rem
+              );
           }
 
           .faq-hero p {
@@ -472,20 +478,19 @@ function FAQ() {
 
           .faq-icon {
             width: 34px;
+
             height: 34px;
 
             font-size: 1.2rem;
           }
 
           .faq-answer {
+            padding:
+              0 10px 22px 0;
+
             font-size: 0.95rem;
 
             line-height: 1.7;
-          }
-
-          .faq-answer.open {
-            padding:
-              0 10px 22px 0;
           }
         }
 
@@ -495,9 +500,9 @@ function FAQ() {
         ============================== */
 
         @media (max-width: 400px) {
-
           .faq-page {
             padding-left: 12px;
+
             padding-right: 12px;
           }
 
@@ -514,19 +519,12 @@ function FAQ() {
           .faq-question {
             gap: 14px;
           }
-
         }
-
       `}</style>
 
       <div className="faq-container">
-
-        {/* =========================
-            HERO
-        ========================= */}
-
+        {/* HERO */}
         <section className="faq-hero">
-
           <span className="faq-label">
             FAQ
           </span>
@@ -538,43 +536,32 @@ function FAQ() {
           </h1>
 
           <p>
-            Find quick answers about your 3D avatar,
-            virtual try-on experience, garments and
-            personalized fit feedback.
+            Find quick answers about your 3D
+            avatar, virtual try-on experience,
+            garments and personalized fit
+            feedback.
           </p>
 
-          <div
-            className="faq-decoration"
-            aria-hidden="true"
-          >
+          <div className="faq-decoration">
             ?
           </div>
-
         </section>
 
-
-        {/* =========================
-            FAQ ACCORDION
-        ========================= */}
-
+        {/* FAQ ACCORDION */}
         <section className="faq-section">
-
           <h2>
             Frequently Asked Questions
           </h2>
 
           {faqs.map((faq, index) => {
-
             const isOpen =
               openIndex === index;
 
             return (
-
               <div
                 className="faq-item"
                 key={faq.question}
               >
-
                 <button
                   type="button"
                   className="faq-question"
@@ -582,39 +569,36 @@ function FAQ() {
                     toggleFAQ(index)
                   }
                   aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
                 >
-
                   <span>
                     {faq.question}
                   </span>
 
                   <span
                     className={`faq-icon ${
-                      isOpen ? "open" : ""
+                      isOpen
+                        ? "open"
+                        : ""
                     }`}
                     aria-hidden="true"
                   >
                     +
                   </span>
-
                 </button>
 
-
-                <div
-                  className={`faq-answer ${
-                    isOpen ? "open" : ""
-                  }`}
-                >
-                  {faq.answer}
-                </div>
-
+                {isOpen && (
+                  <div
+                    id={`faq-answer-${index}`}
+                    className="faq-answer"
+                  >
+                    {faq.answer}
+                  </div>
+                )}
               </div>
-
             );
           })}
-
         </section>
-
       </div>
     </div>
   );
