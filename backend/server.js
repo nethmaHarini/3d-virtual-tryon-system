@@ -176,7 +176,6 @@ const uploadFileToAWS = async (
 
 /* =========================================================
    EMAIL
-========================================================= */
 
 const transporter =
   nodemailer.createTransport({
@@ -837,8 +836,86 @@ app.post(
         [token, email]
       );
 
+      // Get the frontend that sent this request.
+      // This supports localhost, Codespaces and Vercel.
+      const requestOrigin =
+        req.get("origin");
+
+      let frontendUrl =
+        FRONTEND_URL;
+
+      if (requestOrigin) {
+        try {
+          const originUrl =
+            new URL(requestOrigin);
+
+          const hostname =
+            originUrl.hostname;
+
+          const isLocalhost =
+            hostname === "localhost" ||
+            hostname === "127.0.0.1";
+
+          const isCodespace =
+            hostname.endsWith(
+              ".app.github.dev"
+            );
+
+          const isVercel =
+            hostname ===
+            "3d-virtual-tryon-system.vercel.app";
+
+          if (
+            isLocalhost ||
+            isCodespace ||
+            isVercel
+          ) {
+            frontendUrl =
+              requestOrigin;
+          }
+        } catch (error) {
+          console.error(
+            "Invalid frontend origin:",
+            requestOrigin
+          );
+        }
+      }
+
+      frontendUrl =
+        frontendUrl.replace(
+          /\/$/,
+          ""
+        );
+
       const resetLink =
-        `${FRONTEND_URL}/reset-password/${token}`;
+        `${frontendUrl}/reset-password/${token}`;
+
+      console.log(
+        "================================="
+      );
+
+      console.log(
+        "Password reset requested"
+      );
+
+      console.log(
+        "Request origin:",
+        requestOrigin
+      );
+
+      console.log(
+        "Frontend URL:",
+        frontendUrl
+      );
+
+      console.log(
+        "Reset URL:",
+        resetLink
+      );
+
+      console.log(
+        "================================="
+      );
 
       await transporter.sendMail({
         from:
@@ -869,7 +946,8 @@ app.post(
       return res
         .status(500)
         .json({
-          message: "Server error",
+          message:
+            "Server error",
         });
     }
   }
@@ -962,7 +1040,8 @@ app.post(
       return res
         .status(500)
         .json({
-          message: "Server error",
+          message:
+            "Server error",
         });
     }
   }
@@ -1521,7 +1600,6 @@ app.post(
 
 /* =========================================================
    FIT ANALYSIS
-========================================================= */
 
 app.post(
   "/fit-analysis",

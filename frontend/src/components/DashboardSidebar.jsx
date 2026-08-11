@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppTheme } from "../theme";
 
@@ -5,6 +6,33 @@ function DashboardSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useAppTheme();
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+
+  const loadNotificationCount = () => {
+    try {
+      const stored = localStorage.getItem("notifications");
+      const parsed = stored ? JSON.parse(stored) : [];
+      return Array.isArray(parsed)
+        ? parsed.filter((item) => item?.unread).length
+        : 0;
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  useEffect(() => {
+    setUnreadNotifications(loadNotificationCount());
+
+    const handleNotificationUpdate = () => {
+      setUnreadNotifications(loadNotificationCount());
+    };
+
+    window.addEventListener("notifications-updated", handleNotificationUpdate);
+
+    return () => {
+      window.removeEventListener("notifications-updated", handleNotificationUpdate);
+    };
+  }, []);
 
   const username = localStorage.getItem("username") || "";
   const displayName = username.trim().split(/\s+/)[0] || "VirtuFit 3D";
@@ -203,12 +231,14 @@ function DashboardSidebar() {
         </button>
         <button
           type="button"
-          style={styles.sidebarButtonBase}
-          onClick={() => navigate("/dashboard")}
+          style={isActive("/notifications") ? { ...styles.sidebarButtonBase, ...styles.sidebarButtonActive } : styles.sidebarButtonBase}
+          onClick={() => navigate("/notifications")}
         >
           <span>◔</span>
           <span>Notifications</span>
-          <span style={styles.notifyDot}>2</span>
+          {unreadNotifications > 0 ? (
+            <span style={styles.notifyDot}>{unreadNotifications}</span>
+          ) : null}
         </button>
       </nav>
 
