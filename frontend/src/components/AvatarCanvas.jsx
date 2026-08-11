@@ -19,7 +19,6 @@ import {
 
 import * as THREE from "three";
 
-
 function AvatarModel({
   modelPath,
 }) {
@@ -32,20 +31,30 @@ function AvatarModel({
     const clonedObject =
       loadedObject.clone(true);
 
-    // Correct avatar orientation
-    clonedObject.rotation.z =
-      Math.PI;
+    // -------------------------------------------------
+    // IMPORTANT:
+    // Do NOT rotate the SMPL avatar 180 degrees.
+    // The generated OBJ already uses Y as its vertical axis.
+    // -------------------------------------------------
+
+    clonedObject.rotation.set(
+      0,
+      0,
+      0
+    );
 
     clonedObject.updateMatrixWorld(
       true
     );
 
+    // -------------------------------------------------
     // Avatar material
+    // -------------------------------------------------
+
     clonedObject.traverse(
       (child) => {
         if (child.isMesh) {
           child.castShadow = true;
-
           child.receiveShadow = true;
 
           child.material =
@@ -53,14 +62,16 @@ function AvatarModel({
               color: 0xd6d9df,
               roughness: 0.72,
               metalness: 0.02,
-              side:
-                THREE.DoubleSide,
+              side: THREE.DoubleSide,
             });
         }
       }
     );
 
-    // Original bounding box
+    // -------------------------------------------------
+    // Calculate original bounding box
+    // -------------------------------------------------
+
     let boundingBox =
       new THREE.Box3().setFromObject(
         clonedObject
@@ -73,7 +84,10 @@ function AvatarModel({
       originalSize
     );
 
-    // Scale avatar
+    // -------------------------------------------------
+    // Scale avatar for viewer
+    // -------------------------------------------------
+
     const targetDisplayHeight =
       2.0;
 
@@ -91,7 +105,10 @@ function AvatarModel({
       true
     );
 
-    // Bounding box after scale
+    // -------------------------------------------------
+    // Bounding box after scaling
+    // -------------------------------------------------
+
     boundingBox =
       new THREE.Box3().setFromObject(
         clonedObject
@@ -104,26 +121,28 @@ function AvatarModel({
       center
     );
 
-    // Center avatar
+    // -------------------------------------------------
+    // Center avatar horizontally
+    // -------------------------------------------------
+
     clonedObject.position.x -=
       center.x;
 
     clonedObject.position.z -=
       center.z;
 
-    // Vertical position
-    clonedObject.position.y -=
-      boundingBox.min.y;
+    // -------------------------------------------------
+    // Center avatar vertically
+    // -------------------------------------------------
 
     clonedObject.position.y -=
-      1.0;
+      center.y;
 
     clonedObject.updateMatrixWorld(
       true
     );
 
     return clonedObject;
-
   }, [loadedObject]);
 
   useEffect(() => {
@@ -158,7 +177,6 @@ function AvatarModel({
   );
 }
 
-
 function LoadingAvatar() {
   return (
     <mesh position={[0, 0, 0]}>
@@ -173,7 +191,6 @@ function LoadingAvatar() {
   );
 }
 
-
 const viewerBackgrounds = {
   dark:
     "radial-gradient(circle at 50% 30%, #18233a 0%, #0a111d 58%, #050a12 100%)",
@@ -185,14 +202,12 @@ const viewerBackgrounds = {
     "radial-gradient(circle at 50% 30%, #ffffff 0%, #edf1f6 58%, #d8dee7 100%)",
 };
 
-
 export default function AvatarCanvas({
   modelPath =
     "/models/final_avatar.obj",
 
   backgroundMode,
 }) {
-
   const storedBackground =
     localStorage.getItem(
       "viewer-background"
@@ -212,23 +227,14 @@ export default function AvatarCanvas({
     <div
       style={{
         width: "100%",
-
         maxWidth: "100%",
-
         height: "70vh",
-
         minHeight: "560px",
-
         background,
-
         borderRadius: "18px",
-
         overflow: "hidden",
-
         boxShadow: "none",
-
         boxSizing: "border-box",
-
         transition:
           "background 250ms ease",
       }}
@@ -242,14 +248,11 @@ export default function AvatarCanvas({
           ],
 
           fov: 32,
-
           near: 0.1,
-
           far: 100,
         }}
         shadows
       >
-
         {/* AMBIENT LIGHT */}
 
         <hemisphereLight
@@ -332,7 +335,6 @@ export default function AvatarCanvas({
             (Math.PI * 7) / 8
           }
         />
-
       </Canvas>
     </div>
   );
