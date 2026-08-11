@@ -20,6 +20,7 @@ import Profile from "./Profile";
 import ResetPassword from "./ResetPassword";
 import ProtectedRoute from "./ProtectedRoute";
 import Settings from "./Settings";
+import Notifications from "./Notifications";
 
 export default function App() {
   return (
@@ -175,6 +176,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ViewHistory />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
           </ProtectedRoute>
         }
       />
