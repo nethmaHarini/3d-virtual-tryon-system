@@ -62,6 +62,30 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5 MB each
   },
+  //photo upload format
+ fileFilter: (req, file, cb) => {
+     const allowedMimeTypes = [
+      "image/jpeg",
+      "image/png",
+    ];
+
+    const allowedExtensions = [
+      ".jpg",
+      ".jpeg",
+      ".png",
+    ];
+
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    if (
+      allowedMimeTypes.includes(file.mimetype) &&
+      allowedExtensions.includes(extension)
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only JPG , JPEG and PNG image files are allowed."));
+    }
+  }, 
 });
 
 app.get("/", (req, res) => {
@@ -585,6 +609,35 @@ app.post(
     }
   },
 );
+// MULTER / IMAGE UPLOAD ERROR HANDLER
+// =====================================================
+
+app.use((err, req, res, next) => {
+
+  if (err instanceof multer.MulterError) {
+
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({
+        message:
+          "Image size must be less than 5 MB.",
+      });
+    }
+
+    return res.status(400).json({
+      message: err.message,
+    });
+  }
+
+  if (err) {
+    return res.status(400).json({
+      message:
+        err.message ||
+        "Invalid image file.",
+    });
+  }
+
+  next();
+});
 
 // Serve generated avatars statically
 
