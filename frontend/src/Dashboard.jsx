@@ -91,41 +91,76 @@ function Dashboard() {
   }, [error]);
 
   const updateImageState = (position, file) => {
-    if (!file) {
-      return;
+  if (!file) {
+    return;
+  }
+
+  // Only allow JPG, JPEG and PNG
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+  ];
+
+  const allowedExtensions = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+  ];
+
+  const fileName = file.name.toLowerCase();
+
+  const extension = fileName.substring(
+    fileName.lastIndexOf(".")
+  );
+
+  const validType = allowedTypes.includes(file.type);
+  const validExtension =
+    allowedExtensions.includes(extension);
+
+  // Reject unsupported file formats
+  if (!validType || !validExtension) {
+    setError(
+      "Invalid file format. Only JPG, JPEG, and PNG images are allowed."
+    );
+
+    setSuccess("");
+
+    // Automatically remove error after 4 seconds
+    return;
+  }
+
+  // Clear previous error
+  setError("");
+
+  const nextPreview = URL.createObjectURL(file);
+
+  if (position === "front") {
+    if (frontPreview) {
+      URL.revokeObjectURL(frontPreview);
     }
 
-    if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file");
-      return;
+    setFrontImage(file);
+    setFrontPreview(nextPreview);
+    return;
+  }
+
+  if (position === "back") {
+    if (backPreview) {
+      URL.revokeObjectURL(backPreview);
     }
 
-    const nextPreview = URL.createObjectURL(file);
+    setBackImage(file);
+    setBackPreview(nextPreview);
+    return;
+  }
 
-    if (position === "front") {
-      if (frontPreview) {
-        URL.revokeObjectURL(frontPreview);
-      }
-      setFrontImage(file);
-      setFrontPreview(nextPreview);
-      return;
-    }
+  if (sidePreview) {
+    URL.revokeObjectURL(sidePreview);
+  }
 
-    if (position === "back") {
-      if (backPreview) {
-        URL.revokeObjectURL(backPreview);
-      }
-      setBackImage(file);
-      setBackPreview(nextPreview);
-      return;
-    }
-
-    if (sidePreview) {
-      URL.revokeObjectURL(sidePreview);
-    }
-    setSideImage(file);
-    setSidePreview(nextPreview);
-  };
+  setSideImage(file);
+  setSidePreview(nextPreview);
+};
 
   const handleGenerateAvatar = async () => {
     if (!frontImage || !backImage || !sideImage) {
@@ -879,12 +914,20 @@ function Dashboard() {
         }}
       >
         <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          style={styles.hiddenInput}
-          onChange={(event) => updateImageState(keyName, event.target.files?.[0])}
-        />
+  ref={inputRef}
+  type="file"
+  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+  style={styles.hiddenInput}
+  onChange={(event) => {
+    const file = event.target.files?.[0];
+
+    updateImageState(keyName, file);
+
+    // Reset input so selecting the same invalid file
+    // again still triggers onChange
+    event.target.value = "";
+  }}
+/>
 
         {preview ? (
           <img src={preview} alt={`${label} preview`} style={styles.previewImage} />
