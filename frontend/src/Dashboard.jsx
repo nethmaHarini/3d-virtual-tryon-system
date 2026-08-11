@@ -537,45 +537,11 @@ function Dashboard() {
       minWidth: 190,
       minHeight: 50,
     },
-    helperTips: {
-      marginTop: 22,
-      display: "grid",
-      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-      gap: 14,
-    },
-    tipCard: {
-      padding: "14px 14px",
-      borderRadius: 16,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(8, 15, 24, 0.75)",
-      display: "flex",
-      gap: 10,
-      alignItems: "flex-start",
-    },
-    tipBadge: {
-      width: 28,
-      height: 28,
-      borderRadius: "999px",
-      flexShrink: 0,
-      display: "grid",
-      placeItems: "center",
-      color: "#ffffff",
-      fontSize: "0.72rem",
-      fontWeight: 800,
-      background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
-    },
-    tipTitle: {
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "0.84rem",
-      fontWeight: 700,
-    },
-    tipText: {
-      margin: "4px 0 0 0",
-      color: "#c3c6d0",
-      fontSize: "0.74rem",
-      lineHeight: 1.45,
-    },
+
+
+
+
+
     rightRail: {
       display: "flex",
       flexDirection: "column",
@@ -1174,7 +1140,6 @@ function Dashboard() {
           .controls-row {
             grid-template-columns: 1fr !important;
           }
-          .helper-grid,
           .catalog-grid {
             grid-template-columns: 1fr !important;
           }
@@ -1318,22 +1283,6 @@ function Dashboard() {
                 </button>
               </div>
 
-              <div style={styles.helperTips} className="helper-grid">
-                <div style={styles.tipCard}>
-                  <div style={styles.tipBadge}>L</div>
-                  <div>
-                    <p style={styles.tipTitle}>Lighting Matters</p>
-                    <p style={styles.tipText}>Use bright, even light and keep your full body visible for better scanning quality.</p>
-                  </div>
-                </div>
-                <div style={styles.tipCard}>
-                  <div style={styles.tipBadge}>F</div>
-                  <div>
-                    <p style={styles.tipTitle}>Form-Fitting Outfit</p>
-                    <p style={styles.tipText}>Wear closer-fit clothing so body edges are easier for the AI to measure accurately.</p>
-                  </div>
-                </div>
-              </div>
             </section>
 
             <div id="photo-upload-guidelines" className="guidelines-modal" aria-hidden="true">
@@ -1489,4 +1438,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
