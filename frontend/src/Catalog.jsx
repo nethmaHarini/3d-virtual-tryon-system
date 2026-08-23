@@ -353,32 +353,32 @@ function Catalog() {
   // Demo product data (static)
   const tshirts = [
     {
-      id: "t1",
-      name: "White Cotton",
-      category: "T-Shirts",
-      image: "/images/three-shirts.png",
-      thumbnails: [
-        "/images/three-shirts.png",
-        "/images/three-shirts.png",
-        "/images/three-shirts.png"
-      ],
-      breadcrumb: "Shop / Apparel / T-Shirts"
-    },
+    id: "t1",
+    name: "Blue Cotton",
+    category: "T-Shirts",
+    image: "/images/BTShirt_Boy.png",
+    thumbnails: [
+      "/images/BTShirt_Boy.png",
+      "/images/BTShirt_Boy.png",
+      "/images/BTShirt_Boy.png"
+    ],
+    breadcrumb: "Shop / Apparel / T-Shirts"
+  },
     {
       id: "t2",
-      name: "Black Cotton",
+      name: "Pink Crop TOP",
       category: "T-Shirts",
-      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0",
+      image: "/images/pink_crop_top2D_preview.png",
       thumbnails: [
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=0"
+        "/images/pink_crop_top2D_preview.png",
+        "/images/pink_crop_top2D_preview.png",
+        "/images/pink_crop_top2D_preview.png"
       ],
       breadcrumb: "Shop / Apparel / T-Shirts"
     },
-    {
+    /*{
       id: "t3",
-      name: "Gray Buttoned",
+      name: "Gr",
       category: "T-Shirts",
       image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
       thumbnails: [
@@ -411,9 +411,36 @@ function Catalog() {
         "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90"
       ],
       breadcrumb: "Shop / Apparel / T-Shirts"
-    },
+    },*/
   ];
-  const trousers = [];
+
+  //trousers data
+  const trousers = [
+  {
+    id: "tr1",
+    name: "Black Trouser",
+    category: "Trousers",
+    image: "/images/black_pant_boy_32.png",
+    thumbnails: [
+      "/images/black_pant_boy_32.png",
+      "/images/black_pant_boy_32.png",
+      "/images/black_pant_boy_32.png"
+    ],
+    breadcrumb: "Shop / Apparel / Trousers"
+  },
+  {
+    id: "tr2",
+    name: "Orange Trouser",
+    category: "Trousers",
+    image: "/images/orange.jpg",
+    thumbnails: [
+      "/images/orange.jpg",
+      "/images/orange.jpg",
+      "/images/orange.jpg"
+    ],
+    breadcrumb: "Shop / Apparel / Trousers"
+  }
+];
 
   return (
     <div style={styles.page}>
