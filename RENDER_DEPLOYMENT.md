@@ -38,7 +38,7 @@ In Render Dashboard → Environment tab, add these variables:
 
 | Key                    | Value                                                                                                                                                        | Notes                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `DATABASE_URL`         | `postgresql://neondb_owner:npg_lj4U7ZvgHSsJ@ep-purple-butterfly-a1ixbwph-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require` | Your Neon PostgreSQL connection string                      |
+| `DATABASE_URL`         | `<your-database-connection-string>` | Your Neon PostgreSQL connection string                      |
 | `JWT_SECRET`           | `your-super-secret-jwt-key-min-32-chars`                                                                                                                     | Generate a strong random string                             |
 | `GMAIL_USER`           | `your-email@gmail.com`                                                                                                                                       | Your Gmail address                                          |
 | `GMAIL_APP_PASSWORD`   | `xxxx xxxx xxxx xxxx`                                                                                                                                        | Your 16-char Gmail app password                             |
