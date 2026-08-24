@@ -3,9 +3,12 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import { useState } from "react";
+import DashboardSidebar from "./components/DashboardSidebar";
+import { useAppTheme } from "./theme";
 
 function Catalog() {
   const location = useLocation();
+  const { isDark } = useAppTheme();
   const avatarUrl = location.state?.avatarUrl || "/models/final_avatar.obj";
   // --- Styles ---
   const styles = {
@@ -13,8 +16,10 @@ function Catalog() {
       minHeight: "100vh",
       width: "100vw",
       background:
-        "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)",
-      color: "#dce3f0",
+        isDark
+          ? "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)"
+          : "radial-gradient(circle at 12% 14%, rgba(78, 107, 255, 0.16) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 44%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 46%, #eaf0fb 100%)",
+      color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       padding: 0,
       margin: 0,
@@ -26,23 +31,23 @@ function Catalog() {
       left: 26,
       top: 22,
       bottom: 22,
-      width: 292,
-      borderRadius: 28,
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      background: "rgba(21, 28, 38, 0.68)",
-      backdropFilter: "blur(24px)",
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
-      padding: 24,
+      width: 220,
+      borderRadius: 20,
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
+      backdropFilter: "blur(18px)",
+      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
+      padding: 20,
       boxSizing: "border-box",
       display: "flex",
       flexDirection: "column",
-      gap: 14,
+      gap: 12,
       zIndex: 70,
     },
     brand: {
       margin: 0,
       fontSize: "1.2rem",
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       fontWeight: 800,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
       letterSpacing: "-0.01em",
@@ -50,7 +55,7 @@ function Catalog() {
     brandTag: {
       margin: "4px 0 18px 0",
       fontSize: "0.66rem",
-      color: "rgba(195, 198, 208, 0.72)",
+      color: isDark ? "rgba(195, 198, 208, 0.72)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.2em",
       textTransform: "uppercase",
       fontWeight: 700,
@@ -59,21 +64,21 @@ function Catalog() {
       width: "100%",
       border: "1px solid transparent",
       borderRadius: 999,
-      padding: "12px 14px",
-      background: "rgba(255,255,255,0.01)",
-      color: "#c3c0ff",
-      fontSize: "0.92rem",
-      fontWeight: 600,
+      padding: "10px 12px",
+      background: "transparent",
+      color: isDark ? "#c3c0ff" : "#425277",
+      fontSize: "0.95rem",
+      fontWeight: 700,
       textAlign: "left",
       display: "flex",
       alignItems: "center",
-      gap: 10,
-      transition: "all 220ms ease",
+      gap: 12,
+      transition: "all 180ms ease",
     },
     navPillActive: {
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
+      background: isDark ? "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)" : "linear-gradient(90deg, #4e6bff 0%, #8a5cff 100%)",
       color: "#ffffff",
-      boxShadow: "0 0 20px rgba(164, 201, 252, 0.24)",
+      boxShadow: isDark ? "0 10px 30px rgba(111,58,242,0.18)" : "0 10px 30px rgba(78,107,255,0.18)",
     },
     sidebarSection: {
       display: "flex",
@@ -82,20 +87,22 @@ function Catalog() {
     },
     sidebarFooter: {
       marginTop: "auto",
-      paddingTop: 16,
-      borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+      paddingTop: 12,
+      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.03)" : "1px solid rgba(18, 30, 52, 0.06)",
       display: "flex",
       flexDirection: "column",
-      gap: 10,
+      gap: 8,
     },
+    notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
+    sidebarHeader: { color: 'rgba(173,182,204,0.7)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
     profilePill: {
       display: "flex",
       alignItems: "center",
       gap: 10,
-      background: "rgba(8, 15, 24, 0.9)",
+      background: isDark ? "rgba(8, 15, 24, 0.9)" : "rgba(255, 255, 255, 0.92)",
       borderRadius: 16,
       padding: "10px 12px",
-      border: "1px solid rgba(255, 255, 255, 0.06)",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
       boxSizing: "border-box",
     },
     avatarMini: {
@@ -105,7 +112,7 @@ function Catalog() {
       background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
       display: "grid",
       placeItems: "center",
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       fontSize: "0.76rem",
       fontWeight: 700,
       letterSpacing: "0.04em",
@@ -120,7 +127,7 @@ function Catalog() {
     profileSubtitle: {
       margin: "2px 0 0 0",
       fontSize: "0.62rem",
-      color: "rgba(195, 198, 208, 0.78)",
+      color: isDark ? "rgba(195, 198, 208, 0.78)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.16em",
       textTransform: "uppercase",
       fontWeight: 700,
@@ -342,10 +349,6 @@ function Catalog() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("tshirts");
   const email = localStorage.getItem("userEmail");
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
 
   // Demo product data (static)
   const tshirts = [
@@ -458,84 +461,7 @@ function Catalog() {
         }
       `}</style>
 
-      <aside style={styles.sidebar} className="catalog-sidebar">
-        <div>
-          <h1 style={styles.brand}>VirtuFit 3D</h1>
-          <p style={styles.brandTag}>VirtuFit 3D</p>
-        </div>
-
-        <nav style={styles.sidebarSection}>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◈</span><span>Dashboard</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/avatar-viewer", { state: { avatarUrl } })}
-          >
-            <span>◌</span><span>View Avatar</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase, ...styles.navPillActive }}
-            onClick={() => navigate("/catalog", { state: { avatarUrl } })}
-          >
-            <span>◍</span><span>Garment Catalog</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/history")}
-          >
-            <span>◎</span><span>View History</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◔</span><span>Notifications</span>
-          </button>
-        </nav>
-
-        <div style={styles.sidebarFooter}>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◉</span><span>Profile</span>
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.navPillBase }}
-            className="catalog-nav-item"
-            onClick={() => navigate("/dashboard")}
-          >
-            <span>◒</span><span>Settings</span>
-          </button>
-          <button type="button" style={{ ...styles.navPillBase }} className="catalog-nav-item" onClick={handleLogout}>
-            <span>⎋</span><span>Logout</span>
-          </button>
-
-          <div style={styles.profilePill}>
-            <div style={styles.avatarMini}>AI</div>
-            <div>
-              <p style={styles.profileTitle}>{email || "VirtuFit 3D"}</p>
-              <p style={styles.profileSubtitle}>Catalog User</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main} className="catalog-main">
         <div style={styles.mainInner}>

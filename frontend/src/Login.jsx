@@ -214,7 +214,18 @@ function Login() {
         }
       );
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
+
+    if (response.status === 409) {
+      if (data.field === "username") {
+        alert("user name already taken");
+      } else if (data.field === "email") {
+        alert("email already registered");
+      } else {
+        alert("ERROR: " + (data.message || "Conflict"));
+      }
+      return;
+    }
 
       if (response.ok) {
         alert("SUCCESS: " + data.message);

@@ -9,12 +9,19 @@ import {
   useLoader,
 } from "@react-three/fiber";
 
-import { OrbitControls } from "@react-three/drei";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
+import {
+  OrbitControls,
+} from "@react-three/drei";
+
+import {
+  OBJLoader,
+} from "three/examples/jsm/loaders/OBJLoader";
+
 import * as THREE from "three";
 
-
-function AvatarModel({ modelPath }) {
+function AvatarModel({
+  modelPath,
+}) {
   const loadedObject = useLoader(
     OBJLoader,
     modelPath
@@ -24,33 +31,39 @@ function AvatarModel({ modelPath }) {
     const clonedObject =
       loadedObject.clone(true);
 
-    // -----------------------------------------
-    // 0. Correct avatar orientation
-    // -----------------------------------------
-    clonedObject.rotation.z = Math.PI;
+    // Keep original generated geometry orientation
+    clonedObject.rotation.set(
+      0,
+      0,
+      0
+    );
 
-    clonedObject.updateMatrixWorld(true);
+    clonedObject.updateMatrixWorld(
+      true
+    );
 
     // -----------------------------------------
-    // 1. Improve mesh material
+    // Material
     // -----------------------------------------
-    clonedObject.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+    clonedObject.traverse(
+      (child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
 
-        child.material =
-          new THREE.MeshStandardMaterial({
-            color: 0xd6d9df,
-            roughness: 0.72,
-            metalness: 0.02,
-            side: THREE.DoubleSide,
-          });
+          child.material =
+            new THREE.MeshStandardMaterial({
+              color: 0xc9cdd4,
+              roughness: 0.82,
+              metalness: 0.0,
+              side: THREE.DoubleSide,
+            });
+        }
       }
-    });
+    );
 
     // -----------------------------------------
-    // 2. Get original bounding box
+    // Calculate original dimensions
     // -----------------------------------------
     let boundingBox =
       new THREE.Box3().setFromObject(
@@ -65,9 +78,10 @@ function AvatarModel({ modelPath }) {
     );
 
     // -----------------------------------------
-    // 3. Scale avatar to consistent height
+    // Scale for consistent viewer size
     // -----------------------------------------
-    const targetDisplayHeight = 2.0;
+    const targetDisplayHeight =
+      2.35;
 
     if (originalSize.y > 0) {
       const scaleFactor =
@@ -84,7 +98,7 @@ function AvatarModel({ modelPath }) {
     );
 
     // -----------------------------------------
-    // 4. Recalculate bounding box after scaling
+    // Recalculate bounds
     // -----------------------------------------
     boundingBox =
       new THREE.Box3().setFromObject(
@@ -99,34 +113,24 @@ function AvatarModel({ modelPath }) {
     );
 
     // -----------------------------------------
-    // 5. Center avatar horizontally
+    // Center avatar
     // -----------------------------------------
     clonedObject.position.x -=
       center.x;
 
+    clonedObject.position.y -=
+      center.y;
+
     clonedObject.position.z -=
       center.z;
-
-    // -----------------------------------------
-    // 6. Position avatar vertically
-    // -----------------------------------------
-    clonedObject.position.y -=
-      boundingBox.min.y;
-
-    // Move avatar so its center is around Y = 0
-    clonedObject.position.y -= 1.0;
 
     clonedObject.updateMatrixWorld(
       true
     );
 
     return clonedObject;
-
   }, [loadedObject]);
 
-  // -----------------------------------------
-  // Cleanup Three.js resources
-  // -----------------------------------------
   useEffect(() => {
     return () => {
       avatarObject.traverse(
@@ -159,13 +163,12 @@ function AvatarModel({ modelPath }) {
   );
 }
 
-
 function LoadingAvatar() {
   return (
-    <mesh position={[0, 0, 0]}>
+    <mesh>
       <sphereGeometry
         args={[
-          0.08,
+          0.07,
           24,
           24,
         ]}
@@ -178,10 +181,42 @@ function LoadingAvatar() {
   );
 }
 
+const viewerBackgrounds = {
+  dark:
+    "radial-gradient(circle at 50% 32%, #263247 0%, #111927 55%, #080d15 100%)",
+
+  neutral:
+    "radial-gradient(circle at 50% 32%, #a1a7b0 0%, #737983 58%, #4b5058 100%)",
+
+  light:
+    "radial-gradient(circle at 50% 32%, #ffffff 0%, #eef2f7 56%, #d7dde6 100%)",
+};
 
 export default function AvatarCanvas({
-  modelPath = "/models/final_avatar.obj",
+  modelPath =
+    "/models/final_avatar.obj",
+
+  backgroundMode,
 }) {
+  const storedBackground =
+    localStorage.getItem(
+      "viewer-background"
+    ) || "dark";
+
+  const selectedBackground =
+    backgroundMode ||
+    storedBackground;
+
+  const background =
+    viewerBackgrounds[
+      selectedBackground
+    ] ||
+    viewerBackgrounds.dark;
+
+  const isLight =
+    selectedBackground ===
+    "light";
+
   return (
     <div
       style={{
@@ -189,70 +224,108 @@ export default function AvatarCanvas({
         maxWidth: "100%",
         height: "70vh",
         minHeight: "560px",
-
-        background:
-          "transparent",
-
+        background,
         borderRadius: "18px",
-
         overflow: "hidden",
-
         boxShadow: "none",
-
-        boxSizing:
-          "border-box",
+        boxSizing: "border-box",
+        transition:
+          "background 250ms ease",
       }}
     >
       <Canvas
         camera={{
           position: [
             0,
-            0,
-            4.2,
+            0.05,
+            4.0,
           ],
-          fov: 32,
+          fov: 30,
           near: 0.1,
           far: 100,
         }}
         shadows
+        gl={{
+          antialias: true,
+        }}
       >
-        {/* Ambient lighting */}
-        <hemisphereLight
-          intensity={0.9}
-          groundColor={
-            0x202020
+        {/* General ambient light */}
+        <ambientLight
+          intensity={
+            isLight
+              ? 0.28
+              : 0.22
           }
         />
 
-        {/* Main light */}
+        {/* Soft environment-style light */}
+        <hemisphereLight
+          intensity={
+            isLight
+              ? 0.55
+              : 0.42
+          }
+          skyColor={
+            isLight
+              ? 0xffffff
+              : 0xb8c8e8
+          }
+          groundColor={
+            isLight
+              ? 0x767676
+              : 0x141820
+          }
+        />
+
+        {/* Main light from upper-left */}
         <directionalLight
           position={[
-            3,
+            3.8,
+            5.5,
             5,
-            4,
           ]}
-          intensity={1.4}
+          intensity={1.15}
           castShadow
         />
 
-        {/* Fill light */}
+        {/* Side contour light */}
         <directionalLight
           position={[
-            -3,
-            2,
-            2,
+            -4,
+            1.8,
+            1.5,
           ]}
-          intensity={0.7}
+          intensity={0.48}
         />
 
-        {/* Front light */}
+        {/* Opposite side contour */}
+        <directionalLight
+          position={[
+            4,
+            0.8,
+            -1,
+          ]}
+          intensity={0.26}
+        />
+
+        {/* Front fill — intentionally weaker */}
         <directionalLight
           position={[
             0,
-            2,
+            1.5,
             5,
           ]}
-          intensity={0.6}
+          intensity={0.32}
+        />
+
+        {/* Slight overhead definition */}
+        <directionalLight
+          position={[
+            0,
+            6,
+            0.5,
+          ]}
+          intensity={0.24}
         />
 
         <Suspense
@@ -262,9 +335,7 @@ export default function AvatarCanvas({
         >
           <AvatarModel
             key={modelPath}
-            modelPath={
-              modelPath
-            }
+            modelPath={modelPath}
           />
         </Suspense>
 
@@ -276,23 +347,16 @@ export default function AvatarCanvas({
           ]}
           enablePan={false}
           enableDamping
-          dampingFactor={
-            0.08
-          }
-          rotateSpeed={
-            0.75
-          }
-          zoomSpeed={
-            0.85
-          }
-          minDistance={2}
+          dampingFactor={0.08}
+          rotateSpeed={0.7}
+          zoomSpeed={0.8}
+          minDistance={2.4}
           maxDistance={6}
           minPolarAngle={
             Math.PI / 8
           }
           maxPolarAngle={
-            (Math.PI * 7) /
-            8
+            (Math.PI * 7) / 8
           }
         />
       </Canvas>

@@ -1,5 +1,11 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+
+import {
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
+
 import Layout from "./components/Layout";
 
 import LandingPage from "./LandingPage";
@@ -13,27 +19,118 @@ import ViewHistory from "./ViewHistory";
 import Profile from "./Profile";
 import ResetPassword from "./ResetPassword";
 import ProtectedRoute from "./ProtectedRoute";
+import Settings from "./Settings";
+import Notifications from "./Notifications";
 
 export default function App() {
   return (
     <Routes>
-      {/* 1. PUBLIC ROUTES 
-        Wrapped in the Layout component so the Navbar appears at the top 
-      */}
+      {/* =============================================
+          PUBLIC ROUTES
+      ============================================== */}
+
       <Route element={<Layout />}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        {/* Main landing page */}
+        <Route
+          path="/"
+          element={<LandingPage />}
+        />
+
+        {/* Old landing aliases */}
+        <Route
+          path="/Landingpage"
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/landingpage"
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
+        />
+
+        {/* Old standalone pages now redirect
+            into LandingPage sections */}
+
+        <Route
+          path="/features"
+          element={
+            <Navigate
+              to="/#features"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/how-it-works"
+          element={
+            <Navigate
+              to="/#how-it-works"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/faq"
+          element={
+            <Navigate
+              to="/#faq"
+              replace
+            />
+          }
+        />
+
+        <Route
+          path="/contact"
+          element={
+            <Navigate
+              to="/#contact"
+              replace
+            />
+          }
+        />
+
+        {/* Authentication */}
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route
+          path="/reset-password/:token"
+          element={<ResetPassword />}
+        />
       </Route>
 
-      {/* 2. PROTECTED ROUTES 
-        Kept outside the Layout so they have their own independent styling 
-      */}
+      {/* =============================================
+          PROTECTED ROUTES
+      ============================================== */}
+
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />
@@ -79,6 +176,15 @@ export default function App() {
         element={
           <ProtectedRoute>
             <ViewHistory />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <Notifications />
           </ProtectedRoute>
         }
       />

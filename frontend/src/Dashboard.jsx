@@ -1,10 +1,13 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API_URL from "./config";
+import DashboardSidebar from "./components/DashboardSidebar";
+import { useAppTheme } from "./theme";
 
 function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isDark } = useAppTheme();
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
   const [sideImage, setSideImage] = useState(null);
@@ -21,7 +24,6 @@ function Dashboard() {
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
   const sideInputRef = useRef(null);
-  const username = localStorage.getItem("username");
   const email = localStorage.getItem("userEmail");
 
   const _regenQuery = new URLSearchParams(location.search).get("regen");
@@ -40,13 +42,6 @@ function Dashboard() {
       navigate("/login");
     }
   }, [navigate]);
-
-  const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
-  localStorage.removeItem("userEmail");
-  navigate("/login");
-  };
 
   // Clear generated avatar data and return to the photo upload portion of the dashboard
   const handleRegenerate = () => {
@@ -96,41 +91,76 @@ function Dashboard() {
   }, [error]);
 
   const updateImageState = (position, file) => {
-    if (!file) {
-      return;
+  if (!file) {
+    return;
+  }
+
+  // Only allow JPG, JPEG and PNG
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+  ];
+
+  const allowedExtensions = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+  ];
+
+  const fileName = file.name.toLowerCase();
+
+  const extension = fileName.substring(
+    fileName.lastIndexOf(".")
+  );
+
+  const validType = allowedTypes.includes(file.type);
+  const validExtension =
+    allowedExtensions.includes(extension);
+
+  // Reject unsupported file formats
+  if (!validType || !validExtension) {
+    setError(
+      "Invalid file format. Only JPG, JPEG, and PNG images are allowed."
+    );
+
+    setSuccess("");
+
+    // Automatically remove error after 4 seconds
+    return;
+  }
+
+  // Clear previous error
+  setError("");
+
+  const nextPreview = URL.createObjectURL(file);
+
+  if (position === "front") {
+    if (frontPreview) {
+      URL.revokeObjectURL(frontPreview);
     }
 
-    if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file");
-      return;
+    setFrontImage(file);
+    setFrontPreview(nextPreview);
+    return;
+  }
+
+  if (position === "back") {
+    if (backPreview) {
+      URL.revokeObjectURL(backPreview);
     }
 
-    const nextPreview = URL.createObjectURL(file);
+    setBackImage(file);
+    setBackPreview(nextPreview);
+    return;
+  }
 
-    if (position === "front") {
-      if (frontPreview) {
-        URL.revokeObjectURL(frontPreview);
-      }
-      setFrontImage(file);
-      setFrontPreview(nextPreview);
-      return;
-    }
+  if (sidePreview) {
+    URL.revokeObjectURL(sidePreview);
+  }
 
-    if (position === "back") {
-      if (backPreview) {
-        URL.revokeObjectURL(backPreview);
-      }
-      setBackImage(file);
-      setBackPreview(nextPreview);
-      return;
-    }
-
-    if (sidePreview) {
-      URL.revokeObjectURL(sidePreview);
-    }
-    setSideImage(file);
-    setSidePreview(nextPreview);
-  };
+  setSideImage(file);
+  setSidePreview(nextPreview);
+};
 
   const handleGenerateAvatar = async () => {
     if (!frontImage || !backImage || !sideImage) {
@@ -204,8 +234,10 @@ function Dashboard() {
     page: {
       minHeight: "100vh",
       background:
-        "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)",
-      color: "#dce3f0",
+        isDark
+          ? "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)"
+          : "radial-gradient(circle at 12% 16%, rgba(78, 107, 255, 0.16) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 48%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 48%, #eaf0fb 100%)",
+      color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       position: "relative",
       overflowX: "hidden",
@@ -215,30 +247,30 @@ function Dashboard() {
       left: 26,
       top: 22,
       bottom: 22,
-      width: 292,
-      borderRadius: 28,
-      border: "1px solid rgba(255, 255, 255, 0.1)",
-      background: "rgba(21, 28, 38, 0.68)",
-      backdropFilter: "blur(24px)",
-      padding: 24,
+      width: 220,
+      borderRadius: 20,
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
+      backdropFilter: "blur(18px)",
+      padding: 20,
       display: "flex",
       flexDirection: "column",
-      gap: 14,
+      gap: 12,
       zIndex: 20,
-      boxShadow: "0 28px 56px rgba(5, 12, 22, 0.56)",
+      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
       boxSizing: "border-box",
     },
     sidebarBrand: {
       margin: 0,
       fontSize: "1.22rem",
       fontWeight: 800,
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       letterSpacing: "-0.01em",
     },
     sidebarTag: {
       margin: "4px 0 18px 0",
       fontSize: "0.66rem",
-      color: "rgba(195, 198, 208, 0.72)",
+      color: isDark ? "rgba(195, 198, 208, 0.72)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.2em",
       textTransform: "uppercase",
       fontWeight: 700,
@@ -248,43 +280,47 @@ function Dashboard() {
       flexDirection: "column",
       gap: 6,
     },
+    sidebarHeader: { color: isDark ? 'rgba(173,182,204,0.7)' : 'rgba(83, 96, 117, 0.72)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
     sidebarButtonBase: {
       width: "100%",
       border: "1px solid transparent",
       borderRadius: 999,
-      padding: "12px 14px",
-      color: "#c3c0ff",
-      background: "rgba(255, 255, 255, 0.01)",
-      fontSize: "0.93rem",
-      fontWeight: 600,
+      padding: "10px 12px",
+      color: isDark ? "#c3c0ff" : "#425277",
+      background: "transparent",
+      fontSize: "0.95rem",
+      fontWeight: 700,
       display: "flex",
       alignItems: "center",
-      gap: 10,
+      gap: 12,
       textAlign: "left",
       cursor: "pointer",
-      transition: "all 220ms ease",
+      transition: "all 180ms ease",
     },
     sidebarButtonActive: {
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
+      background: isDark ? "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)" : "linear-gradient(90deg, #4e6bff 0%, #8a5cff 100%)",
       color: "#ffffff",
-      boxShadow: "0 0 20px rgba(164, 201, 252, 0.24)",
+      boxShadow: isDark ? "0 10px 30px rgba(111,58,242,0.18)" : "0 10px 30px rgba(78,107,255,0.18)",
+      paddingLeft: 12,
+      paddingRight: 12,
     },
     sidebarFooter: {
       marginTop: "auto",
-      paddingTop: 16,
-      borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+      paddingTop: 12,
+      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.03)" : "1px solid rgba(18, 30, 52, 0.06)",
       display: "flex",
       flexDirection: "column",
-      gap: 10,
+      gap: 8,
     },
+    notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
     profilePill: {
       display: "flex",
       alignItems: "center",
       gap: 10,
-      background: "rgba(8, 15, 24, 0.9)",
+      background: isDark ? "rgba(8, 15, 24, 0.9)" : "rgba(255, 255, 255, 0.92)",
       borderRadius: 16,
       padding: "10px 12px",
-      border: "1px solid rgba(255, 255, 255, 0.06)",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
       boxSizing: "border-box",
     },
     avatarMini: {
@@ -303,13 +339,13 @@ function Dashboard() {
     profileTitle: {
       margin: 0,
       fontSize: "0.82rem",
-      color: "#f3f6ff",
+      color: isDark ? "#f3f6ff" : "#152033",
       fontWeight: 700,
     },
     profileSubtitle: {
       margin: "2px 0 0 0",
       fontSize: "0.62rem",
-      color: "rgba(195, 198, 208, 0.78)",
+      color: isDark ? "rgba(195, 198, 208, 0.78)" : "rgba(83, 96, 117, 0.78)",
       letterSpacing: "0.16em",
       textTransform: "uppercase",
       fontWeight: 700,
@@ -536,45 +572,11 @@ function Dashboard() {
       minWidth: 190,
       minHeight: 50,
     },
-    helperTips: {
-      marginTop: 22,
-      display: "grid",
-      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-      gap: 14,
-    },
-    tipCard: {
-      padding: "14px 14px",
-      borderRadius: 16,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(8, 15, 24, 0.75)",
-      display: "flex",
-      gap: 10,
-      alignItems: "flex-start",
-    },
-    tipBadge: {
-      width: 28,
-      height: 28,
-      borderRadius: "999px",
-      flexShrink: 0,
-      display: "grid",
-      placeItems: "center",
-      color: "#ffffff",
-      fontSize: "0.72rem",
-      fontWeight: 800,
-      background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
-    },
-    tipTitle: {
-      margin: 0,
-      color: "#ffffff",
-      fontSize: "0.84rem",
-      fontWeight: 700,
-    },
-    tipText: {
-      margin: "4px 0 0 0",
-      color: "#c3c6d0",
-      fontSize: "0.74rem",
-      lineHeight: 1.45,
-    },
+
+
+
+
+
     rightRail: {
       display: "flex",
       flexDirection: "column",
@@ -912,12 +914,20 @@ function Dashboard() {
         }}
       >
         <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          style={styles.hiddenInput}
-          onChange={(event) => updateImageState(keyName, event.target.files?.[0])}
-        />
+  ref={inputRef}
+  type="file"
+  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+  style={styles.hiddenInput}
+  onChange={(event) => {
+    const file = event.target.files?.[0];
+
+    updateImageState(keyName, file);
+
+    // Reset input so selecting the same invalid file
+    // again still triggers onChange
+    event.target.value = "";
+  }}
+/>
 
         {preview ? (
           <img src={preview} alt={`${label} preview`} style={styles.previewImage} />
@@ -1173,7 +1183,6 @@ function Dashboard() {
           .controls-row {
             grid-template-columns: 1fr !important;
           }
-          .helper-grid,
           .catalog-grid {
             grid-template-columns: 1fr !important;
           }
@@ -1191,63 +1200,7 @@ function Dashboard() {
         }
       `}</style>
 
-      <aside style={styles.sidebar} className="dashboard-sidebar">
-        <div>
-          <h1 style={styles.sidebarBrand}>VirtuFit 3D</h1>
-          <p style={styles.sidebarTag}>VirtuFit 3D</p>
-        </div>
-
-        <nav style={styles.sidebarSection}>
-          <button type="button" style={{ ...styles.sidebarButtonBase, ...styles.sidebarButtonActive }} onClick={() => navigate("/dashboard") }>
-            <span>◈</span>
-            <span>Dashboard</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/avatar-viewer", { state: { avatarUrl: localStorage.getItem("avatarUrl") } })}>
-            <span>◌</span>
-            <span>View Avatar</span>
-          </button>
-          <button
-            type="button"
-            className="dash-nav-item"
-            style={styles.sidebarButtonBase}
-            onClick={() => navigate("/catalog")}
-          >
-            <span>◍</span>
-            <span>Garment Catalog</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/history") }>
-            <span>◎</span>
-            <span>View History</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
-            <span>◔</span>
-            <span>Notifications</span>
-          </button>
-        </nav>
-
-        <div style={styles.sidebarFooter}>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/profile") }>
-            <span>◉</span>
-            <span>Profile</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={() => navigate("/dashboard") }>
-            <span>◒</span>
-            <span>Settings</span>
-          </button>
-          <button type="button" className="dash-nav-item" style={styles.sidebarButtonBase} onClick={handleLogout}>
-            <span>⎋</span>
-            <span>Logout</span>
-          </button>
-
-          <div style={styles.profilePill}>
-            <div style={styles.avatarMini}>AI</div>
-            <div>
-              <p style={styles.profileTitle}>{email || "VirtuFit 3D"}</p>
-              <p style={styles.profileSubtitle}>{hasGeneratedAvatar ? "Existing User" : "New Artisan"}</p>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DashboardSidebar />
 
       <main style={styles.main} className="dashboard-main">
         <div style={styles.mainInner} className="dashboard-main-inner">
@@ -1373,22 +1326,6 @@ function Dashboard() {
                 </button>
               </div>
 
-              <div style={styles.helperTips} className="helper-grid">
-                <div style={styles.tipCard}>
-                  <div style={styles.tipBadge}>L</div>
-                  <div>
-                    <p style={styles.tipTitle}>Lighting Matters</p>
-                    <p style={styles.tipText}>Use bright, even light and keep your full body visible for better scanning quality.</p>
-                  </div>
-                </div>
-                <div style={styles.tipCard}>
-                  <div style={styles.tipBadge}>F</div>
-                  <div>
-                    <p style={styles.tipTitle}>Form-Fitting Outfit</p>
-                    <p style={styles.tipText}>Wear closer-fit clothing so body edges are easier for the AI to measure accurately.</p>
-                  </div>
-                </div>
-              </div>
             </section>
 
             <div id="photo-upload-guidelines" className="guidelines-modal" aria-hidden="true">
@@ -1544,4 +1481,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
