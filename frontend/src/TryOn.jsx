@@ -1,9 +1,10 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import AvatarCanvas from "./components/AvatarCanvas";
 import DashboardSidebar from "./components/DashboardSidebar";
 import { useAppTheme } from "./theme";
+import API_URL from "./config";
 
 const fitData = [
   { region: "Chest", status: "Tight", color: "#ff6b7a" },
@@ -14,12 +15,43 @@ const fitData = [
 export default function TryOn() {
   const location = useLocation();
   const { isDark } = useAppTheme();
-  const { garment, selectedSize, avatarUrl } = location.state || {};
+  const { garment, selectedSize } = location.state || {};
+
+  const resolvedAvatarUrl = useMemo(() => {
+    const candidates = [
+      location.state?.avatarUrl,
+      location.state?.avatar_file,
+      location.state?.avatarFile,
+      localStorage.getItem("avatarUrl"),
+      localStorage.getItem("avatar_file"),
+      localStorage.getItem("generatedAvatar"),
+    ];
+
+    const cleanApiUrl = API_URL.replace(/\/$/, "");
+
+    for (const value of candidates) {
+      if (typeof value !== "string" || !value.trim()) {
+        continue;
+      }
+
+      const trimmed = value.trim();
+
+      if (trimmed.startsWith(`${cleanApiUrl}/generated-avatars/`)) {
+        return trimmed;
+      }
+
+      if (trimmed.startsWith("/generated-avatars/")) {
+        return `${cleanApiUrl}${trimmed}`;
+      }
+    }
+
+    return "/models/final_avatar.obj";
+  }, [location.state]);
 
   const colors = isDark
     ? {
         pageBackground:
-         "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)",
+         "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)",
         cardBackground: "rgba(21, 28, 38, 0.68)",
         panelBackground: "rgba(9, 15, 24, 0.94)",
         panelBorder: "1px solid rgba(255, 255, 255, 0.08)",
@@ -38,9 +70,9 @@ export default function TryOn() {
       }
     : {
         pageBackground:
-         "radial-gradient(circle at 12% 14%, rgba(78, 107, 255, 0.16) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 44%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 46%, #eaf0fb 100%)",
-        cardBackground: "rgba(255, 255, 255, 0.76)",
-        panelBackground: "rgba(255, 255, 255, 0.9)",
+         "radial-gradient(circle at 12% 16%, rgba(78, 107, 255, 0.16) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 48%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 48%, #eaf0fb 100%)",
+        cardBackground: "rgba(255, 255, 255, 0.82)",
+        panelBackground: "rgba(255, 255, 255, 0.92)",
         panelBorder: "1px solid rgba(18, 30, 52, 0.08)",
         text: "#152033",
         heading: "#101b31",
@@ -70,7 +102,7 @@ export default function TryOn() {
     main: {
       marginLeft: 346,
       marginRight: 26,
-      paddingTop: 34,
+      paddingTop: 30,
       paddingBottom: 30,
       boxSizing: "border-box",
     },
@@ -82,141 +114,137 @@ export default function TryOn() {
       flexDirection: "column",
       gap: 22,
     },
-    headingWrap: {
+    pageHeader: {
+      marginBottom: 0,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "end",
+      gap: 22,
       flexWrap: "wrap",
-      gap: 16,
-      marginBottom: 2,
     },
-    eyebrow: {
+    headerTitle: {
       margin: 0,
-      fontSize: "0.72rem",
-      fontWeight: 800,
-      letterSpacing: "0.18em",
-      textTransform: "uppercase",
-      color: isDark ? "rgba(195,198,208,0.72)" : "rgba(83,96,117,0.78)",
-    },
-    heading: {
-      margin: "6px 0 0",
-      fontSize: "2.28rem",
-      fontWeight: 800,
+      fontSize: "2.25rem",
+      color: isDark ? "#ffffff" : "#152033",
       letterSpacing: "-0.02em",
       lineHeight: 1.1,
-      color: colors.heading,
+      fontWeight: 800,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
     },
-    statusChip: {
+    headerSub: {
+      margin: "8px 0 0 0",
+      fontSize: "0.97rem",
+      color: isDark ? "#c3c6d0" : "#5f6b7c",
+      lineHeight: 1.5,
+      maxWidth: 700,
+    },
+    statusBadge: {
+      padding: "9px 14px",
+      borderRadius: 999,
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(18, 30, 52, 0.1)",
+      background: isDark ? "rgba(21, 28, 38, 0.72)" : "rgba(255, 255, 255, 0.86)",
       display: "inline-flex",
       alignItems: "center",
       gap: 8,
-      background: colors.chipBg,
-      border: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid rgba(18,30,52,0.08)",
-      borderRadius: 999,
-      padding: "9px 14px",
-      color: colors.chipText,
       fontSize: "0.7rem",
       fontWeight: 700,
-      letterSpacing: "0.1em",
       textTransform: "uppercase",
+      letterSpacing: "0.1em",
+      color: isDark ? "#c3c6d0" : "#526078",
     },
-    chipDot: {
+    dot: {
       width: 8,
       height: 8,
       borderRadius: "999px",
       background: "#a4c9fc",
       boxShadow: "0 0 10px rgba(164, 201, 252, 0.8)",
+      animation: "avatarPulse 1.4s ease-in-out infinite",
     },
     contentGrid: {
       display: "grid",
-      gridTemplateColumns: "minmax(0, 1.1fr) minmax(290px, 0.9fr)",
+      gridTemplateColumns: "minmax(0, 1.2fr) minmax(310px, 0.8fr)",
       gap: 28,
       alignItems: "stretch",
     },
-    primaryCard: {
-      background: colors.cardBackground,
-      border: colors.panelBorder,
-      borderRadius: 24,
-      boxShadow: isDark ? "0 22px 44px rgba(5,12,22,0.34)" : "0 20px 42px rgba(34,57,95,0.18)",
-      backdropFilter: "blur(24px)",
-      padding: 28,
-      boxSizing: "border-box",
-    },
-    sectionHeader: {
-      margin: 0,
-      color: colors.heading,
-      fontSize: "1.12rem",
-      fontWeight: 800,
-      letterSpacing: "0.12em",
-      textTransform: "uppercase",
-    },
-    subtitle: {
-      margin: "10px 0 22px",
-      color: colors.muted,
-      fontSize: "0.98rem",
-      lineHeight: 1.6,
-      maxWidth: 620,
-    },
-    avatarCard: {
-      background: colors.panelBackground,
-      border: colors.panelBorder,
-      borderRadius: 22,
-      overflow: "hidden",
-    },
-    avatarViewport: {
+    stageCard: {
       width: "100%",
-      height: 580,
-      background: isDark ? "radial-gradient(circle at 50% 20%, rgba(143, 113, 255, 0.18) 0%, transparent 26%), linear-gradient(180deg, rgba(9, 15, 24, 0.96) 0%, rgba(13, 21, 31, 0.9) 100%)" : "radial-gradient(circle at 50% 18%, rgba(117, 146, 255, 0.16) 0%, transparent 26%), linear-gradient(180deg, rgba(247, 249, 255, 0.96) 0%, rgba(230, 239, 255, 0.8) 100%)",
+      maxWidth: "100%",
+      background: isDark ? "rgba(21, 28, 38, 0.65)" : "rgba(255, 255, 255, 0.88)",
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.07)" : "1px solid rgba(18, 30, 52, 0.08)",
+      borderRadius: 22,
+      backdropFilter: "blur(24px)",
+      boxShadow: isDark ? "0 22px 44px rgba(5, 12, 22, 0.34)" : "0 22px 44px rgba(83, 96, 117, 0.12)",
+      boxSizing: "border-box",
+      padding: 24,
+    },
+    avatarPanel: {
+      width: "100%",
+      minHeight: 600,
+      background: isDark
+        ? "radial-gradient(circle at 50% 28%, rgba(54, 38, 206, 0.18) 0%, rgba(13, 20, 29, 0.96) 58%, rgba(8, 15, 24, 0.98) 100%)"
+        : "radial-gradient(circle at 50% 28%, rgba(78, 107, 255, 0.12) 0%, rgba(245, 248, 255, 0.96) 58%, rgba(235, 241, 252, 0.98) 100%)",
+      borderRadius: 20,
+      boxShadow: isDark ? "0 0 40px rgba(7, 16, 28, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.08) inset" : "0 0 40px rgba(83, 96, 117, 0.12), 0 0 0 1px rgba(18, 30, 52, 0.06) inset",
       display: "flex",
+      flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
       position: "relative",
-      padding: 0,
       overflow: "hidden",
+      border: isDark ? "1px solid rgba(164, 201, 252, 0.24)" : "1px solid rgba(78, 107, 255, 0.18)",
     },
-    previewBar: {
+    canvasHint: {
+      position: "absolute",
+      top: 14,
+      right: 14,
+      borderRadius: 999,
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid rgba(18, 30, 52, 0.1)",
+      background: isDark ? "rgba(8, 15, 24, 0.72)" : "rgba(255, 255, 255, 0.88)",
+      color: isDark ? "#c3c6d0" : "#526078",
+      fontSize: "0.64rem",
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
+      fontWeight: 700,
+      padding: "7px 10px",
+      zIndex: 2,
+    },
+    controlBar: {
       display: "flex",
-      justifyContent: "space-between",
+      flexWrap: "wrap",
       alignItems: "center",
-      gap: 18,
-      background: colors.previewBarBg,
-      borderTop: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(18,30,52,0.08)",
-      padding: "16px 18px",
+      justifyContent: "space-between",
+      gap: 10,
+      marginTop: 10,
+      marginBottom: 2,
+      padding: "10px 12px",
+      borderRadius: 14,
+      border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid rgba(18, 30, 52, 0.08)",
+      background: isDark ? "rgba(8, 15, 24, 0.72)" : "rgba(255, 255, 255, 0.82)",
       boxSizing: "border-box",
     },
-    previewTextBlock: {
+    controlInfo: {
+      margin: 0,
+      color: isDark ? "#c3c6d0" : "#526078",
+      fontSize: "0.76rem",
+      lineHeight: 1.4,
+      letterSpacing: "0.01em",
+    },
+    controlPills: {
       display: "flex",
-      flexDirection: "column",
-      gap: 4,
-      minWidth: 0,
+      flexWrap: "wrap",
+      gap: 8,
+      alignItems: "center",
     },
-    previewTitle: {
-      color: colors.previewText,
-      fontSize: "1rem",
+    controlPill: {
+      borderRadius: 999,
+      border: isDark ? "1px solid rgba(164, 201, 252, 0.3)" : "1px solid rgba(78, 107, 255, 0.25)",
+      background: isDark ? "rgba(164, 201, 252, 0.12)" : "rgba(78, 107, 255, 0.08)",
+      color: isDark ? "#a4c9fc" : "#4e6bff",
+      padding: "6px 10px",
+      fontSize: "0.66rem",
       fontWeight: 700,
-      letterSpacing: "-0.01em",
-    },
-    previewMeta: {
-      color: colors.previewMeta,
-      fontSize: "0.78rem",
-      fontWeight: 600,
-      letterSpacing: "0.04em",
+      letterSpacing: "0.08em",
       textTransform: "uppercase",
-    },
-    view360Button: {
-      border: "none",
-      borderRadius: 12,
-      padding: "11px 16px",
-      background: colors.buttonBg,
-      color: "#ffffff",
-      fontSize: "0.8rem",
-      fontWeight: 800,
-      letterSpacing: "0.1em",
-      textTransform: "uppercase",
-      cursor: "pointer",
-      boxShadow: "0 12px 24px rgba(98, 78, 205, 0.3)",
-      flexShrink: 0,
     },
     fitPanel: {
       background: colors.cardBackground,
@@ -229,6 +257,14 @@ export default function TryOn() {
       display: "flex",
       flexDirection: "column",
       gap: 18,
+    },
+    sectionHeader: {
+      margin: 0,
+      color: colors.heading,
+      fontSize: "1.12rem",
+      fontWeight: 800,
+      letterSpacing: "0.12em",
+      textTransform: "uppercase",
     },
     fitSubtitle: {
       margin: 0,
@@ -314,7 +350,7 @@ export default function TryOn() {
         waist: "Perfect",
         hip: "Loose",
         recommendation: "AI recommendation...",
-        avatarUrl,
+        avatarUrl: resolvedAvatarUrl,
       }),
     });
 
@@ -323,64 +359,64 @@ export default function TryOn() {
 
   return (
     <div style={styles.page}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
+
+        @keyframes avatarPulse {
+         0%, 100% { opacity: 0.4; }
+         50% { opacity: 1; }
+        }
+
+        @media (max-width: 1220px) {
+         .tryon-main { margin-left: 18px !important; margin-right: 18px !important; }
+        }
+
+        @media (max-width: 980px) {
+         .tryon-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+
       <DashboardSidebar />
 
-      <main style={styles.main}>
+      <main style={styles.main} className="tryon-main">
         <div style={styles.mainInner}>
-         <div style={styles.headingWrap}>
+         <header style={styles.pageHeader}>
            <div>
-             <p style={styles.eyebrow}>Try-on studio</p>
-             <h1 style={styles.heading}>Virtual Fitting Room</h1>
-           </div>
-           <div style={styles.statusChip}>
-             <span style={styles.chipDot} />
-             Live preview
-           </div>
-         </div>
-
-         <div style={styles.contentGrid}>
-           <section style={styles.primaryCard}>
-             <h2 style={styles.sectionHeader}>Your Digital Twin</h2>
-             <p style={styles.subtitle}>
-               Experience precision fit with your personalized high-fidelity 3D avatar.
+             <h2 style={styles.headerTitle}>Your Digital Twin</h2>
+             <p style={styles.headerSub}>
+               {resolvedAvatarUrl !== "/models/final_avatar.obj"
+                 ? "Avatar generated successfully from your inputs. Inspect details, or continue to garment selection."
+                 : "Generate an avatar from the dashboard to view your personalized 3D model here."}
              </p>
+           </div>
 
-             <div style={styles.avatarCard}>
-               <div style={styles.avatarViewport}>
-                 <AvatarCanvas
-                   modelPath={avatarUrl || "/models/final_avatar.obj"}
-                   backgroundMode={localStorage.getItem("viewer-background") || "dark"}
-                 />
-               </div>
+           <div style={styles.statusBadge}>
+             <span style={styles.dot} />
+             <span>{resolvedAvatarUrl !== "/models/final_avatar.obj" ? "Viewer Online" : "Waiting for Avatar"}</span>
+           </div>
+         </header>
 
-               <div style={styles.previewBar}>
-                 <div style={styles.previewTextBlock}>
-                   <span style={styles.previewTitle}>
-                     {garment ? `${garment.title || garment.name} Preview` : "3D Human Avatar Preview"}
-                   </span>
-                   <span style={styles.previewMeta}>
-                     {selectedSize
-                       ? `Selected size: ${selectedSize}`
-                       : "Real-time photorealistic simulation enabled"}
-                   </span>
-                 </div>
+         <div style={styles.contentGrid} className="tryon-grid">
+           <section style={styles.stageCard}>
+             <div style={styles.avatarPanel}>
+               <div style={styles.canvasHint}>360 Viewer</div>
 
-                 <button
-                   type="button"
-                   style={styles.view360Button}
-                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                 >
-                   View in 360
-                 </button>
+               <AvatarCanvas modelPath={resolvedAvatarUrl} backgroundMode={localStorage.getItem("viewer-background") || "dark"} />
+             </div>
+
+             <div style={styles.controlBar}>
+               <p style={styles.controlInfo}>Drag to rotate 360°. Scroll to zoom. Right-click drag to orbit view.</p>
+               <div style={styles.controlPills}>
+                 <span style={styles.controlPill}>Rotate</span>
+                 <span style={styles.controlPill}>Zoom</span>
+                 <span style={styles.controlPill}>Orbit</span>
                </div>
              </div>
            </section>
 
            <aside style={styles.fitPanel}>
              <h2 style={styles.sectionHeader}>Fit Analysis</h2>
-             <p style={styles.fitSubtitle}>
-               Simulation complete based on your digital twin measurements
-             </p>
+             <p style={styles.fitSubtitle}>Simulation complete based on your digital twin measurements</p>
 
              <div style={styles.fitTable}>
                {fitData.map(({ region, status, color }) => (
