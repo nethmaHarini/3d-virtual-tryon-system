@@ -45,6 +45,47 @@ export function applyTheme(themeMode = getStoredThemeMode()) {
   const resolvedTheme = getResolvedTheme(themeMode);
   const root = window.document.documentElement;
 
+  const tokens =
+    resolvedTheme === "dark"
+      ? {
+          "--bg": "#090D16",
+          "--sidebar": "#0D1220",
+          "--surface": "#111827",
+          "--surface-raised": "#161E2E",
+          "--border": "#263044",
+          "--text-primary": "#F8FAFC",
+          "--text-secondary": "#A7B0C0",
+          "--text-muted": "#727C8E",
+          "--primary": "#7C3AED",
+          "--primary-hover": "#8B5CF6",
+          "--primary-soft": "rgba(124, 58, 237, 0.14)",
+          "--success": "#22C55E",
+          "--warning": "#F59E0B",
+          "--danger": "#EF4444",
+          "--info": "#38BDF8",
+        }
+      : {
+          "--bg": "#F5F7FB",
+          "--sidebar": "#FFFFFF",
+          "--surface": "#F9FAFC",
+          "--surface-raised": "#FFFFFF",
+          "--border": "#E2E8F0",
+          "--text-primary": "#0F172A",
+          "--text-secondary": "#475569",
+          "--text-muted": "#64748B",
+          "--primary": "#7C3AED",
+          "--primary-hover": "#8B5CF6",
+          "--primary-soft": "rgba(124, 58, 237, 0.10)",
+          "--success": "#22C55E",
+          "--warning": "#F59E0B",
+          "--danger": "#EF4444",
+          "--info": "#38BDF8",
+        };
+
+  Object.entries(tokens).forEach(([key, value]) => {
+    root.style.setProperty(key, value);
+  });
+
   root.setAttribute("data-theme", resolvedTheme);
   root.style.colorScheme = resolvedTheme;
 

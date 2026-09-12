@@ -1,203 +1,110 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #ffffff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  --bg: #090D16;
+  --sidebar: #0D1220;
+  --surface: #111827;
+  --surface-raised: #161E2E;
+  --border: #263044;
+  --text-primary: #F8FAFC;
+  --text-secondary: #A7B0C0;
+  --text-muted: #727C8E;
+  --primary: #7C3AED;
+  --primary-hover: #8B5CF6;
+  --primary-soft: rgba(124, 58, 237, 0.14);
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #38BDF8;
 
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px,
-    rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --shadow-soft: 0 14px 30px rgba(8, 13, 22, 0.18);
+  --shadow-strong: 0 18px 36px rgba(8, 13, 22, 0.28);
 
-  --sans:
-    system-ui,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  --font-sans: "Inter", "Segoe UI", sans-serif;
+  --font-heading: "Inter", "Segoe UI", sans-serif;
 
-  --heading:
-    system-ui,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-
-  --mono:
-    ui-monospace,
-    Consolas,
-    monospace;
-
-  font: 18px / 145% var(--sans);
-
-  letter-spacing: 0.18px;
-
-  color-scheme: light dark;
-
-  color: var(--text);
-
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
   background: var(--bg);
-
+  color: var(--text-primary);
+  color-scheme: dark;
   font-synthesis: none;
-
   text-rendering: optimizeLegibility;
-
-  -webkit-font-smoothing:
-    antialiased;
-
-  -moz-osx-font-smoothing:
-    grayscale;
-}
-
-html[data-theme="dark"] {
-  --text: #9ca3af;
-  --text-h: #f3f4f6;
-  --bg: #16171d;
-  --border: #2e303a;
-  --code-bg: #1f2028;
-  --accent: #c084fc;
-
-  --accent-bg:
-    rgba(192, 132, 252, 0.15);
-
-  --accent-border:
-    rgba(192, 132, 252, 0.5);
-
-  --social-bg:
-    rgba(47, 48, 58, 0.5);
-
-  --shadow:
-    rgba(0, 0, 0, 0.4) 0 10px 15px -3px,
-    rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-}
-
-html[data-theme="dark"] #social .button-icon {
-  filter:
-    invert(1)
-    brightness(2);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html[data-theme="light"] {
-  --text: #4d5870;
-  --text-h: #0b1220;
-  --bg: #f6f8ff;
-  --border: #dde4f1;
-  --code-bg: #edf2ff;
-  --accent: #4e6bff;
-
-  --accent-bg:
-    rgba(78, 107, 255, 0.1);
-
-  --accent-border:
-    rgba(78, 107, 255, 0.35);
-
-  --social-bg:
-    rgba(255, 255, 255, 0.75);
-
-  --shadow:
-    rgba(12, 21, 48, 0.08) 0 10px 15px -3px,
-    rgba(12, 21, 48, 0.05) 0 4px 6px -2px;
+  --bg: #F5F7FB;
+  --sidebar: #FFFFFF;
+  --surface: #F9FAFC;
+  --surface-raised: #FFFFFF;
+  --border: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --primary: #7C3AED;
+  --primary-hover: #8B5CF6;
+  --primary-soft: rgba(124, 58, 237, 0.10);
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --info: #38BDF8;
+  color-scheme: light;
 }
-
-/* =========================================
-   GLOBAL PAGE RESET
-========================================= */
 
 html {
   width: 100%;
-
   min-height: 100%;
-
   margin: 0;
-
   padding: 0;
-
   scroll-behavior: smooth;
 }
 
 body {
   width: 100%;
-
   min-height: 100%;
-
   margin: 0;
-
   padding: 0;
-
   overflow-x: hidden;
-
   background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
 }
 
 #root {
   width: 100%;
-
   min-height: 100vh;
-
   margin: 0;
-
   padding: 0;
-
-  max-width: none;
-
-  border: none;
-
-  text-align: initial;
-
   display: block;
-
   box-sizing: border-box;
 }
 
-/* Prevent elements from unexpectedly
-   exceeding viewport width */
-
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-/* =========================================
-   TYPOGRAPHY
-========================================= */
-
-h1,
-h2 {
-  font-family: var(--heading);
-
-  color: var(--text-h);
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 p {
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-
-  display: inline-flex;
-
-  border-radius: 4px;
-
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-
-  line-height: 135%;
-
-  padding: 4px 8px;
-
-  background: var(--code-bg);
+button, input, select, textarea {
+  font: inherit;
 }
 
 @media (max-width: 1024px) {
   :root {
-    font-size: 16px;
+    font-size: 15px;
   }
 }
