@@ -88,7 +88,8 @@ function AvatarViewer() {
   const styles = {
     page: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       background: isDark
         ? "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)"
         : "radial-gradient(circle at 12% 16%, rgba(78, 107, 255, 0.16) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 48%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 48%, #eaf0fb 100%)",
@@ -101,21 +102,23 @@ function AvatarViewer() {
     },
 
     main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 30,
-      paddingBottom: 30,
+      marginLeft: 286,
+      marginRight: 32,
+      paddingTop: 28,
+      paddingBottom: 32,
       minHeight: "100vh",
+      minWidth: 0,
       boxSizing: "border-box",
     },
 
     mainInner: {
       width: "100%",
-      maxWidth: 1320,
+      maxWidth: 1400,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 22,
+      gap: 24,
+      minWidth: 0,
     },
 
     pageHeader: {

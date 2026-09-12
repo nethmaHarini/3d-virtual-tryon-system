@@ -32,7 +32,8 @@ function ViewHistory() {
   const styles = {
     page: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       background:
         isDark
           ? "radial-gradient(circle at 12% 16%, rgba(54, 38, 206, 0.22) 0%, transparent 38%), radial-gradient(circle at 88% 84%, rgba(95, 11, 126, 0.24) 0%, transparent 48%), linear-gradient(155deg, #090f17 0%, #0d141d 48%, #111a27 100%)"
@@ -81,8 +82,8 @@ function ViewHistory() {
       cursor: "pointer",
       transition: "all 180ms ease",
     },
-    main: { marginLeft: 346, marginRight: 26, paddingTop: 34, paddingBottom: 28, boxSizing: "border-box" },
-    mainInner: { width: "100%", maxWidth: 1320, margin: "0 auto", display: "flex", flexDirection: "column", gap: 22 },
+    main: { marginLeft: 286, marginRight: 32, paddingTop: 28, paddingBottom: 32, minWidth: 0, boxSizing: "border-box" },
+    mainInner: { width: "100%", maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24, minWidth: 0 },
     headerTitle: { margin: 0, fontSize: "1.86rem", color: isDark ? "#ffffff" : "#152033", fontWeight: 800 },
     card: { padding: 20, borderRadius: 18, background: isDark ? "rgba(21,28,38,0.66)" : "rgba(255,255,255,0.9)", border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(18, 30, 52, 0.08)", boxSizing: "border-box" },
     listItem: { padding: 12, borderRadius: 12, background: isDark ? "rgba(8,15,24,0.72)" : "rgba(247,249,255,0.95)", border: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(18, 30, 52, 0.06)", display: "flex", justifyContent: "space-between", gap: 12 },

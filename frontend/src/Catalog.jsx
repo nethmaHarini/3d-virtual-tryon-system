@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { useState } from "react";
 import DashboardSidebar from "./components/DashboardSidebar";
+import TryOnJourneyBar from "./components/TryOnJourneyBar";
 import { useAppTheme } from "./theme";
 
 function Catalog() {
@@ -14,7 +15,8 @@ function Catalog() {
   const styles = {
     page: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       background:
         isDark
           ? "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)"
@@ -133,19 +135,21 @@ function Catalog() {
       fontWeight: 700,
     },
     main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 34,
-      paddingBottom: 28,
+      marginLeft: 286,
+      marginRight: 32,
+      paddingTop: 28,
+      paddingBottom: 32,
+      minWidth: 0,
       boxSizing: "border-box",
     },
     mainInner: {
       width: "100%",
-      maxWidth: 1320,
+      maxWidth: 1400,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 22,
+      gap: 24,
+      minWidth: 0,
     },
     headingWrap: {
       marginBottom: 4,
@@ -492,6 +496,8 @@ function Catalog() {
 
       <main style={styles.main} className="catalog-main">
         <div style={styles.mainInner}>
+          <TryOnJourneyBar currentStep={1} />
+
           <header style={styles.headingWrap}>
             <div>
               <h2 style={styles.heading}>Garment Catalog</h2>

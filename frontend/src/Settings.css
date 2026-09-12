@@ -131,12 +131,14 @@ html[data-motion="off"] *::after {
 ===================================================== */
 
 .settings-content {
-  margin-left: 346px;
-  margin-right: 34px;
+  margin-left: 286px;
+  margin-right: 32px;
 
-  padding: 44px 0 64px;
+  padding: 28px 0 32px;
 
   min-height: 100vh;
+  min-width: 0;
+  max-width: 1400px;
 }
 
 /* =====================================================

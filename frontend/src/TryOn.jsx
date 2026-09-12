@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import AvatarCanvas from "./components/AvatarCanvas";
 import DashboardSidebar from "./components/DashboardSidebar";
+import TryOnJourneyBar from "./components/TryOnJourneyBar";
 import { useAppTheme } from "./theme";
 import API_URL from "./config";
 
@@ -91,7 +92,8 @@ export default function TryOn() {
   const styles = {
     page: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       background: colors.pageBackground,
       color: colors.text,
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
@@ -100,19 +102,21 @@ export default function TryOn() {
       boxSizing: "border-box",
     },
     main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 30,
-      paddingBottom: 30,
+      marginLeft: 286,
+      marginRight: 32,
+      paddingTop: 28,
+      paddingBottom: 32,
+      minWidth: 0,
       boxSizing: "border-box",
     },
     mainInner: {
       width: "100%",
-      maxWidth: 1320,
+      maxWidth: 1400,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 22,
+      gap: 24,
+      minWidth: 0,
     },
     pageHeader: {
       marginBottom: 0,
@@ -380,6 +384,8 @@ export default function TryOn() {
 
       <main style={styles.main} className="tryon-main">
         <div style={styles.mainInner}>
+         <TryOnJourneyBar currentStep={3} />
+
          <header style={styles.pageHeader}>
            <div>
              <h2 style={styles.headerTitle}>Your Digital Twin</h2>

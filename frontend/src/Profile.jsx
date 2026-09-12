@@ -87,7 +87,8 @@ function Profile() {
   const styles = {
     page: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       background:
         isDark
           ? "radial-gradient(circle at 14% 14%, rgba(54, 38, 206, 0.24) 0%, transparent 32%), radial-gradient(circle at 84% 16%, rgba(95, 11, 126, 0.18) 0%, transparent 30%), radial-gradient(circle at 78% 84%, rgba(76, 176, 255, 0.14) 0%, transparent 34%), linear-gradient(155deg, #090f17 0%, #0c1320 45%, #111a27 100%)"
@@ -175,19 +176,21 @@ function Profile() {
     },
     notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
     main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 34,
-      paddingBottom: 28,
+      marginLeft: 286,
+      marginRight: 32,
+      paddingTop: 28,
+      paddingBottom: 32,
+      minWidth: 0,
       boxSizing: "border-box",
     },
     mainInner: {
       width: "100%",
-      maxWidth: 1320,
+      maxWidth: 1400,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 22,
+      gap: 24,
+      minWidth: 0,
     },
     pageHeader: {
       display: "flex",

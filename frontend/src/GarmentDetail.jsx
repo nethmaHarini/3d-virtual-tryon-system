@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
+import TryOnJourneyBar from "./components/TryOnJourneyBar";
 import { useAppTheme } from "./theme";
 
 export default function GarmentDetail() {
@@ -62,7 +63,8 @@ export default function GarmentDetail() {
   const styles = {
     page: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       background: colors.pageBackground,
       color: colors.text,
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
@@ -71,20 +73,22 @@ export default function GarmentDetail() {
       boxSizing: "border-box",
     },
     main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 34,
-      paddingBottom: 30,
+      marginLeft: 286,
+      marginRight: 32,
+      paddingTop: 28,
+      paddingBottom: 32,
       minHeight: "100vh",
+      minWidth: 0,
       boxSizing: "border-box",
     },
     mainInner: {
       width: "100%",
-      maxWidth: 1320,
+      maxWidth: 1400,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 22,
+      gap: 24,
+      minWidth: 0,
     },
     detailCard: {
       width: "100%",
@@ -232,7 +236,8 @@ export default function GarmentDetail() {
     },
     fallbackWrap: {
       minHeight: "100vh",
-      width: "100vw",
+      width: "100%",
+      minWidth: 0,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -312,6 +317,8 @@ export default function GarmentDetail() {
 
       <main style={styles.main}>
         <div style={styles.mainInner}>
+          <TryOnJourneyBar currentStep={2} />
+
           <div style={styles.detailCard}>
             <div style={styles.mediaPanel}>
               <div style={styles.previewFrame}>

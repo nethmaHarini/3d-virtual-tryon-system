@@ -232,6 +232,8 @@ function Dashboard() {
 
   const styles = {
     page: {
+      width: "100%",
+      minWidth: 0,
       minHeight: "100vh",
       background:
         isDark
@@ -241,6 +243,7 @@ function Dashboard() {
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       position: "relative",
       overflowX: "hidden",
+      boxSizing: "border-box",
     },
     sidebar: {
       position: "fixed",
@@ -351,28 +354,34 @@ function Dashboard() {
       fontWeight: 700,
     },
     main: {
-      marginLeft: 346,
-      marginRight: 26,
-      paddingTop: 30,
-      paddingBottom: 30,
+      marginLeft: 286,
+      marginRight: 32,
+      paddingTop: 28,
+      paddingBottom: 32,
       minHeight: "100vh",
+      minWidth: 0,
       boxSizing: "border-box",
     },
     mainInner: {
       width: "100%",
-      maxWidth: 1320,
+      maxWidth: 1220,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 22,
+      gap: 24,
+      minWidth: 0,
     },
     pageHeader: {
       marginBottom: 0,
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "end",
+      alignItems: "center",
       gap: 22,
       flexWrap: "wrap",
+      width: "100%",
+      maxWidth: 1220,
+      marginLeft: "auto",
+      marginRight: "auto",
     },
     headerTitle: {
       margin: 0,
@@ -403,6 +412,8 @@ function Dashboard() {
       textTransform: "uppercase",
       letterSpacing: "0.1em",
       color: "#c3c6d0",
+      marginLeft: "auto",
+      whiteSpace: "nowrap",
     },
     dot: {
       width: 8,
@@ -413,8 +424,11 @@ function Dashboard() {
       animation: "dashPulse 1.4s ease-in-out infinite",
     },
     newGrid: {
+      width: "100%",
+      maxWidth: 1040,
+      margin: "0 auto",
       display: "grid",
-      gridTemplateColumns: "minmax(0, 1.95fr) minmax(320px, 1fr)",
+      gridTemplateColumns: "minmax(0, 1fr)",
       gap: 22,
       alignItems: "stretch",
     },
@@ -433,6 +447,9 @@ function Dashboard() {
       boxSizing: "border-box",
     },
     creatorSection: {
+      width: "100%",
+      maxWidth: 1040,
+      margin: "0 auto",
       padding: 30,
       position: "relative",
       overflow: "hidden",
@@ -507,7 +524,7 @@ function Dashboard() {
       paddingTop: 18,
       borderTop: "1px solid rgba(255, 255, 255, 0.1)",
       display: "grid",
-      gridTemplateColumns: "1.1fr auto",
+      gridTemplateColumns: "minmax(0, 1fr) auto",
       gap: 20,
       alignItems: "end",
     },
