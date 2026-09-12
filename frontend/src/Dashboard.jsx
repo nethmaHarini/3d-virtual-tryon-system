@@ -21,6 +21,7 @@ function Dashboard() {
   const [isGenerateHovered, setIsGenerateHovered] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [showPhotoGuide, setShowPhotoGuide] = useState(false);
   const frontInputRef = useRef(null);
   const backInputRef = useRef(null);
   const sideInputRef = useRef(null);
@@ -483,14 +484,14 @@ function Dashboard() {
       gap: 16,
     },
     uploadTile: {
-      minHeight: 188,
+      minHeight: 250,
+      aspectRatio: "3 / 4",
       borderRadius: 18,
       background: "rgba(8, 15, 24, 0.9)",
       display: "flex",
       flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 12,
+      alignItems: "stretch",
+      justifyContent: "space-between",
       color: "#c3c6d0",
       fontWeight: 700,
       letterSpacing: "0.03em",
@@ -499,7 +500,7 @@ function Dashboard() {
       textAlign: "center",
       cursor: "pointer",
       overflow: "hidden",
-      transition: "box-shadow 0.24s ease, transform 0.24s ease, border-color 0.24s ease, background 0.24s ease",
+      transition: "box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease, background 0.18s ease",
     },
     iconWrap: {
       width: 44,
@@ -898,74 +899,167 @@ function Dashboard() {
     },
   };
 
-  const renderUploadTile = (label, keyName, preview, inputRef) => {
-    const isSelected = Boolean(preview);
-    const isHovered = hoveredTile === keyName;
+ const renderPoseImage = (type, large = false) => {
+   const src = `/images/pose-${type}.png`;
+   const imageStyle = {
+     height: large ? "90%" : "90%",
+     width: "auto",
+     maxWidth: large ? "85%" : "85%",
+     objectFit: "contain",
+     objectPosition: "center",
+     display: "block",
+     background: "transparent",
+   };
 
-    return (
-      <div
-        role="button"
-        tabIndex={0}
-        key={keyName}
-        onClick={() => inputRef.current?.click()}
-        onMouseEnter={() => setHoveredTile(keyName)}
-        onMouseLeave={() => setHoveredTile("")}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        style={{
-          ...styles.uploadTile,
-          border: isSelected
-            ? "1px solid rgba(164, 201, 252, 0.95)"
-            : "1px solid rgba(133, 172, 255, 0.24)",
-          boxShadow: isSelected
-            ? "0 0 0 1px rgba(164, 201, 252, 0.4), 0 0 22px rgba(164, 201, 252, 0.3)"
-            : isHovered
-              ? "0 12px 28px rgba(24, 80, 182, 0.4)"
-              : "none",
-          transform: isHovered ? "translateY(-2px)" : "translateY(0)",
-          background: isHovered ? "rgba(17, 25, 38, 0.95)" : styles.uploadTile.background,
-        }}
-      >
-        <input
-  ref={inputRef}
-  type="file"
-  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-  style={styles.hiddenInput}
-  onChange={(event) => {
-    const file = event.target.files?.[0];
+   return (
+     <div
+       style={{
+         width: "100%",
+         height: large ? 300 : 300,
+         display: "flex",
+         alignItems: "center",
+         justifyContent: "center",
+         overflow: "hidden",
+         background: "transparent",
+         borderRadius: 12,
+         position: "relative",
+       }}
+       aria-label={`${type} pose placeholder`}
+     >
+       <img
+         src={src}
+         alt={`${type} pose placeholder`}
+         style={imageStyle}
+         onError={(event) => {
+           const parent = event.currentTarget.parentElement;
+           event.currentTarget.style.display = "none";
+           if (parent) {
+             parent.style.background = isDark ? "rgba(17,24,39,0.8)" : "rgba(248,250,252,0.8)";
+             parent.style.border = isDark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(15,23,42,0.06)";
+             parent.style.display = "flex";
+             parent.style.alignItems = "center";
+             parent.style.justifyContent = "center";
+             parent.style.color = isDark ? "#c3c6d0" : "#475569";
+             parent.style.fontSize = "0.72rem";
+             parent.style.letterSpacing = "0.08em";
+             parent.style.textTransform = "uppercase";
+             parent.style.fontWeight = 700;
+             parent.innerText = "Pose";
+           }
+         }}
+       />
+     </div>
+   );
+ };
 
-    updateImageState(keyName, file);
+ const renderUploadTile = (label, keyName, preview, inputRef) => {
+   const isSelected = Boolean(preview);
+   const isHovered = hoveredTile === keyName;
 
-    // Reset input so selecting the same invalid file
-    // again still triggers onChange
-    event.target.value = "";
-  }}
-/>
+   return (
+     <div
+       role="button"
+       tabIndex={0}
+       key={keyName}
+       onClick={() => inputRef.current?.click()}
+       onMouseEnter={() => setHoveredTile(keyName)}
+       onMouseLeave={() => setHoveredTile("")}
+       onKeyDown={(event) => {
+         if (event.key === "Enter" || event.key === " ") {
+           event.preventDefault();
+           inputRef.current?.click();
+         }
+       }}
+       style={{
+         ...styles.uploadTile,
+         border: isSelected
+           ? "1px solid rgba(164, 201, 252, 0.95)"
+           : isHovered
+             ? "1px solid rgba(164, 201, 252, 0.44)"
+             : "1px solid rgba(133, 172, 255, 0.24)",
+         boxShadow: isSelected
+           ? "0 0 0 1px rgba(164, 201, 252, 0.32)"
+           : isHovered
+             ? "0 10px 20px rgba(24, 80, 182, 0.18)"
+             : "none",
+         transform: isHovered ? "translateY(-2px)" : "translateY(0)",
+         background: isHovered ? "rgba(17, 25, 38, 0.95)" : styles.uploadTile.background,
+       }}
+     >
+       <input
+         ref={inputRef}
+         type="file"
+         accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+         style={styles.hiddenInput}
+         onChange={(event) => {
+           const file = event.target.files?.[0];
 
-        {preview ? (
-          <img src={preview} alt={`${label} preview`} style={styles.previewImage} />
-        ) : (
-          <>
-            <div style={styles.iconWrap}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M3 8.5C3 7.12 4.12 6 5.5 6H8L9.3 4.4C9.68 3.93 10.25 3.66 10.85 3.66H13.15C13.75 3.66 14.32 3.93 14.7 4.4L16 6H18.5C19.88 6 21 7.12 21 8.5V17.5C21 18.88 19.88 20 18.5 20H5.5C4.12 20 3 18.88 3 17.5V8.5Z"
-                  stroke="#9fd2ff"
-                  strokeWidth="1.6"
-                />
-                <circle cx="12" cy="13" r="3.5" stroke="#9fd2ff" strokeWidth="1.6" />
-              </svg>
-            </div>
-            <span>{label}</span>
-          </>
-        )}
-      </div>
-    );
-  };
+           updateImageState(keyName, file);
+
+           event.target.value = "";
+         }}
+       />
+
+       <div style={{
+         width: "100%",
+         height: "100%",
+         display: "flex",
+         flexDirection: "column",
+         alignItems: "center",
+         justifyContent: "space-between",
+         gap: 10,
+       }}>
+         <div style={{
+           width: "100%",
+           flex: 1,
+           minHeight: 0,
+           display: "flex",
+           alignItems: "center",
+           justifyContent: "center",
+           borderRadius: 12,
+           background: isDark ? "rgba(17, 24, 39, 0.8)" : "rgba(248, 250, 252, 0.8)",
+           border: isDark ? "1px solid rgba(255,255,255,0.04)" : "1px solid rgba(15,23,42,0.06)",
+           overflow: "hidden",
+           padding: 12,
+           boxSizing: "border-box",
+         }}>
+           {preview ? (
+             <img src={preview} alt={`${label} preview`} style={{ ...styles.previewImage, objectFit: "contain", objectPosition: "center", background: "transparent" }} />
+           ) : (
+             renderPoseImage(keyName, false)
+           )}
+         </div>
+
+         <div style={{
+           display: "flex",
+           alignItems: "center",
+           justifyContent: "center",
+           gap: 8,
+           width: "100%",
+           paddingTop: 4,
+         }}>
+           <span style={{
+             display: "inline-flex",
+             alignItems: "center",
+             justifyContent: "center",
+             width: 28,
+             height: 28,
+             borderRadius: 999,
+             background: isDark ? "rgba(124, 58, 237, 0.12)" : "rgba(124, 58, 237, 0.1)",
+             border: isDark ? "1px solid rgba(124, 58, 237, 0.25)" : "1px solid rgba(124, 58, 237, 0.18)",
+           }}>
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+               <path d="M7 8.5V7.5C7 5.84 8.34 4.5 10 4.5H14C15.66 4.5 17 5.84 17 7.5V8.5" stroke={isDark ? "#dfe7f8" : "#334155"} strokeWidth="1.7" strokeLinecap="round" />
+               <rect x="4.5" y="8.5" width="15" height="11" rx="2.5" stroke={isDark ? "#dfe7f8" : "#334155"} strokeWidth="1.7" />
+               <circle cx="12" cy="14" r="3" stroke={isDark ? "#dfe7f8" : "#334155"} strokeWidth="1.7" />
+             </svg>
+           </span>
+           <span style={{ color: isDark ? "#dfe7f8" : "#1f2937", fontSize: "0.82rem", fontWeight: 700, letterSpacing: "0.01em" }}>{label}</span>
+         </div>
+       </div>
+     </div>
+   );
+ };
 
   return (
     <div style={styles.page}>
@@ -1017,13 +1111,31 @@ function Dashboard() {
           box-shadow: 0 24px 44px rgba(5, 12, 22, 0.42);
         }
         .guidelines-inline {
-          margin: 8px 0 0 0;
+          margin: 12px 0 0 0;
           font-size: 0.78rem;
           color: #aab8cd;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
           flex-wrap: wrap;
+        }
+        .guidelines-inline .best-results-label {
+          color: #dfe7f8;
+          font-weight: 700;
+        }
+        .guidelines-inline .best-results-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #dfe7f8;
+        }
+        .guidelines-inline .best-results-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 999px;
+          display: inline-block;
+          background: #4ade80;
+          box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.12);
         }
         .guidelines-link {
           color: #a4c9fc;
@@ -1038,127 +1150,205 @@ function Dashboard() {
           border-color: rgba(217, 235, 255, 0.85);
           text-shadow: 0 0 14px rgba(164, 201, 252, 0.45);
         }
-        .guidelines-modal {
+        .photo-guide-modal {
           position: fixed;
           inset: 0;
+          height: 100vh;
+          overflow: hidden;
           background: rgba(4, 10, 18, 0.72);
           backdrop-filter: blur(8px);
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 220ms ease;
           z-index: 110;
           display: grid;
           place-items: center;
           padding: 20px;
           box-sizing: border-box;
         }
-        .guidelines-modal:target {
-          opacity: 1;
-          pointer-events: auto;
-        }
-        .guidelines-dialog {
-          width: min(760px, 100%);
-          max-height: 86vh;
-          overflow: auto;
-          border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: linear-gradient(160deg, rgba(17, 26, 39, 0.92) 0%, rgba(10, 18, 30, 0.95) 100%);
-          box-shadow: 0 28px 56px rgba(5, 12, 22, 0.58), 0 0 0 1px rgba(164, 201, 252, 0.14) inset;
-          padding: 22px 22px 18px 22px;
+        .photo-guide-dialog {
+          width: min(860px, calc(100vw - 32px));
+          max-height: calc(100vh - 48px);
+          display: flex;
+          flex-direction: column;
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: linear-gradient(160deg, rgba(17, 26, 39, 0.96) 0%, rgba(10, 18, 30, 0.96) 100%);
+          box-shadow: 0 30px 60px rgba(5, 12, 22, 0.6), 0 0 0 1px rgba(164, 201, 252, 0.12) inset;
           box-sizing: border-box;
+          overflow: hidden;
         }
-        .guidelines-header {
+        .photo-guide-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           gap: 14px;
-          margin-bottom: 14px;
+          padding: 22px 22px 14px 22px;
+          flex-shrink: 0;
         }
-        .guidelines-title {
+        .photo-guide-content {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          padding: 0 22px 18px 22px;
+          overscroll-behavior: contain;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(148, 163, 184, 0.5) transparent;
+        }
+        .photo-guide-content::-webkit-scrollbar {
+          width: 8px;
+        }
+        .photo-guide-content::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .photo-guide-content::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.45);
+          border-radius: 999px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+        .photo-guide-title {
           margin: 0;
           color: #ffffff;
-          font-size: 1.16rem;
+          font-size: 1.26rem;
           font-weight: 800;
           letter-spacing: -0.01em;
           font-family: 'Plus Jakarta Sans', 'Manrope', sans-serif;
         }
-        .guidelines-sub {
+        .photo-guide-sub {
           margin: 6px 0 0 0;
           color: #c3c6d0;
           font-size: 0.82rem;
           line-height: 1.45;
         }
-        .guidelines-close {
+        .photo-guide-close {
           flex-shrink: 0;
-          width: 32px;
-          height: 32px;
+          width: 34px;
+          height: 34px;
           border-radius: 999px;
           border: 1px solid rgba(255, 255, 255, 0.16);
           color: #dce3f0;
-          text-decoration: none;
-          display: grid;
-          place-items: center;
-          font-size: 1rem;
           background: rgba(255, 255, 255, 0.03);
           transition: all 200ms ease;
+          cursor: pointer;
+          font-size: 1.2rem;
         }
-        .guidelines-close:hover {
+        .photo-guide-close:hover {
           background: rgba(255, 255, 255, 0.09);
           border-color: rgba(164, 201, 252, 0.42);
           color: #ffffff;
         }
-        .guidelines-grid {
+        .photo-guide-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+          margin-bottom: 18px;
         }
-        .guidelines-item {
-          border-radius: 14px;
+        .photo-guide-card {
+          border-radius: 18px;
           border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(8, 15, 24, 0.7);
-          padding: 11px 12px;
+          background: rgba(17, 24, 39, 0.86);
+          padding: 18px 16px 14px 16px;
+          text-align: center;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
         }
-        .guidelines-item h5 {
+        .photo-guide-visual {
+          display: grid;
+          place-items: center;
+          min-height: 118px;
+          margin-bottom: 12px;
+          border-radius: 14px;
+          background: linear-gradient(180deg, rgba(124, 58, 237, 0.08), rgba(17, 24, 39, 0.8));
+          border: 1px solid rgba(124, 58, 237, 0.14);
+        }
+        .photo-guide-card h5 {
           margin: 0;
           color: #ffffff;
-          font-size: 0.82rem;
-          font-weight: 700;
+          font-size: 0.8rem;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
         }
-        .guidelines-item p {
-          margin: 6px 0 0 0;
-          color: #c3c6d0;
-          font-size: 0.72rem;
-          line-height: 1.45;
-        }
-        .guidelines-avoid {
-          margin-top: 10px;
-          border-radius: 14px;
-          border: 1px solid rgba(255, 154, 154, 0.26);
-          background: rgba(60, 18, 24, 0.34);
-          padding: 11px 12px;
-        }
-        .guidelines-avoid h5 {
-          margin: 0;
-          color: #ffd0d0;
-          font-size: 0.82rem;
-          font-weight: 700;
-        }
-        .guidelines-avoid ul {
-          margin: 8px 0 0 0;
-          padding-left: 16px;
-          color: #f6c3c3;
-          font-size: 0.72rem;
+        .photo-guide-card p {
+          margin: 10px 0 0 0;
+          color: #dfe7f8;
           line-height: 1.5;
+          font-size: 0.8rem;
         }
-        .guidelines-protip {
-          margin-top: 10px;
+        .photo-guide-checklist {
+          border-radius: 18px;
+          border: 1px solid rgba(116, 177, 255, 0.18);
+          background: rgba(10, 18, 30, 0.7);
+          padding: 14px 16px;
+        }
+        .photo-guide-checklist h5 {
+          margin: 0;
+          color: #e2e8f0;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+        .photo-guide-checklist-grid {
+          margin-top: 12px;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px 18px;
+        }
+        .check-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #dfe7f8;
+          font-size: 0.8rem;
+          line-height: 1.4;
+        }
+        .check-bullet {
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: rgba(74, 222, 128, 0.12);
+          border: 1px solid rgba(74, 222, 128, 0.5);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #7ef0a1;
+          font-size: 0.78rem;
+          font-weight: 800;
+          flex-shrink: 0;
+        }
+        .photo-guide-warning {
+          margin-top: 12px;
           border-radius: 14px;
-          border: 1px solid rgba(164, 201, 252, 0.26);
-          background: rgba(18, 30, 46, 0.46);
+          border: 1px solid rgba(251, 146, 60, 0.26);
+          background: rgba(120, 53, 15, 0.14);
+          color: #f8d7b3;
+          font-size: 0.76rem;
           padding: 10px 12px;
-          color: #b8d7ff;
-          font-size: 0.74rem;
           line-height: 1.45;
+          letter-spacing: 0.01em;
+        }
+        .photo-guide-footer {
+          display: flex;
+          justify-content: flex-end;
+          padding: 0 22px 18px 22px;
+          flex-shrink: 0;
+        }
+        .photo-guide-button {
+          border: none;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+          color: #ffffff;
+          padding: 12px 18px;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 12px 24px rgba(124, 58, 237, 0.2);
+          transition: transform 180ms ease, filter 180ms ease;
+        }
+        .photo-guide-button:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.04);
         }
         @keyframes dashPulse {
           0%, 100% { opacity: 0.4; }
@@ -1214,6 +1404,24 @@ function Dashboard() {
           .guidelines-dialog {
             padding: 16px 16px 14px 16px;
           }
+          .photo-guide-modal {
+            padding: 12px;
+          }
+          .photo-guide-dialog {
+            width: min(860px, calc(100vw - 24px));
+            max-height: calc(100dvh - 24px);
+          }
+        }
+        @media (max-width: 640px) {
+          .photo-guide-header {
+            padding: 18px 18px 12px 18px;
+          }
+          .photo-guide-content {
+            padding: 0 18px 14px 18px;
+          }
+          .photo-guide-footer {
+            padding: 0 18px 14px 18px;
+          }
         }
       `}</style>
 
@@ -1247,7 +1455,23 @@ function Dashboard() {
               </p>
               <p className="guidelines-inline">
                 Need help before uploading?
-                <a href="#photo-upload-guidelines" className="guidelines-link">Photo Upload Guidelines</a>
+                <button
+                  type="button"
+                  className="guidelines-link"
+                  onClick={() => setShowPhotoGuide(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    padding: 0,
+                    font: "inherit",
+                    cursor: "pointer",
+                    display: "inline",
+                    textDecoration: "underline",
+                    textUnderlineOffset: "2px",
+                  }}
+                >
+                  View Photo Setup Guide
+                </button>
               </p>
 
               {success && (
@@ -1278,8 +1502,16 @@ function Dashboard() {
 
               <div style={styles.uploadRow} className="upload-grid">
                 {renderUploadTile("Front View", "front", frontPreview, frontInputRef)}
-                {renderUploadTile("Side Profile", "side", sidePreview, sideInputRef)}
+                {renderUploadTile("Side View", "side", sidePreview, sideInputRef)}
                 {renderUploadTile("Back View", "back", backPreview, backInputRef)}
+              </div>
+
+              <div className="guidelines-inline" style={{ marginTop: 16 }}>
+                <span className="best-results-label">For best results</span>
+                <span className="best-results-item"><span className="best-results-dot" />Full body visible</span>
+                <span className="best-results-item"><span className="best-results-dot" />Fitted clothing</span>
+                <span className="best-results-item"><span className="best-results-dot" />Plain background</span>
+                <span className="best-results-item"><span className="best-results-dot" />Good lighting</span>
               </div>
 
               <div style={styles.controlsRow} className="controls-row">
@@ -1345,59 +1577,68 @@ function Dashboard() {
 
             </section>
 
-            <div id="photo-upload-guidelines" className="guidelines-modal" aria-hidden="true">
-              <div className="guidelines-dialog" role="dialog" aria-modal="true" aria-labelledby="guidelines-title">
-                <div className="guidelines-header">
-                  <div>
-                    <h4 id="guidelines-title" className="guidelines-title">Photo Upload Guidelines (For Best Avatar Accuracy)</h4>
-                    <p className="guidelines-sub">Follow these quick capture rules before uploading front, side, and back images.</p>
+            {showPhotoGuide && (
+              <div className="photo-guide-modal" onClick={() => setShowPhotoGuide(false)}>
+                <div className="photo-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="photo-guide-title" onClick={(event) => event.stopPropagation()}>
+                  <div className="photo-guide-header">
+                    <div>
+                      <h4 id="photo-guide-title" className="photo-guide-title">Photo Setup Guide</h4>
+                      <p className="photo-guide-sub">Follow these simple steps for the most accurate 3D avatar.</p>
+                    </div>
+                    <button type="button" className="photo-guide-close" aria-label="Close photo setup guide" onClick={() => setShowPhotoGuide(false)}>×</button>
                   </div>
-                  <a href="#" className="guidelines-close" aria-label="Close guidelines">x</a>
+ 
+                  <div className="photo-guide-content">
+                    <div className="photo-guide-grid">
+                      <article className="photo-guide-card">
+                        <div className="photo-guide-visual">{renderPoseImage("front", true)}</div>
+                        <h5>Front View</h5>
+                        <p>Face the camera and stand straight.</p>
+                      </article>
+                      <article className="photo-guide-card">
+                        <div className="photo-guide-visual">{renderPoseImage("side", true)}</div>
+                        <h5>Side View</h5>
+                        <p>Stand sideways with your full body visible.</p>
+                      </article>
+                      <article className="photo-guide-card">
+                        <div className="photo-guide-visual">{renderPoseImage("back", true)}</div>
+                        <h5>Back View</h5>
+                        <p>Face away from the camera and stand straight.</p>
+                      </article>
+                    </div>
+ 
+                    <div className="photo-guide-checklist">
+                      <h5>Before you upload</h5>
+                      <div className="photo-guide-checklist-grid">
+                        {[
+                          "Full body visible",
+                          "Stand naturally and upright",
+                          "Arms slightly away from body",
+                          "Wear fitted clothing",
+                          "Plain, uncluttered background",
+                          "Bright, even lighting",
+                        ].map((item) => (
+                          <div key={item} className="check-item">
+                            <span className="check-bullet">✓</span>
+                            <span>{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+ 
+                    <div className="photo-guide-warning">
+                      Avoid: Blurry photos • Cropped body • Baggy clothing • Dark lighting • Busy backgrounds
+                    </div>
+                  </div>
+ 
+                  <div className="photo-guide-footer">
+                    <button type="button" className="photo-guide-button" onClick={() => setShowPhotoGuide(false)}>
+                      Got it, start uploading
+                    </button>
+                  </div>
                 </div>
-
-                <div className="guidelines-grid">
-                  <article className="guidelines-item">
-                    <h5>1. Body Position</h5>
-                    <p>Stand straight and upright. Keep arms slightly away. Face the camera directly and avoid bending, leaning, or twisting.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>2. Required Photos</h5>
-                    <p>Front view, side profile, and back view. Make sure your entire body is visible in all images.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>3. Clothing</h5>
-                    <p>Wear tight or fitted clothes. Avoid loose, baggy, layered outfits, coats, jackets, and long dresses.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>4. Lighting</h5>
-                    <p>Use bright, even lighting. Avoid shadows and backlighting. Natural daylight works best.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>5. Background</h5>
-                    <p>Use a plain, uncluttered background. Avoid objects around you. A solid wall is ideal.</p>
-                  </article>
-                  <article className="guidelines-item">
-                    <h5>6. Camera Setup</h5>
-                    <p>Keep camera at waist or chest height. Keep full body in frame and use a stable camera to avoid blur.</p>
-                  </article>
-                </div>
-
-                <section className="guidelines-avoid">
-                  <h5>7. Avoid These Mistakes</h5>
-                  <ul>
-                    <li>Cropped body parts</li>
-                    <li>Blurry or low-quality images</li>
-                    <li>Dark lighting</li>
-                    <li>Busy background</li>
-                    <li>Wearing loose clothes</li>
-                  </ul>
-                </section>
-
-                <p className="guidelines-protip">
-                  Pro Tip: The better your photos, the more accurate your 3D avatar will be.
-                </p>
               </div>
-            </div>
+            )}
 
           </div>
         )}
