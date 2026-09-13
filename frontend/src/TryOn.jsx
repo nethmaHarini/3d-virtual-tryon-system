@@ -1,6 +1,6 @@
 
 import React, { useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AvatarCanvas from "./components/AvatarCanvas";
 import DashboardSidebar from "./components/DashboardSidebar";
 import TryOnJourneyBar from "./components/TryOnJourneyBar";
@@ -17,6 +17,7 @@ export default function TryOn() {
   const location = useLocation();
   const { isDark } = useAppTheme();
   const { garment, selectedSize } = location.state || {};
+  const navigate = useNavigate();
 
   const resolvedAvatarUrl = useMemo(() => {
     const candidates = [
@@ -346,6 +347,21 @@ export default function TryOn() {
       boxShadow: "0 12px 24px rgba(124, 58, 237, 0.2)",
       transition: "transform 180ms ease, box-shadow 180ms ease, filter 180ms ease",
     },
+    tryAnotherButton: {
+      marginTop: 12,
+      border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(18,30,52,0.08)",
+      borderRadius: 16,
+      background: "transparent",
+      color: isDark ? "#dfe7f8" : "#152033",
+      padding: "12px 18px",
+      fontSize: "0.88rem",
+      fontWeight: 800,
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
+      cursor: "pointer",
+      boxShadow: "none",
+      transition: "transform 160ms ease, box-shadow 160ms ease, filter 160ms ease",
+    },
   };
 
   const handleSave = async () => {
@@ -452,6 +468,15 @@ export default function TryOn() {
 
              <button type="button" style={styles.saveButton} onClick={handleSave}>
                Save Fit Analysis
+             </button>
+
+             <button
+               type="button"
+               style={styles.tryAnotherButton}
+               onClick={() => navigate('/catalog')}
+               aria-label="Try another garment"
+             >
+               Try Another Garment
              </button>
            </aside>
          </div>
