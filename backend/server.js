@@ -32,6 +32,8 @@ const GENERATED_AVATAR_DIR = path.join(
   "generated-avatars"
 );
 
+const PROFILE_UPLOAD_DIR = path.join(__dirname, "profile-uploads");
+
 const TMP_UPLOAD_DIR = path.join(
   __dirname,
   "tmp-uploads"
@@ -64,6 +66,8 @@ fs.mkdirSync(GENERATED_AVATAR_DIR, {
 fs.mkdirSync(TMP_UPLOAD_DIR, {
   recursive: true,
 });
+
+fs.mkdirSync(PROFILE_UPLOAD_DIR, { recursive: true });
 
 /* =========================================================
    TEMP FILE HELPERS
@@ -204,6 +208,12 @@ app.use(
   express.static(GENERATED_AVATAR_DIR)
 );
 
+// Serve profile uploads
+app.use(
+  "/profile-uploads",
+  express.static(PROFILE_UPLOAD_DIR)
+);
+
 /* =========================================================
    MULTER IMAGE UPLOAD
 ========================================================= */
@@ -338,6 +348,31 @@ const createAuthToken = (user) => {
       expiresIn: "1h",
     }
   );
+};
+
+// Ensure users table has a profile_image column (safe to run on startup)
+(async function ensureProfileColumn() {
+  try {
+    await pool.query(
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image VARCHAR(500);`
+    );
+  } catch (err) {
+    console.warn('Could not add profile_image column (it may already exist):', err.message || err);
+  }
+})();
+
+// Middleware to authenticate requests using Bearer token
+const authenticate = (req, res, next) => {
+  try {
+    const auth = req.headers.authorization;
+    if (!auth) return res.status(401).json({ message: 'Missing Authorization header' });
+    const token = auth.replace(/^Bearer\s+/i, '');
+    const payload = jwt.verify(token, SECRET);
+    req.user = payload;
+    return next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
 };
 
 /* =========================================================
@@ -527,6 +562,11 @@ app.post(
           });
       }
 
+      // Build profile image URL if stored in DB
+      const profileImageUrl = user.profile_image
+        ? (user.profile_image.startsWith('http') ? user.profile_image : `/profile-uploads/${user.profile_image}`)
+        : null;
+
       const token =
         createAuthToken(user);
 
@@ -539,6 +579,7 @@ app.post(
           id: user.id,
           username: user.username,
           email: user.email,
+          profile_image_url: profileImageUrl,
         },
       });
     } catch (error) {
@@ -559,6 +600,95 @@ app.post(
 /* =========================================================
    GOOGLE AUTH
 ========================================================= */
+
+/* =========================================================
+   PROFILE PHOTO UPLOAD
+   - POST /profile/photo (authenticated)
+   - saves file to PROFILE_UPLOAD_DIR, updates users.profile_image
+========================================================= */
+app.post('/profile/photo', authenticate, upload.single('photo'), async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Invalid user' });
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const ext = (req.file.originalname || '').split('.').pop() || '';
+    const safeExt = ext ? `.${ext}` : '';
+    const filename = `profile_${userId}_${Date.now()}${safeExt}`;
+    const fullPath = path.join(PROFILE_UPLOAD_DIR, filename);
+
+    fs.writeFileSync(fullPath, req.file.buffer);
+
+    // Update DB
+    await pool.query('UPDATE users SET profile_image = $1 WHERE id = $2', [filename, userId]);
+
+    const profileImageUrl = `/profile-uploads/${filename}`;
+
+    return res.json({ message: 'Profile photo uploaded', profile_image_url: profileImageUrl });
+  } catch (err) {
+    console.error('Profile upload error:', err);
+    return res.status(500).json({ message: 'Upload failed' });
+  }
+});
+
+
+// Update profile (username/email)
+app.put('/profile', authenticate, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: 'Invalid user' });
+
+    const { username, email } = req.body || {};
+
+    const nameToSave = (username || '').trim();
+    const emailToSave = (email || '').trim();
+
+    if (!nameToSave || nameToSave.length < 3) {
+      return res.status(400).json({ message: 'Username must be at least 3 characters' });
+    }
+
+    if (!isValidEmail(emailToSave)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    // Check duplicates excluding current user
+    const dup = await pool.query(
+      `SELECT id, username, email FROM users WHERE (username = $1 OR email = $2) AND id <> $3`,
+      [nameToSave, emailToSave, userId]
+    );
+
+    if (dup.rows.length > 0) {
+      const conflict = dup.rows[0];
+      if (conflict.username === nameToSave) {
+        return res.status(409).json({ field: 'username', message: 'Username already taken' });
+      }
+      if (conflict.email === emailToSave) {
+        return res.status(409).json({ field: 'email', message: 'Email already in use' });
+      }
+      return res.status(409).json({ message: 'Conflict' });
+    }
+
+    const result = await pool.query(
+      `UPDATE users SET username = $1, email = $2 WHERE id = $3 RETURNING id, username, email, profile_image`,
+      [nameToSave, emailToSave, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const updated = result.rows[0];
+    const profileImageUrl = updated.profile_image
+      ? (updated.profile_image.startsWith('http') ? updated.profile_image : `/profile-uploads/${updated.profile_image}`)
+      : null;
+
+    return res.json({ user: { id: updated.id, username: updated.username, email: updated.email, profile_image_url: profileImageUrl } });
+  } catch (err) {
+    console.error('Profile update error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 app.post(
   "/auth/google",
@@ -733,7 +863,7 @@ app.post(
           INSERT INTO users
           (username, email, password)
           VALUES ($1, $2, $3)
-          RETURNING id, username, email
+        RETURNING id, username, email, profile_image
           `,
           [
             generatedUsername,
@@ -744,6 +874,11 @@ app.post(
 
       const newUser =
         insertedUser.rows[0];
+
+      // Construct profile image url if present
+      const profileImageUrl = newUser.profile_image
+        ? (newUser.profile_image.startsWith('http') ? newUser.profile_image : `/profile-uploads/${newUser.profile_image}`)
+        : null;
 
       const token =
         createAuthToken(newUser);
@@ -756,7 +891,12 @@ app.post(
 
           token,
 
-          user: newUser,
+          user: {
+            id: newUser.id,
+            username: newUser.username,
+            email: newUser.email,
+            profile_image_url: profileImageUrl,
+          },
         });
     } catch (error) {
       console.error(

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppTheme } from "../theme";
+import API_URL, { resolveProfilePhotoUrl } from "../config";
 
 function DashboardSidebar() {
   const navigate = useNavigate();
@@ -34,13 +35,42 @@ function DashboardSidebar() {
     };
   }, []);
 
-  const username = localStorage.getItem("username") || "";
-  const displayName = username.trim().split(/\s+/)[0] || "VirtuFit 3D";
+  const [username, setUsername] = useState(localStorage.getItem("username") || "");
+  const displayName = (username || "").trim().split(/\s+/)[0] || "VirtuFit 3D";
   const hasGeneratedAvatar = Boolean(
     localStorage.getItem("avatar_file") ||
       localStorage.getItem("avatarUrl") ||
       localStorage.getItem("generatedAvatar")
   );
+
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('profilePhoto') || null);
+
+  useEffect(() => {
+    const onUpdate = (e) => {
+      const v = e?.detail?.profilePhoto;
+      if (v !== undefined) {
+        setProfilePhoto(v);
+      }
+      const uname = e?.detail?.username;
+      if (uname !== undefined) {
+        setUsername(uname);
+      }
+      const email = e?.detail?.email;
+      if (email !== undefined) {
+        // keep localStorage in sync if desired
+        try { localStorage.setItem('userEmail', email); } catch (err) {}
+      }
+    };
+    window.addEventListener('profile-updated', onUpdate);
+    return () => window.removeEventListener('profile-updated', onUpdate);
+  }, []);
+
+
+  const handleImgError = () => {
+    // keep stored profilePhoto in localStorage (don't delete it on a single load error)
+    // but clear local UI state so initials are shown; components may retry later.
+    setProfilePhoto(null);
+  };
 
   const styles = {
     sidebar: {
@@ -264,7 +294,11 @@ function DashboardSidebar() {
         </button>
 
         <div style={styles.profilePill}>
-          <div style={styles.avatarMini}>AI</div>
+          {profilePhoto ? (
+            <img src={resolveProfilePhotoUrl(profilePhoto)} alt="profile" onError={handleImgError} style={{ width: 34, height: 34, borderRadius: 999, objectFit: 'cover' }} />
+          ) : (
+            <div style={styles.avatarMini}>{(username || 'V').trim().slice(0,2).toUpperCase()}</div>
+          )}
           <div>
             <p style={styles.profileTitle}>{displayName}</p>
             <p style={styles.profileSubtitle}>{hasGeneratedAvatar ? "Existing User" : "New Artisan"}</p>

@@ -52,6 +52,10 @@ function Login() {
 
         if (data?.token) {
           localStorage.setItem("token", data.token);
+          if (data.user?.profile_image_url) {
+            localStorage.setItem('profilePhoto', data.user.profile_image_url);
+            window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: data.user.profile_image_url } }));
+          }
           alert("SUCCESS: " + (data.message || "Google login successful"));
           navigate("/dashboard");
           return;
@@ -156,6 +160,11 @@ function Login() {
   if (data?.user) {
     localStorage.setItem("username", data.user.username);
     localStorage.setItem("userEmail", data.user.email);
+    if (data.user.profile_image_url) {
+      localStorage.setItem('profilePhoto', data.user.profile_image_url);
+      // Notify sidebar/profile to update immediately
+      window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: data.user.profile_image_url } }));
+    }
   }
 
   alert("SUCCESS: " + data.message);

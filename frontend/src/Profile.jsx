@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
 import { useAppTheme } from "./theme";
+import API_URL, { resolveProfilePhotoUrl } from "./config";
 
 function Profile() {
   const navigate = useNavigate();
@@ -17,6 +18,20 @@ function Profile() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const [avatarHover, setAvatarHover] = useState(false);
+  const [avatarUpdated, setAvatarUpdated] = useState(null);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('profilePhoto') || null);
+  const [saveProfileError, setSaveProfileError] = useState("");
+  const location = useLocation();
+
+  useEffect(() => {
+    const onUpdate = (e) => {
+      const v = e?.detail?.profilePhoto;
+      if (v) setProfilePhoto(v);
+    };
+    window.addEventListener('profile-updated', onUpdate);
+    return () => window.removeEventListener('profile-updated', onUpdate);
+  }, []);
 
   const email = localStorage.getItem("userEmail");
   const username = localStorage.getItem("username");
@@ -29,6 +44,82 @@ function Profile() {
       ""
     );
 
+    // Attempt to discover an avatar timestamp from several possible sources.
+    (function discoverAvatarTimestamp() {
+      // 1) Check navigation state (if someone came with avatar data)
+      try {
+        const fromLocation = location?.state?.avatar || location?.state;
+        if (fromLocation && typeof fromLocation === 'object') {
+          const cand = fromLocation.updatedAt || fromLocation.updated_at || fromLocation.createdAt || fromLocation.created_at || fromLocation.timestamp || fromLocation.ts;
+          if (cand) {
+            const parsed = Date.parse(cand);
+            if (!Number.isNaN(parsed)) {
+              setAvatarUpdated(parsed);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // 2) Check well-known localStorage keys that may contain timestamp metadata
+      const keysToCheck = [
+        'avatar_updated', 'avatarUpdated', 'avatarTimestamp', 'avatar_timestamp',
+        'generatedAvatarMeta', 'avatar_meta', 'avatarInfo', 'avatar',
+      ];
+
+      for (const k of keysToCheck) {
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) continue;
+
+          // If raw looks like JSON, try to parse and grab fields
+          if ((raw.startsWith('{') && raw.endsWith('}')) || (raw.startsWith('[') && raw.endsWith(']'))) {
+            try {
+              const obj = JSON.parse(raw);
+              const cand = obj.updatedAt || obj.updated_at || obj.createdAt || obj.created_at || obj.timestamp || obj.ts || obj.time;
+              if (cand) {
+                const parsed = Date.parse(cand);
+                if (!Number.isNaN(parsed)) {
+                  setAvatarUpdated(parsed);
+                  return;
+                }
+              }
+            } catch (e) {
+              // fallthrough
+            }
+          }
+
+          // raw may itself be an ISO timestamp string
+          const parsedRaw = Date.parse(raw);
+          if (!Number.isNaN(parsedRaw)) {
+            setAvatarUpdated(parsedRaw);
+            return;
+          }
+
+          // raw may be a URL with a query param timestamp e.g., ?t=163...
+          try {
+            const url = new URL(raw, window.location.origin);
+            const t = url.searchParams.get('t') || url.searchParams.get('ts');
+            if (t) {
+              const parsedT = Date.parse(t) || Number(t);
+              if (!Number.isNaN(parsedT)) {
+                setAvatarUpdated(parsedT);
+                return;
+              }
+            }
+          } catch (e) {
+            // ignore non-URLs
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      // 3) If we find nothing, leave avatarUpdated as null (UI will hide Last updated)
+    })();
+
     try {
       const storedHistory = localStorage.getItem("viewHistory");
       const parsedHistory = storedHistory ? JSON.parse(storedHistory) : [];
@@ -39,7 +130,7 @@ function Profile() {
     // initialize local state for editable fields
     setUsernameState(localStorage.getItem("username") || "");
     setEmailState(localStorage.getItem("userEmail") || "");
-  }, []);
+  }, [location]);
 
   // open the confirmation modal when pencil is clicked
   function openAvatarConfirm() {
@@ -53,7 +144,7 @@ function Profile() {
     if (avatarInputRef.current) avatarInputRef.current.click();
   }
 
-  function handleAvatarFileChange(e) {
+  async function handleAvatarFileChange(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return; // user cancelled file picker
 
@@ -67,6 +158,57 @@ function Profile() {
       return;
     }
 
+    // If user is authenticated, upload to backend to persist in DB
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      try {
+        const form = new FormData();
+        form.append('photo', file);
+
+        const resp = await fetch(`${API_URL}/profile/photo`, {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + token,
+          },
+          body: form,
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+          setPhotoError(data.message || 'Upload failed');
+          e.target.value = '';
+          return;
+        }
+
+        const photoUrl = data.profile_image_url;
+        if (photoUrl) {
+          // persist for client-side immediate use
+          try {
+            localStorage.setItem('profilePhoto', photoUrl);
+          } catch (err) {
+            // ignore
+          }
+
+          // update header avatar display (store profile photo for header/sidebar)
+          setProfilePhoto(photoUrl);
+
+          // notify other components (sidebar) that profile changed
+          window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: photoUrl } }));
+        }
+
+        setPhotoError("");
+        setShowPhotoModal(false);
+      } catch (err) {
+        console.error(err);
+        setPhotoError('Upload failed');
+        e.target.value = '';
+      }
+
+      return;
+    }
+
+    // Fallback for non-authenticated workflows — preserve existing behaviour
     const reader = new FileReader();
     reader.onload = function (ev) {
       const dataUrl = ev.target.result;
@@ -185,11 +327,12 @@ function Profile() {
     },
     mainInner: {
       width: "100%",
-      maxWidth: 1400,
+      maxWidth: 1280,
       margin: "0 auto",
       display: "flex",
       flexDirection: "column",
-      gap: 24,
+      gap: 22,
+      padding: '0 20px',
       minWidth: 0,
     },
     pageHeader: {
@@ -337,7 +480,8 @@ function Profile() {
     },
     headerCard: {
       width: '100%',
-      padding: 22,
+      padding: 24,
+      minHeight: 112,
       borderRadius: 14,
       background: 'linear-gradient(180deg, rgba(7,9,20,0.55), rgba(16,12,30,0.40))',
       border: '1px solid rgba(255,255,255,0.04)',
@@ -350,14 +494,14 @@ function Profile() {
       overflow: 'hidden',
     },
     headerAvatarSquare: {
-      width: 110,
-      height: 110,
-      borderRadius: 18,
+      width: 96,
+      height: 96,
+      borderRadius: 16,
       background: 'linear-gradient(145deg, #6f3af2 0%, #a746d1 100%)',
       display: 'grid',
       placeItems: 'center',
       color: '#fff',
-      fontSize: 36,
+      fontSize: 28,
       fontWeight: 900,
       boxShadow: '0 18px 40px rgba(101,47,183,0.28)',
       flex: '0 0 auto',
@@ -403,32 +547,34 @@ function Profile() {
       cursor: "pointer",
       boxShadow: '0 6px 18px rgba(111,58,242,0.06)',
     },
-    twoCol: { display: "grid", gridTemplateColumns: "1fr 420px", gap: 18, alignItems: "start" },
-    infoCard: { padding: 20, borderRadius: 14, background: "rgba(8,15,24,0.72)", border: "1px solid rgba(255,255,255,0.06)" },
+    twoCol: { display: "grid", gridTemplateColumns: "1.15fr 0.85fr", gap: 22, alignItems: "start" },
+    infoCard: { padding: 22, minHeight: 260, borderRadius: 14, background: "rgba(8,15,24,0.72)", border: "1px solid rgba(255,255,255,0.06)" },
     infoCardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12 },
     infoIcon: { width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(145deg, rgba(111,58,242,0.15), rgba(167,70,209,0.06))', display: 'grid', placeItems: 'center', color: '#dfe7ff', fontWeight: 800 },
     rowIcon: { width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.03)', display: 'grid', placeItems: 'center', color: '#c3c6d0' },
     infoRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.03)" },
     infoLabel: { margin: 0, color: "#aab8cd", fontSize: "0.78rem", fontWeight: 700 },
     infoValue: { margin: 0, color: "#fff", fontWeight: 700, fontSize: "0.95rem" },
-    avatarCard: { padding: 20, borderRadius: 14, background: "rgba(8,15,24,0.72)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 12, alignItems: "center", justifyContent: "center" },
+    avatarCard: { padding: 22, minHeight: 260, borderRadius: 14, background: "rgba(8,15,24,0.72)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: 12, alignItems: "center", justifyContent: "center" },
     createAvatarBtn: { background: "linear-gradient(135deg, #6f3af2 0%, #a746d1 100%)", color: "#fff", border: "none", padding: "10px 18px", borderRadius: 12, cursor: "pointer", fontWeight: 700 },
     accountActivity: { display: "flex", gap: 12, marginTop: 18 },
     activityCard: { flex: 1, padding: 18, borderRadius: 12, background: "rgba(8,15,24,0.72)", border: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" },
     activityTitle: { margin: 0, color: "#aab8cd", fontWeight: 700, fontSize: "0.95rem" },
     activityValue: { margin: 0, color: "#fff", fontSize: "1.12rem", fontWeight: 800 },
     accountSummary: {
-      width: '100%',
-      padding: 20,
+      width: 'auto',
+      maxWidth: 420,
+      padding: 16,
       borderRadius: 14,
       background: 'rgba(8,15,24,0.6)',
       border: '1px solid rgba(255,255,255,0.03)',
       display: 'flex',
       alignItems: 'center',
-      gap: 20,
-      boxShadow: '0 18px 36px rgba(5,8,20,0.4)'
+      gap: 16,
+      boxShadow: '0 12px 24px rgba(5,8,20,0.28)',
+      marginTop: 4,
     },
-    activityItem: { flex: 1, display: 'flex', gap: 14, alignItems: 'center', padding: '12px 6px' },
+    activityItem: { flex: '0 0 360px', display: 'flex', gap: 14, alignItems: 'center', padding: '12px 6px', minWidth: 320, maxWidth: 420 },
     activityDivider: { width: 1, height: 64, background: 'rgba(255,255,255,0.03)' },
     iconBubblePurple: { width: 56, height: 56, borderRadius: 999, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle at 30% 30%, rgba(111,58,242,0.2), rgba(167,70,209,0.06))', boxShadow: '0 10px 22px rgba(101,47,183,0.14)' },
     iconBubbleGreen: { width: 56, height: 56, borderRadius: 999, display: 'grid', placeItems: 'center', background: 'radial-gradient(circle at 30% 30%, rgba(34,197,94,0.12), rgba(74,222,128,0.04))', boxShadow: '0 10px 22px rgba(34,197,94,0.08)' },
@@ -446,6 +592,35 @@ function Profile() {
   const initials = (displayName || "V").trim().slice(0, 2).toUpperCase();
   const avatarLabel = generatedAvatar ? "Avatar linked" : "No avatar yet";
 
+  const avatarModelUrl = useMemo(() => {
+    const candidates = [
+      location.state?.avatarUrl,
+      location.state?.avatar_file,
+      location.state?.avatarFile,
+      localStorage.getItem("avatarUrl"),
+      localStorage.getItem("avatar_file"),
+      localStorage.getItem("generatedAvatar"),
+    ];
+
+    const cleanApiUrl = API_URL.replace(/\/$/, "");
+
+    for (const value of candidates) {
+      if (typeof value !== "string" || !value.trim()) continue;
+      const trimmed = value.trim();
+      // Accept only avatars served by the current backend
+      if (trimmed.startsWith(`${cleanApiUrl}/generated-avatars/`)) {
+        return trimmed;
+      }
+
+      // Accept relative generated-avatar URLs
+      if (trimmed.startsWith("/generated-avatars/")) {
+        return `${cleanApiUrl}${trimmed}`;
+      }
+    }
+
+    return null;
+  }, [location.state]);
+
   function openEditModal() {
     setEditName(usernameState || username || "");
     setEditEmail(emailState || email || "");
@@ -456,14 +631,60 @@ function Profile() {
     setShowEditModal(false);
   }
 
-  function saveProfile() {
+  async function saveProfile() {
+    setSaveProfileError('');
     const nameToSave = (editName || "").trim();
     const emailToSave = (editEmail || "").trim();
-    localStorage.setItem('username', nameToSave);
-    localStorage.setItem('userEmail', emailToSave);
-    setUsernameState(nameToSave);
-    setEmailState(emailToSave);
-    setShowEditModal(false);
+
+    if (!nameToSave || nameToSave.length < 3) {
+      setSaveProfileError('Username must be at least 3 characters');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToSave)) {
+      setSaveProfileError('Please provide a valid email address');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setSaveProfileError('You must be logged in to update your profile');
+      return;
+    }
+
+    try {
+      const resp = await fetch(`${API_URL}/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ username: nameToSave, email: emailToSave }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) {
+        setSaveProfileError(data.message || (data.field ? `${data.field} conflict` : 'Failed to update profile'));
+        return;
+      }
+
+      const updatedUser = data.user;
+
+      // persist locally after server confirms
+      try { localStorage.setItem('username', updatedUser.username); } catch (e) {}
+      try { localStorage.setItem('userEmail', updatedUser.email); } catch (e) {}
+
+      setUsernameState(updatedUser.username);
+      setEmailState(updatedUser.email);
+
+      // notify other components (sidebar)
+      window.dispatchEvent(new CustomEvent('profile-updated', { detail: { username: updatedUser.username, email: updatedUser.email } }));
+
+      setShowEditModal(false);
+    } catch (err) {
+      console.error('Profile save error:', err);
+      setSaveProfileError('Connection failed');
+    }
   }
 
   // close modals on Escape
@@ -504,10 +725,10 @@ function Profile() {
           </header>
 
           <section style={styles.headerCard}>
-            <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 18, alignItems: 'center', width: '100%' }}>
               <div style={styles.headerAvatarSquare}>
-                {generatedAvatar ? (
-                  <img src={generatedAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 14 }} />
+                {(profilePhoto || generatedAvatar) ? (
+                  <img src={resolveProfilePhotoUrl(profilePhoto || generatedAvatar)} alt="avatar" onError={(e) => { setProfilePhoto(null); }} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 14 }} />
                 ) : (
                   <span style={{ fontSize: 36, fontWeight: 800 }}>{initials}</span>
                 )}
@@ -529,15 +750,11 @@ function Profile() {
                   </svg>
                 </button>
               </div>
+
               <div style={styles.headerContent}>
-                <h3 style={styles.bannerName}>{displayName}</h3>
+                <h3 style={styles.bannerName}>{usernameState || username || displayName}</h3>
                 <p style={styles.bannerEmail}>{email || "No email saved"}</p>
                 <div style={styles.bannerBadges}>
-                  <div style={styles.activePill}>
-                    <span style={{ width: 10, height: 10, borderRadius: 999, background: '#4ade80', boxShadow: '0 0 10px rgba(74,222,128,0.55)' }} />
-                    <span>Active Account</span>
-                  </div>
-
                   <div style={styles.avatarStatus}>
                     <span style={{ display: 'inline-block', width: 18, height: 18, borderRadius: 6, background: 'rgba(255,255,255,0.12)', display: 'grid', placeItems: 'center', color: '#fff', fontSize: 12 }}>
                       ⎔
@@ -546,9 +763,11 @@ function Profile() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            
+              <div style={styles.headerRight}>
+                <button style={styles.headerEditBtn} onClick={openEditModal} aria-label="Edit profile">Edit Profile</button>
+              </div>
+            </div>
           </section>
           {showEditModal && (
             <div style={styles.editModalOverlay}>
@@ -558,6 +777,7 @@ function Profile() {
                 <input style={styles.editInput} value={editName} onChange={(e) => setEditName(e.target.value)} />
                 <label style={{ marginTop: 12, color: '#aab8cd', fontWeight: 700 }}>Email address</label>
                 <input style={styles.editInput} value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+                {saveProfileError && <p style={{ color: '#ffb4b4', marginTop: 10 }}>{saveProfileError}</p>}
                 <div style={styles.modalActions}>
                   <button style={styles.modalBtnSecondary} onClick={closeEditModal}>Cancel</button>
                   <button style={styles.modalBtnPrimary} onClick={saveProfile}>Save</button>
@@ -596,13 +816,6 @@ function Profile() {
               <div style={{ marginTop: 12 }}>
                 <div style={styles.infoRow}>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <div style={styles.rowIcon}>🧾</div>
-                    <p style={styles.infoLabel}>Full Name</p>
-                  </div>
-                  <p style={styles.infoValue}>{displayName}</p>
-                </div>
-                <div style={styles.infoRow}>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                     <div style={styles.rowIcon}>✉️</div>
                     <p style={styles.infoLabel}>Email Address</p>
                   </div>
@@ -619,70 +832,126 @@ function Profile() {
             </div>
 
             <aside style={styles.avatarCard}>
-              <div style={{ width: 120, height: 120, borderRadius: 999, background: 'radial-gradient(circle at 30% 30%, rgba(111,58,242,0.35), rgba(167,70,209,0.12))', display: 'grid', placeItems: 'center', color: '#fff', fontSize: 28, fontWeight: 800 }}>
-                {generatedAvatar ? (
-                  <img src={generatedAvatar} alt="avatar" style={{ width: 120, height: 120, borderRadius: 999, objectFit: 'cover' }} />
+              <div style={{ width: 120, height: 120, borderRadius: 14, background: 'linear-gradient(145deg, rgba(111,58,242,0.08), rgba(167,70,209,0.04))', display: 'grid', placeItems: 'center', color: '#fff', fontSize: 28, fontWeight: 800 }}>
+                {/* Do NOT display profile photo here — this card must represent the 3D avatar state */}
+                {avatarModelUrl ? (
+                  // Simple 3D avatar thumbnail placeholder — the full viewer is available via 'Open Avatar'
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <rect width="64" height="64" rx="8" fill="rgba(255,255,255,0.02)" />
+                    <path d="M32 36c6 0 10 3 10 6v2H22v-2c0-3 4-6 10-6z" fill="#bfc8dc" />
+                    <circle cx="32" cy="22" r="8" fill="#dfe7f8" />
+                  </svg>
                 ) : (
-                  initials
+                  // Neutral placeholder
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                    <rect width="64" height="64" rx="8" fill="rgba(255,255,255,0.02)" />
+                    <path d="M32 36c6 0 10 3 10 6v2H22v-2c0-3 4-6 10-6z" fill="#9fb0c9" />
+                    <circle cx="32" cy="22" r="8" fill="#cfe3ff" />
+                  </svg>
                 )}
               </div>
-              <h4 style={{ margin: 0, color: '#fff', fontWeight: 800 }}>No avatar created yet</h4>
-              <p style={{ margin: 0, color: '#cfe3ff' }}>Create your personalized 3D avatar to begin your virtual try-on experience.</p>
-              <button style={{ ...styles.createAvatarBtn, background: 'linear-gradient(90deg,#6f3af2,#a746d1)' }} onClick={() => navigate('/dashboard')}>Create Avatar</button>
+
+              {avatarModelUrl ? (
+                <>
+                  <h4 style={{ margin: '12px 0 0 0', color: '#fff', fontWeight: 800 }}>Your Avatar</h4>
+                  <p style={{ margin: '6px 0 0 0', color: '#cfe3ff' }}>Your personalized 3D avatar is ready.</p>
+
+                  {/* Optional metadata row: Last updated (only when a valid timestamp is available) */}
+                  {avatarUpdated ? (
+                    <div style={{ marginTop: 8, color: '#9fb0c9', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                        <path d="M12 6v6l4 2" stroke="#9fb0c9" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="9" stroke="#9fb0c9" strokeWidth="1.2"/>
+                      </svg>
+                      <span style={{ color: '#9fb0c9' }}>Last updated · {new Date(avatarUpdated).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
+                  ) : null}
+
+                  <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                    <button style={{ ...styles.createAvatarBtn, background: 'linear-gradient(90deg,#6f3af2,#a746d1)' }} onClick={() => navigate('/avatar-viewer')}>Open Avatar</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h4 style={{ margin: '12px 0 0 0', color: '#fff', fontWeight: 800 }}>No avatar generated yet</h4>
+                  <p style={{ margin: '6px 0 0 0', color: '#cfe3ff' }}>Generate your personalized 3D avatar to begin virtual try-on.</p>
+                  <button style={{ ...styles.createAvatarBtn, background: 'linear-gradient(90deg,#6f3af2,#a746d1)' }} onClick={() => navigate('/dashboard')}>Generate Avatar</button>
+                </>
+              )}
             </aside>
           </div>
+ 
 
-          <div style={styles.accountSummary}>
-            <div style={styles.activityItem}>
-              <div style={styles.iconBubblePurple} aria-hidden>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 6v6l4 2" stroke="#bfb7ff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="12" r="9" stroke="#cdbdff" strokeWidth="1.2"/>
-                </svg>
+          {/* Lower two-column grid: Try-On Sessions + Privacy & Biometric Data */}
+          <>
+            <style>{`.profile-lower-grid { margin-top: 22px; display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 22px; align-items: stretch; }
+              @media (max-width: 900px) { .profile-lower-grid { grid-template-columns: 1fr; } }`}</style>
+
+            <div className="profile-lower-grid">
+              {/* Try-On Sessions card */}
+              <div style={{ padding: 20, borderRadius: 14, background: 'rgba(8,15,24,0.72)', border: '1px solid rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 14, width: '100%', height: '100%' }}>
+                <div style={styles.iconBubblePurple} aria-hidden>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 6v6l4 2" stroke="#bfb7ff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="12" r="9" stroke="#cdbdff" strokeWidth="1.2"/>
+                  </svg>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <p style={styles.activityTitle}>Try-On Sessions</p>
+                  <p style={styles.activityValue}>{viewHistoryCount}</p>
+                  <p style={styles.activitySmall}>Total try-on sessions</p>
+                </div>
               </div>
-              <div>
-                <p style={styles.activityTitle}>Try-On Sessions</p>
-                <p style={styles.activityValue}>0</p>
-                <p style={styles.activitySmall}>Total try-on sessions</p>
+
+              {/* Privacy & Biometric Data card */}
+              <div style={{ padding: 20, borderRadius: 14, background: 'rgba(8,15,24,0.6)', border: '1px solid rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', gap: 14, width: '100%', height: '100%' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, display: 'grid', placeItems: 'center', background: 'rgba(111,58,242,0.08)' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2l6 3v5c0 5-3.58 9.74-6 12-2.42-2.26-6-7-6-12V5l6-3z" stroke="#cfc9ff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+                  <strong style={{ color: '#fff', fontSize: 14 }}>Privacy & Biometric Data</strong>
+                  <p style={{ margin: 0, color: '#9fb0c9', fontSize: 13 }}>Your uploaded photos and body-related data are used to create your personalized 3D avatar and support the virtual try-on experience.</p>
+                  <div style={{ marginTop: 6 }}>
+                    <button style={{ ...styles.secondaryButton, padding: '8px 10px', fontSize: 13 }} onClick={() => setShowPrivacyModal(true)}>Learn about your data</button>
+                  </div>
+                </div>
               </div>
             </div>
+          </>
+          {showPrivacyModal && (
+            <div style={styles.editModalOverlay} onClick={(e) => { if (e.target === e.currentTarget) setShowPrivacyModal(false); }}>
+              <div style={{ ...styles.editModal, width: 640 }} role="dialog" aria-modal="true" aria-label="Privacy & Biometric Data">
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '1.1rem', fontWeight: 800 }}>Privacy & Biometric Data</h3>
+                <p style={{ marginTop: 10, color: '#aab8cd' }}>Information about how photos, avatar models, and fit-related data are used within VirtuFit 3D.</p>
 
-            <div style={styles.activityDivider} />
+                <div style={{ marginTop: 14, display: 'grid', gap: 12 }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: 14 }}>Photo Data</h4>
+                    <p style={{ margin: 0, color: '#cfe3ff' }}>Photos you upload are used to generate a personalized 3D avatar.</p>
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: 14 }}>Avatar Data</h4>
+                    <p style={{ margin: 0, color: '#cfe3ff' }}>The generated 3D avatar is used to power the virtual try-on experience in the app.</p>
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: 14 }}>Fit Data</h4>
+                    <p style={{ margin: 0, color: '#cfe3ff' }}>Body and fit-related information may be used to provide fit analysis and personalized recommendations.</p>
+                  </div>
+                </div>
 
-            <div style={styles.activityItem}>
-              <div style={styles.iconBubblePurple} aria-hidden>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z" stroke="#d9cffb" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M4 20c0-3.31 2.69-6 6-6h4c3.31 0 6 2.69 6 6" stroke="#d9cffb" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <p style={styles.activityTitle}>Saved Avatar</p>
-                <p style={styles.activityValue}>{generatedAvatar ? 'Available' : 'Not Available'}</p>
-                <p style={styles.activitySmall}>{generatedAvatar ? 'Your avatar is ready' : 'No avatar created yet'}</p>
-              </div>
-            </div>
-
-            <div style={styles.activityDivider} />
-
-            <div style={styles.activityItem}>
-              <div style={styles.iconBubbleGreen} aria-hidden>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2l3 5 6 .9-4.5 4 1.1 6L12 16l-5.6 3.9 1.1-6L3 7.9 9 7 12 2z" stroke="#aff8d1" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9.5 12.5l1.8 1.8L15 10" stroke="#1ee38a" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <p style={styles.activityTitle}>Account Status</p>
-                <p style={styles.activityValue}>Active</p>
-                <p style={styles.activitySmall}>Your account is active</p>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 18 }}>
+                  <button style={styles.modalBtnSecondary} onClick={() => setShowPrivacyModal(false)}>Close</button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
         </div>
       </main>
     </div>
   );
 }
-
+ 
 export default Profile;
