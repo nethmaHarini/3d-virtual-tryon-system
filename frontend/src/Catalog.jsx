@@ -352,7 +352,6 @@ function Catalog() {
 
   const navigate = useNavigate();
   const [tab, setTab] = useState("tshirts");
-  const email = localStorage.getItem("userEmail");
 
   // Demo product data (static)
   const tshirts = [
@@ -430,7 +429,8 @@ function Catalog() {
       "/images/black_pant_boy_32.png",
       "/images/black_pant_boy_32.png"
     ],
-    breadcrumb: "Shop / Apparel / Trousers"
+    breadcrumb: "Shop / Apparel / Trousers",
+    sizes: ["30", "32", "34", "36", "38"]
   },
   {
     id: "tr2",
@@ -442,7 +442,28 @@ function Catalog() {
       "/images/orange.jpg",
       "/images/orange.jpg"
     ],
-    breadcrumb: "Shop / Apparel / Trousers"
+    breadcrumb: "Shop / Apparel / Trousers",
+    sizes: ["30", "32", "34", "36", "38"]
+  },
+  {
+    id: "tr3",
+    name: "White Male Trouser",
+    category: "Trousers",
+    image: "/images/white_male_trouser.png",
+    thumbnails: [
+      "/images/Trousers/white_male_trouser_front.png",
+      "/images/Trousers/white_male_trouser_side.png",
+      "/images/Trousers/white_male_trouser_back.png"
+    ],
+    breadcrumb: "Shop / Apparel / Trousers",
+    sizes: ["30", "32", "34", "36", "38"],
+    modelBySize: {
+      "30": "/models/trousers/white/male_white_trouser_30.glb",
+      "32": "/models/trousers/white/male_white_trouser_32.glb",
+      "34": "/models/trousers/white/male_white_trouser_34.glb",
+      "36": "/models/trousers/white/male_white_trouser_36.glb",
+      "38": "/models/trousers/white/male_white_trouser_38.glb"
+    }
   }
 ];
 
@@ -565,7 +586,11 @@ function Catalog() {
                           : "Shop / Apparel / Trousers",
                         title: item.name,
                         images: [item.image],
-                        sizes: ["S", "M", "L"],
+                        sizes:
+                          item.sizes ||
+                          (tab === "trousers"
+                            ? ["30", "32", "34", "36", "38"]
+                            : ["S", "M", "L"]),
                       },
                     },
                   })
@@ -579,7 +604,33 @@ function Catalog() {
                 <div style={styles.cardBody}>
                   <p style={styles.cardType}>{tab === "tshirts" ? "T-Shirts" : "Trousers"}</p>
                   <h3 style={styles.cardName}>{item.name}</h3>
-                  <button type="button" style={styles.cardButton} className="catalog-cta">
+                  <button
+                    type="button"
+                    style={styles.cardButton}
+                    className="catalog-cta"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/garment-detail", {
+                        state: {
+                          avatarUrl,
+                          garment: {
+                            ...item,
+                            breadcrumb:
+                              tab === "tshirts"
+                                ? "Shop / Apparel / T-Shirts"
+                                : "Shop / Apparel / Trousers",
+                            title: item.name,
+                            images: item.thumbnails || [item.image],
+                            sizes:
+                              item.sizes ||
+                              (tab === "trousers"
+                                ? ["30", "32", "34", "36", "38"]
+                                : ["S", "M", "L"]),
+                          },
+                        },
+                      });
+                    }}
+                  >
                     <span>◉</span>
                     <span>Try-On</span>
                   </button>
