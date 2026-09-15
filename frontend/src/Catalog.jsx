@@ -1,26 +1,30 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
-import { useState } from "react";
 import DashboardSidebar from "./components/DashboardSidebar";
 import TryOnJourneyBar from "./components/TryOnJourneyBar";
 import { useAppTheme } from "./theme";
 
 function Catalog() {
+  const navigate = useNavigate();
   const location = useLocation();
   const { isDark } = useAppTheme();
-  const avatarUrl = location.state?.avatarUrl || "/models/final_avatar.obj";
-  // --- Styles ---
+
+  const avatarUrl =
+    location.state?.avatarUrl ||
+    localStorage.getItem("avatarUrl") ||
+    "/models/final_avatar.obj";
+
+  const [tab, setTab] = useState("tshirts");
+
   const styles = {
     page: {
       minHeight: "100vh",
       width: "100%",
       minWidth: 0,
-      background:
-        isDark
-          ? "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)"
-          : "radial-gradient(circle at 12% 14%, rgba(78, 107, 255, 0.16) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 44%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 46%, #eaf0fb 100%)",
+      background: isDark
+        ? "radial-gradient(circle at 12% 14%, rgba(54, 38, 206, 0.22) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(95, 11, 126, 0.2) 0%, transparent 44%), linear-gradient(155deg, #090f17 0%, #0d141d 46%, #111a27 100%)"
+        : "radial-gradient(circle at 12% 14%, rgba(78, 107, 255, 0.16) 0%, transparent 34%), radial-gradient(circle at 86% 84%, rgba(138, 92, 255, 0.12) 0%, transparent 44%), linear-gradient(155deg, #f7f9ff 0%, #edf2ff 46%, #eaf0fb 100%)",
       color: isDark ? "#dce3f0" : "#152033",
       fontFamily: "'Manrope', 'Segoe UI', sans-serif",
       padding: 0,
@@ -28,112 +32,7 @@ function Catalog() {
       boxSizing: "border-box",
       overflowX: "hidden",
     },
-    sidebar: {
-      position: "fixed",
-      left: 26,
-      top: 22,
-      bottom: 22,
-      width: 220,
-      borderRadius: 20,
-      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
-      background: isDark ? "linear-gradient(180deg, rgba(8,12,20,0.72), rgba(10,14,26,0.64))" : "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,243,250,0.92))",
-      backdropFilter: "blur(18px)",
-      boxShadow: isDark ? "0 28px 56px rgba(5, 12, 22, 0.56)" : "0 28px 56px rgba(83, 96, 117, 0.12)",
-      padding: 20,
-      boxSizing: "border-box",
-      display: "flex",
-      flexDirection: "column",
-      gap: 12,
-      zIndex: 70,
-    },
-    brand: {
-      margin: 0,
-      fontSize: "1.2rem",
-      color: isDark ? "#ffffff" : "#152033",
-      fontWeight: 800,
-      fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
-      letterSpacing: "-0.01em",
-    },
-    brandTag: {
-      margin: "4px 0 18px 0",
-      fontSize: "0.66rem",
-      color: isDark ? "rgba(195, 198, 208, 0.72)" : "rgba(83, 96, 117, 0.78)",
-      letterSpacing: "0.2em",
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
-    navPillBase: {
-      width: "100%",
-      border: "1px solid transparent",
-      borderRadius: 999,
-      padding: "10px 12px",
-      background: "transparent",
-      color: isDark ? "#c3c0ff" : "#425277",
-      fontSize: "0.95rem",
-      fontWeight: 700,
-      textAlign: "left",
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      transition: "all 180ms ease",
-    },
-    navPillActive: {
-      background: isDark ? "linear-gradient(90deg, #6f3af2 0%, #a746d1 100%)" : "linear-gradient(90deg, #4e6bff 0%, #8a5cff 100%)",
-      color: "#ffffff",
-      boxShadow: isDark ? "0 10px 30px rgba(111,58,242,0.18)" : "0 10px 30px rgba(78,107,255,0.18)",
-    },
-    sidebarSection: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 6,
-    },
-    sidebarFooter: {
-      marginTop: "auto",
-      paddingTop: 12,
-      borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.03)" : "1px solid rgba(18, 30, 52, 0.06)",
-      display: "flex",
-      flexDirection: "column",
-      gap: 8,
-    },
-    notifyDot: { marginLeft: 8, display: 'inline-block', minWidth: 18, height: 18, borderRadius: 18, background: 'linear-gradient(90deg,#6f3af2,#a746d1)', color: '#fff', fontSize: 11, lineHeight: '18px', textAlign: 'center', fontWeight: 800 },
-    sidebarHeader: { color: 'rgba(173,182,204,0.7)', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '2px 0 6px 0' },
-    profilePill: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      background: isDark ? "rgba(8, 15, 24, 0.9)" : "rgba(255, 255, 255, 0.92)",
-      borderRadius: 16,
-      padding: "10px 12px",
-      border: isDark ? "1px solid rgba(255, 255, 255, 0.06)" : "1px solid rgba(18, 30, 52, 0.08)",
-      boxSizing: "border-box",
-    },
-    avatarMini: {
-      width: 34,
-      height: 34,
-      borderRadius: "999px",
-      background: "linear-gradient(145deg, #3626ce 0%, #5f0b7e 100%)",
-      display: "grid",
-      placeItems: "center",
-      color: isDark ? "#ffffff" : "#152033",
-      fontSize: "0.76rem",
-      fontWeight: 700,
-      letterSpacing: "0.04em",
-      flexShrink: 0,
-    },
-    profileTitle: {
-      margin: 0,
-      fontSize: "0.82rem",
-      color: "#f3f6ff",
-      fontWeight: 700,
-    },
-    profileSubtitle: {
-      margin: "2px 0 0 0",
-      fontSize: "0.62rem",
-      color: isDark ? "rgba(195, 198, 208, 0.78)" : "rgba(83, 96, 117, 0.78)",
-      letterSpacing: "0.16em",
-      textTransform: "uppercase",
-      fontWeight: 700,
-    },
+
     main: {
       marginLeft: 286,
       marginRight: 32,
@@ -142,6 +41,7 @@ function Catalog() {
       minWidth: 0,
       boxSizing: "border-box",
     },
+
     mainInner: {
       width: "100%",
       maxWidth: 1400,
@@ -151,6 +51,7 @@ function Catalog() {
       gap: 24,
       minWidth: 0,
     },
+
     headingWrap: {
       marginBottom: 4,
       display: "flex",
@@ -159,17 +60,19 @@ function Catalog() {
       flexWrap: "wrap",
       gap: 16,
     },
+
     heading: {
       margin: 0,
       fontSize: "2.28rem",
       letterSpacing: "-0.02em",
       fontWeight: 800,
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       lineHeight: 1.1,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
     },
+
     subtitle: {
-      color: "#c3c6d0",
+      color: isDark ? "#c3c6d0" : "#5f6b7c",
       fontWeight: 400,
       fontSize: "0.98rem",
       textAlign: "left",
@@ -178,11 +81,16 @@ function Catalog() {
       lineHeight: 1.55,
       letterSpacing: "0.01em",
     },
+
     statusChip: {
       padding: "9px 14px",
       borderRadius: 999,
-      border: "1px solid rgba(255, 255, 255, 0.08)",
-      background: "rgba(21, 28, 38, 0.72)",
+      border: isDark
+        ? "1px solid rgba(255, 255, 255, 0.08)"
+        : "1px solid rgba(18, 30, 52, 0.1)",
+      background: isDark
+        ? "rgba(21, 28, 38, 0.72)"
+        : "rgba(255, 255, 255, 0.86)",
       display: "inline-flex",
       alignItems: "center",
       gap: 8,
@@ -190,8 +98,9 @@ function Catalog() {
       fontWeight: 700,
       letterSpacing: "0.1em",
       textTransform: "uppercase",
-      color: "#c3c6d0",
+      color: isDark ? "#c3c6d0" : "#526078",
     },
+
     chipDot: {
       width: 8,
       height: 8,
@@ -200,6 +109,7 @@ function Catalog() {
       boxShadow: "0 0 10px rgba(164, 201, 252, 0.8)",
       animation: "catalogPulse 1.4s ease-in-out infinite",
     },
+
     searchFilterRow: {
       display: "flex",
       gap: 14,
@@ -207,6 +117,7 @@ function Catalog() {
       alignItems: "center",
       marginBottom: 2,
     },
+
     searchWrap: {
       minWidth: 250,
       flex: "1 1 320px",
@@ -214,94 +125,124 @@ function Catalog() {
       alignItems: "center",
       gap: 8,
       borderRadius: 999,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(8, 15, 24, 0.74)",
+      border: isDark
+        ? "1px solid rgba(255,255,255,0.08)"
+        : "1px solid rgba(18,30,52,0.08)",
+      background: isDark
+        ? "rgba(8, 15, 24, 0.74)"
+        : "rgba(255,255,255,0.85)",
       padding: "10px 14px",
       boxSizing: "border-box",
-      color: "#8d9199",
+      color: isDark ? "#8d9199" : "#65728a",
       fontSize: "0.86rem",
     },
+
     searchInput: {
       flex: 1,
       border: "none",
       background: "transparent",
       outline: "none",
-      color: "#dce3f0",
+      color: isDark ? "#dce3f0" : "#152033",
       fontSize: "0.86rem",
     },
+
     tabBar: {
       display: "flex",
       gap: 8,
       flexWrap: "wrap",
     },
+
     tabButtonBase: {
       borderRadius: 999,
       padding: "10px 18px",
       fontSize: "0.84rem",
       fontWeight: 700,
-      border: "1px solid rgba(255,255,255,0.08)",
+      border: isDark
+        ? "1px solid rgba(255,255,255,0.08)"
+        : "1px solid rgba(18,30,52,0.08)",
       cursor: "pointer",
       transition: "all 220ms ease",
       letterSpacing: "0.02em",
     },
+
     tabButtonInactive: {
-      background: "rgba(36, 42, 52, 0.64)",
-      color: "#c3c6d0",
+      background: isDark
+        ? "rgba(36, 42, 52, 0.64)"
+        : "#ffffff",
+      color: isDark ? "#c3c6d0" : "#425277",
     },
+
     tabButtonActive: {
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
+      background:
+        "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
       color: "#ffffff",
       boxShadow: "0 0 16px rgba(164, 201, 252, 0.22)",
       border: "1px solid rgba(164, 201, 252, 0.34)",
     },
+
     cardGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(238px, 1fr))",
+      gridTemplateColumns:
+        "repeat(auto-fit, minmax(238px, 1fr))",
       gap: 20,
       width: "100%",
       marginTop: 6,
     },
+
     card: {
       borderRadius: 22,
-      border: "1px solid rgba(255, 255, 255, 0.07)",
-      background: "rgba(21, 28, 38, 0.66)",
+      border: isDark
+        ? "1px solid rgba(255, 255, 255, 0.07)"
+        : "1px solid rgba(18,30,52,0.08)",
+      background: isDark
+        ? "rgba(21, 28, 38, 0.66)"
+        : "rgba(255,255,255,0.9)",
       backdropFilter: "blur(20px)",
       overflow: "hidden",
-      boxShadow: "0 16px 34px rgba(5, 12, 22, 0.34)",
+      boxShadow: isDark
+        ? "0 16px 34px rgba(5, 12, 22, 0.34)"
+        : "0 16px 34px rgba(73,84,105,0.12)",
       cursor: "pointer",
-      transition: "transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease",
+      transition:
+        "transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease",
       display: "flex",
       flexDirection: "column",
       minHeight: 320,
     },
+
     imageWrap: {
       width: "100%",
       aspectRatio: "3 / 4",
       overflow: "hidden",
       position: "relative",
-      background: "#101824",
+      background: isDark ? "#101824" : "#eef1f6",
     },
+
     cardImg: {
       width: "100%",
       height: "100%",
       objectFit: "cover",
       transition: "transform 420ms ease",
     },
+
     gradientOverlay: {
       position: "absolute",
       left: 0,
       right: 0,
       bottom: 0,
       height: "42%",
-      background: "linear-gradient(to top, rgba(13, 20, 29, 0.9) 0%, rgba(13, 20, 29, 0.2) 56%, transparent 100%)",
+      background:
+        "linear-gradient(to top, rgba(13, 20, 29, 0.9) 0%, rgba(13, 20, 29, 0.2) 56%, transparent 100%)",
       pointerEvents: "none",
     },
+
     cardBody: {
       padding: "14px 14px 16px 14px",
       display: "flex",
       flexDirection: "column",
       gap: 10,
     },
+
     cardType: {
       margin: 0,
       fontSize: "0.64rem",
@@ -310,14 +251,33 @@ function Catalog() {
       letterSpacing: "0.16em",
       textTransform: "uppercase",
     },
+
     cardName: {
       margin: 0,
       fontSize: "1rem",
-      color: "#ffffff",
+      color: isDark ? "#ffffff" : "#152033",
       fontWeight: 700,
       lineHeight: 1.32,
       fontFamily: "'Plus Jakarta Sans', 'Manrope', sans-serif",
     },
+
+    sizePreview: {
+      display: "flex",
+      gap: 6,
+      flexWrap: "wrap",
+    },
+
+    sizeChip: {
+      padding: "5px 8px",
+      borderRadius: 8,
+      fontSize: "0.7rem",
+      fontWeight: 700,
+      background: isDark
+        ? "rgba(255,255,255,0.08)"
+        : "rgba(78,107,255,0.08)",
+      color: isDark ? "#cdd4e2" : "#425277",
+    },
+
     cardButton: {
       marginTop: 2,
       width: "100%",
@@ -325,7 +285,8 @@ function Catalog() {
       borderRadius: 999,
       padding: "11px 14px",
       cursor: "pointer",
-      background: "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
+      background:
+        "linear-gradient(135deg, #3626ce 0%, #5f0b7e 100%)",
       color: "#ffffff",
       fontWeight: 700,
       fontSize: "0.8rem",
@@ -337,6 +298,7 @@ function Catalog() {
       transition: "all 220ms ease",
       boxShadow: "0 10px 22px rgba(40, 30, 104, 0.35)",
     },
+
     emptyText: {
       color: "#8eb6d6",
       opacity: 0.78,
@@ -350,170 +312,276 @@ function Catalog() {
     },
   };
 
-  const navigate = useNavigate();
-  const [tab, setTab] = useState("tshirts");
-  const email = localStorage.getItem("userEmail");
+  // =========================================================
+  // T-SHIRTS
+  // =========================================================
 
-  // Demo product data (static)
   const tshirts = [
     {
-    id: "t1",
-    name: "Blue Cotton",
-    category: "T-Shirts",
-    image: "/images/BTShirt_Boy.png",
-    thumbnails: [
-      "/images/BTShirt_Boy.png",
-      "/images/BTShirt_Boy.png",
-      "/images/BTShirt_Boy.png"
-    ],
-    breadcrumb: "Shop / Apparel / T-Shirts"
-  },
+      id: "t1",
+      name: "Blue Cotton",
+      category: "T-Shirts",
+
+      image: "/images/BTShirt_Boy.png",
+
+      thumbnails: [
+        "/images/BTShirt_Boy.png",
+        "/images/BTShirt_Boy.png",
+        "/images/BTShirt_Boy.png",
+      ],
+
+      breadcrumb: "Shop / Apparel / T-Shirts",
+
+      sizes: ["S", "M", "L"],
+    },
+
     {
       id: "t2",
       name: "Pink Crop TOP",
       category: "T-Shirts",
+
       image: "/images/pink_crop_top2D_preview.png",
+
       thumbnails: [
         "/images/pink_crop_top2D_preview.png",
         "/images/pink_crop_top2D_preview.png",
-        "/images/pink_crop_top2D_preview.png"
+        "/images/pink_crop_top2D_preview.png",
       ],
-      breadcrumb: "Shop / Apparel / T-Shirts"
+
+      breadcrumb: "Shop / Apparel / T-Shirts",
+
+      sizes: ["S", "M", "L"],
     },
-    /*{
+
+    /*
+    Keep your future catalog items here.
+
+    {
       id: "t3",
-      name: "Gr",
-      category: "T-Shirts",
-      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
-      thumbnails: [
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-50"
-      ],
-      breadcrumb: "Shop / Apparel / T-Shirts"
-    },
-    {
-      id: "t4",
-      name: "Highneck T Shirt",
-      category: "T-Shirts",
-      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80",
-      thumbnails: [
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=-80"
-      ],
-      breadcrumb: "Shop / Apparel / T-Shirts"
-    },
-    {
-      id: "t5",
-      name: "Red Polo",
-      category: "T-Shirts",
-      image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90",
-      thumbnails: [
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90",
-        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=400&q=80&sat=100&hue=90"
-      ],
-      breadcrumb: "Shop / Apparel / T-Shirts"
-    },*/
+      name: "Grey T-Shirt",
+      ...
+    }
+    */
   ];
 
-  //trousers data
+  // =========================================================
+  // TROUSERS
+  // =========================================================
+
   const trousers = [
-  {
-    id: "tr1",
-    name: "Black Trouser",
-    category: "Trousers",
-    image: "/images/black_pant_boy_32.png",
-    thumbnails: [
-      "/images/black_pant_boy_32.png",
-      "/images/black_pant_boy_32.png",
-      "/images/black_pant_boy_32.png"
-    ],
-    breadcrumb: "Shop / Apparel / Trousers"
-  },
-  {
-    id: "tr2",
-    name: "Orange Trouser",
-    category: "Trousers",
-    image: "/images/orange.jpg",
-    thumbnails: [
-      "/images/orange.jpg",
-      "/images/orange.jpg",
-      "/images/orange.jpg"
-    ],
-    breadcrumb: "Shop / Apparel / Trousers"
-  }
-];
+    {
+      id: "tr1",
+      name: "Black Trouser",
+      category: "Trousers",
+
+      image: "/images/black_pant_boy_32.png",
+
+      thumbnails: [
+        "/images/black_pant_boy_32.png",
+        "/images/black_pant_boy_32.png",
+        "/images/black_pant_boy_32.png",
+      ],
+
+      breadcrumb: "Shop / Apparel / Trousers",
+
+      sizes: ["30", "32", "34", "36", "38"],
+    },
+
+    {
+      id: "tr2",
+      name: "Orange Trouser",
+      category: "Trousers",
+
+      image: "/images/orange.jpg",
+
+      thumbnails: [
+        "/images/orange.jpg",
+        "/images/orange.jpg",
+        "/images/orange.jpg",
+      ],
+
+      breadcrumb: "Shop / Apparel / Trousers",
+
+      sizes: ["30", "32", "34", "36", "38"],
+    },
+
+    {
+      id: "tr3",
+      name: "White Male Trouser",
+      category: "Trousers",
+
+      // Main image shown in the catalog card
+      image:
+        "/images/Trousers/white_male_trouser_front.png",
+
+      // Front / side / back preview images
+      thumbnails: [
+        "/images/Trousers/white_male_trouser_front.png",
+        "/images/Trousers/white_male_trouser_side.png",
+        "/images/Trousers/white_male_trouser_back.png",
+      ],
+
+      // GarmentDetail.jsx reads this array
+      images: [
+        "/images/Trousers/white_male_trouser_front.png",
+        "/images/Trousers/white_male_trouser_side.png",
+        "/images/Trousers/white_male_trouser_back.png",
+      ],
+
+      breadcrumb: "Shop / Apparel / Trousers",
+
+      sizes: ["30", "32", "34", "36", "38"],
+
+      modelBySize: {
+        "30":
+          "/models/trousers/white/male_white_trouser_30.glb",
+
+        "32":
+          "/models/trousers/white/male_white_trouser_32.glb",
+
+        "34":
+          "/models/trousers/white/male_white_trouser_34.glb",
+
+        "36":
+          "/models/trousers/white/male_white_trouser_36.glb",
+
+        "38":
+          "/models/trousers/white/male_white_trouser_38.glb",
+      },
+    },
+  ];
+
+  // =========================================================
+  // OPEN GARMENT DETAIL PAGE
+  // =========================================================
+
+  const openGarment = (item) => {
+    navigate("/garment-detail", {
+      state: {
+        avatarUrl,
+
+        garment: {
+          ...item,
+
+          title: item.name,
+
+          breadcrumb:
+            item.category === "Trousers"
+              ? "Shop / Apparel / Trousers"
+              : "Shop / Apparel / T-Shirts",
+
+          /*
+            Very important:
+            Send ALL preview images to GarmentDetail.
+          */
+          images:
+            item.images ||
+            item.thumbnails ||
+            [item.image],
+
+          sizes:
+            item.sizes ||
+            (item.category === "Trousers"
+              ? ["30", "32", "34", "36", "38"]
+              : ["S", "M", "L"]),
+        },
+      },
+    });
+  };
+
+  const products =
+    tab === "tshirts"
+      ? tshirts
+      : trousers;
 
   return (
     <div style={styles.page}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
+      <style>
+        {`
+          @import url(
+            'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap'
+          );
 
-        .catalog-nav-item:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(164, 201, 252, 0.24);
-          transform: translateX(4px);
-        }
-        .catalog-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 24px 44px rgba(5, 12, 22, 0.46);
-          border-color: rgba(164, 201, 252, 0.24);
-        }
-        .catalog-card:hover .catalog-card-image {
-          transform: scale(1.06);
-        }
-        .catalog-tab:hover {
-          border-color: rgba(164, 201, 252, 0.3);
-          background: rgba(255, 255, 255, 0.08);
-          color: #ffffff;
-        }
-        .catalog-cta:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.05);
-          box-shadow: 0 15px 28px rgba(40, 30, 104, 0.48);
-        }
-        @keyframes catalogPulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
-        }
-        @media (max-width: 1220px) {
-          .catalog-sidebar {
-            position: static !important;
-            width: auto !important;
-            margin: 18px;
+          .catalog-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 44px rgba(5, 12, 22, 0.46);
+            border-color: rgba(164, 201, 252, 0.24);
           }
-          .catalog-main {
-            margin-left: 18px !important;
-            margin-right: 18px !important;
-            padding-top: 4px !important;
+
+          .catalog-card:hover .catalog-card-image {
+            transform: scale(1.06);
           }
-        }
-      `}</style>
+
+          .catalog-tab:hover {
+            border-color: rgba(164, 201, 252, 0.3);
+          }
+
+          .catalog-cta:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+          }
+
+          @keyframes catalogPulse {
+            0%,
+            100% {
+              opacity: 0.4;
+            }
+
+            50% {
+              opacity: 1;
+            }
+          }
+
+          @media (max-width: 1220px) {
+            .catalog-main {
+              margin-left: 18px !important;
+              margin-right: 18px !important;
+              padding-top: 4px !important;
+            }
+          }
+        `}
+      </style>
 
       <DashboardSidebar />
 
-      <main style={styles.main} className="catalog-main">
+      <main
+        style={styles.main}
+        className="catalog-main"
+      >
         <div style={styles.mainInner}>
-          <TryOnJourneyBar currentStep={1} />
+          <TryOnJourneyBar
+            currentStep={1}
+          />
 
           <header style={styles.headingWrap}>
             <div>
-              <h2 style={styles.heading}>Garment Catalog</h2>
+              <h2 style={styles.heading}>
+                Garment Catalog
+              </h2>
+
               <p style={styles.subtitle}>
-                Explore curated digital couture pieces engineered for precise virtual fitting and realistic drape behavior.
+                Explore curated digital couture
+                pieces engineered for precise
+                virtual fitting and realistic
+                drape behavior.
               </p>
             </div>
+
             <div style={styles.statusChip}>
               <span style={styles.chipDot} />
-              <span>Catalog Online</span>
+
+              <span>
+                Catalog Online
+              </span>
             </div>
           </header>
 
-          <section style={styles.searchFilterRow}>
+          <section
+            style={styles.searchFilterRow}
+          >
             <div style={styles.searchWrap}>
               <span>⌕</span>
+
               <input
                 style={styles.searchInput}
                 value=""
@@ -524,75 +592,129 @@ function Catalog() {
             </div>
 
             <div style={styles.tabBar}>
-          <button
-            style={{
-              ...styles.tabButtonBase,
-              ...(tab === "tshirts" ? styles.tabButtonActive : styles.tabButtonInactive),
-            }}
-            className={tab === "tshirts" ? "" : "catalog-tab"}
-            onClick={() => setTab("tshirts")}
-          >
-            T-Shirts
-          </button>
-          <button
-            style={{
-              ...styles.tabButtonBase,
-              ...(tab === "trousers" ? styles.tabButtonActive : styles.tabButtonInactive),
-            }}
-            className={tab === "trousers" ? "" : "catalog-tab"}
-            onClick={() => setTab("trousers")}
-          >
-            Trousers
-          </button>
+              <button
+                type="button"
+                style={{
+                  ...styles.tabButtonBase,
+
+                  ...(tab === "tshirts"
+                    ? styles.tabButtonActive
+                    : styles.tabButtonInactive),
+                }}
+                className={
+                  tab === "tshirts"
+                    ? ""
+                    : "catalog-tab"
+                }
+                onClick={() =>
+                  setTab("tshirts")
+                }
+              >
+                T-Shirts
+              </button>
+
+              <button
+                type="button"
+                style={{
+                  ...styles.tabButtonBase,
+
+                  ...(tab === "trousers"
+                    ? styles.tabButtonActive
+                    : styles.tabButtonInactive),
+                }}
+                className={
+                  tab === "trousers"
+                    ? ""
+                    : "catalog-tab"
+                }
+                onClick={() =>
+                  setTab("trousers")
+                }
+              >
+                Trousers
+              </button>
             </div>
           </section>
 
           {/* Product Grid */}
           <section style={styles.cardGrid}>
-            {(tab === "tshirts" ? tshirts : trousers).map((item, idx) => (
+            {products.map((item) => (
               <article
-                key={item.name + idx}
+                key={item.id}
                 style={styles.card}
                 className="catalog-card"
                 onClick={() =>
-                  navigate("/garment-detail", {
-                    state: {
-                      avatarUrl,
-                      garment: {
-                        ...item,
-                        breadcrumb: tab === "tshirts"
-                          ? "Shop / Apparel / T-Shirts"
-                          : "Shop / Apparel / Trousers",
-                        title: item.name,
-                        images: [item.image],
-                        sizes: ["S", "M", "L"],
-                      },
-                    },
-                  })
+                  openGarment(item)
                 }
               >
                 <div style={styles.imageWrap}>
-                  <img src={item.image} alt={item.name} style={styles.cardImg} className="catalog-card-image" />
-                  <div style={styles.gradientOverlay} />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    style={styles.cardImg}
+                    className="catalog-card-image"
+                  />
+
+                  <div
+                    style={
+                      styles.gradientOverlay
+                    }
+                  />
                 </div>
 
                 <div style={styles.cardBody}>
-                  <p style={styles.cardType}>{tab === "tshirts" ? "T-Shirts" : "Trousers"}</p>
-                  <h3 style={styles.cardName}>{item.name}</h3>
-                  <button type="button" style={styles.cardButton} className="catalog-cta">
+                  <p style={styles.cardType}>
+                    {item.category}
+                  </p>
+
+                  <h3 style={styles.cardName}>
+                    {item.name}
+                  </h3>
+
+                  {/* Show sizes */}
+                  <div style={styles.sizePreview}>
+                    {item.sizes?.map(
+                      (size) => (
+                        <span
+                          key={size}
+                          style={styles.sizeChip}
+                        >
+                          {item.category ===
+                          "Trousers"
+                            ? `${size}"`
+                            : size}
+                        </span>
+                      )
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    style={styles.cardButton}
+                    className="catalog-cta"
+                    onClick={(event) => {
+                      event.stopPropagation();
+
+                      openGarment(item);
+                    }}
+                  >
                     <span>◉</span>
-                    <span>Try-On</span>
+
+                    <span>
+                      Try-On
+                    </span>
                   </button>
                 </div>
               </article>
             ))}
           </section>
 
-          {tab === "trousers" && trousers.length === 0 && (
-            <div style={styles.emptyText}>
-              No trousers available yet.
-            </div>
-          )}
+          {tab === "trousers" &&
+            trousers.length === 0 && (
+              <div style={styles.emptyText}>
+                No trousers available yet.
+              </div>
+            )}
         </div>
       </main>
     </div>
