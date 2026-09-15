@@ -336,22 +336,37 @@ function Catalog() {
     },
 
     {
-      id: "t2",
-      name: "Pink Crop TOP",
-      category: "T-Shirts",
+  id: "t2",
+  name: "Pink Female T-Shirt",
+  category: "T-Shirts",
 
-      image: "/images/pink_crop_top2D_preview.png",
+  image:
+    "/images/T_shirts/Female/pink/female_pink_tshirt_front.png",
 
-      thumbnails: [
-        "/images/pink_crop_top2D_preview.png",
-        "/images/pink_crop_top2D_preview.png",
-        "/images/pink_crop_top2D_preview.png",
-      ],
+  thumbnails: [
+    "/images/T_shirts/Female/pink/female_pink_tshirt_front.png",
+    "/images/T_shirts/Female/pink/female_pink_tshirt_side.png",
+    "/images/T_shirts/Female/pink/female_pink_tshirt_back.png",
+  ],
 
-      breadcrumb: "Shop / Apparel / T-Shirts",
+  images: [
+    "/images/T_shirts/Female/pink/female_pink_tshirt_front.png",
+    "/images/T_shirts/Female/pink/female_pink_tshirt_side.png",
+    "/images/T_shirts/Female/pink/female_pink_tshirt_back.png",
+  ],
 
-      sizes: ["S", "M", "L"],
-    },
+  breadcrumb: "Shop / Apparel / T-Shirts",
+
+  sizes: ["S", "M", "L", "XL", "XXL"],
+
+  modelBySize: {
+    S: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_S.glb",
+    M: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_M.glb",
+    L: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_L.glb",
+    XL: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_XL.glb",
+    XXL: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
+  },
+},
 
     /*
     Keep your future catalog items here.

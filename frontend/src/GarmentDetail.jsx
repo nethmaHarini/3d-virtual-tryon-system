@@ -430,7 +430,7 @@ export default function GarmentDetail() {
           "36",
           "38",
         ]
-      : ["S", "M", "L"]);
+      : ["S", "M", "L", "XL", "XXL"]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
