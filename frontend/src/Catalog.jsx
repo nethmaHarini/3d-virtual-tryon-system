@@ -317,26 +317,9 @@ function Catalog() {
   // =========================================================
 
   const tshirts = [
+   
     {
-      id: "t1",
-      name: "Blue Cotton",
-      category: "T-Shirts",
-
-      image: "/images/BTShirt_Boy.png",
-
-      thumbnails: [
-        "/images/BTShirt_Boy.png",
-        "/images/BTShirt_Boy.png",
-        "/images/BTShirt_Boy.png",
-      ],
-
-      breadcrumb: "Shop / Apparel / T-Shirts",
-
-      sizes: ["S", "M", "L"],
-    },
-
-    {
-  id: "t2",
+  id: "t1",
   name: "Pink Female T-Shirt",
   category: "T-Shirts",
 
@@ -360,11 +343,75 @@ function Catalog() {
   sizes: ["S", "M", "L", "XL", "XXL"],
 
   modelBySize: {
-    S: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_S.glb",
-    M: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_M.glb",
-    L: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_L.glb",
-    XL: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_XL.glb",
-    XXL: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
+    S: "/models/T_shirts/Female/pink_M/female_pink_tshirt_S.glb",
+    M: "/models/T_shirts/Female/pink_M/female_pink_tshirt_M.glb",
+    L: "/models/T_shirts/Female/pink_M/female_pink_tshirt_L.glb",
+    XL: "/models/T_shirts/Female/pink_M/female_pink_tshirt_XL.glb",
+    XXL: "/models/T_shirts/Female/pink_M/female_pink_tshirt_XXL.glb",
+  },
+},
+  {
+  id: "t2",
+  name: "Orange Female T-Shirt",
+  category: "T-Shirts",
+
+  image:
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
+
+  thumbnails: [
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
+  ],
+
+  images: [
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
+  ],
+
+  breadcrumb: "Shop / Apparel / T-Shirts",
+
+  sizes: ["S", "M", "L", "XL", "XXL"],
+
+  modelBySize: {
+    S: "/models/T_shirts/Female/orange_M/female_orange_tshirt_S.glb",
+    M: "/models/T_shirts/Female/orange_M/female_orange_tshirt_M.glb",
+    L: "/models/T_shirts/Female/orange_M/female_orange_tshirt_L.glb",
+    XL: "/models/T_shirts/Female/orange_M/female_orange_tshirt_XL.glb",
+    XXL: "/models/T_shirts/Female/orange_M/female_orange_tshirt_XXL.glb",
+  },
+},
+   {
+  id: "t2",
+  name: "black male T-Shirt",
+  category: "T-Shirts",
+
+  image:
+    "/images/T_shirts/male/blackIma/male_black_tshirt_orginal.png",
+
+  thumbnails: [
+    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
+  ],
+
+  images: [
+    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
+  ],
+
+  breadcrumb: "Shop / Apparel / T-Shirts",
+
+  sizes: ["S", "M", "L", "XL", "XXL"],
+
+  modelBySize: {
+    S: "/models/T shirts/male/black_M/male_black_tshirt_S.glb.",
+    M: "/models/T shirts/male/black_M/male_black_tshirt_M.glb",
+    L: "/models/T shirts/male/black_M/male_black_tshirt_L.glb",
+    XL: "/models/T shirts/male/black_M/male_black_tshirt_XL.glb",
+    XXL: "/models/T shirts/male/black_M/male_black_tshirt_XXL.glb",
   },
 },
 
@@ -386,20 +433,48 @@ function Catalog() {
   const trousers = [
     {
       id: "tr1",
-      name: "Black Trouser",
+      name: "purple female trouser",
       category: "Trousers",
 
-      image: "/images/black_pant_boy_32.png",
+      // Main image shown in the catalog card
+      image:
+        "/images/Trousers/purple_female_trouser_front.png",
 
+      // Front / side / back preview images
       thumbnails: [
-        "/images/black_pant_boy_32.png",
-        "/images/black_pant_boy_32.png",
-        "/images/black_pant_boy_32.png",
+        "/images/Trousers/purple_female_trouser_front.png",
+        "/images/Trousers/purple_female_trouser_side.png",
+        "/images/Trousers/purple_female_trouser_back.png",
+      ],
+
+      // GarmentDetail.jsx reads this array
+      images: [
+        "/images/Trousers/purple_female_trouser_front.png",
+        "/images/Trousers/purple_female_trouser_side.png",
+        "/images/Trousers/purple_female_trouser_back.png",
       ],
 
       breadcrumb: "Shop / Apparel / Trousers",
 
       sizes: ["30", "32", "34", "36", "38"],
+
+      modelBySize: {
+        "30":
+          "/models/trousers/Female/purple_M/female_purple_trouser_30.glb",
+
+
+        "32":
+          "/models/trousers/Female/purple_M/female_purple_trouser_32.glb",
+
+        "34":
+          "/models/trousers/Female/purple_M/female_purple_trouser_34.glb",
+
+        "36":
+          "/models/trousers/Female/purple_M/female_purple_trouser_36.glb",
+
+        "38":
+          "/models/trousers/Female/purple_M/female_purple_trouser_38.glb",
+      },
     },
 
     {
