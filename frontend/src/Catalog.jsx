@@ -350,6 +350,71 @@ function Catalog() {
     XXL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
   },
 },
+  {
+  id: "t2",
+  name: "black male T-Shirt",
+  category: "T-Shirts",
+
+  image:
+    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
+    
+
+  thumbnails: [
+    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
+  ],
+
+  images: [
+    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
+    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
+  ],
+
+  breadcrumb: "Shop / Apparel / T-Shirts",
+
+  sizes: ["S", "M", "L", "XL", "XXL"],
+
+  modelBySize: {
+    S: "/models/T shirts/male/black_M/male_black_tshirt_S.glb",
+    M: "/models/T shirts/male/black_M/male_black_tshirt_M.glb",
+    L: "/models/T shirts/male/black_M/male_black_tshirt_L.glb",
+    XL: "/models/T shirts/male/black_M/male_black_tshirt_XL.glb",
+    XXL: "/models/T shirts/male/black_M/male_black_tshirt_XXL.glb",
+  },
+},
+   {
+  id: "t3",
+  name: "Orange Female T-Shirt",
+  category: "T-Shirts",
+
+  image:
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
+
+  thumbnails: [
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
+  ],
+
+  images: [
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
+    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
+  ],
+
+  breadcrumb: "Shop / Apparel / T-Shirts",
+
+  sizes: ["S", "M", "L", "XL", "XXL"],
+
+  modelBySize: {
+    S: "/models/T shirts/Female/Orange_M/female_orange_tshirt_S.glb",
+    M: "/models/T shirts/Female/Orange_M/female_orange_tshirt_M.glb",
+    L: "/models/T shirts/Female/Orange_M/female_orange_tshirt_L.glb",
+    XL: "/models/T shirts/Female/Orange_M/female_orange_tshirt_XL.glb",
+    XXL: "/models/T shirts/Female/Orange_M/female_orange_tshirt_XXL.glb",
+  },
+},
 
     /*
     Keep your future catalog items here.
@@ -374,20 +439,20 @@ function Catalog() {
 
       // Main image shown in the catalog card
       image:
-        "/images/Trousers/purple_female_trouser_front.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_front.png",
 
       // Front / side / back preview images
       thumbnails: [
-        "/images/Trousers/purple_female_trouser_front.png",
-        "/images/Trousers/purple_female_trouser_side.png",
-        "/images/Trousers/purple_female_trouser_back.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_front.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_side.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_back.png",
       ],
 
       // GarmentDetail.jsx reads this array
       images: [
-        "/images/Trousers/purple_female_trouser_front.png",
-        "/images/Trousers/purple_female_trouser_side.png",
-        "/images/Trousers/purple_female_trouser_back.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_front.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_side.png",
+        "/images/Trousers/Female/purple_Ima/female_purple_trouser_back.png",
       ],
 
       breadcrumb: "Shop / Apparel / Trousers",
@@ -413,26 +478,10 @@ function Catalog() {
       },
     },
 
+   
+
     {
       id: "tr2",
-      name: "Orange Trouser",
-      category: "Trousers",
-
-      image: "/images/orange.jpg",
-
-      thumbnails: [
-        "/images/orange.jpg",
-        "/images/orange.jpg",
-        "/images/orange.jpg",
-      ],
-
-      breadcrumb: "Shop / Apparel / Trousers",
-
-      sizes: ["30", "32", "34", "36", "38"],
-    },
-
-    {
-      id: "tr3",
       name: "White Male Trouser",
       category: "Trousers",
 
