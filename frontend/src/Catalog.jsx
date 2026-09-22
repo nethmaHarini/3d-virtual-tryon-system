@@ -360,11 +360,11 @@ function Catalog() {
   sizes: ["S", "M", "L", "XL", "XXL"],
 
   modelBySize: {
-    S: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_S.glb",
-    M: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_M.glb",
-    L: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_L.glb",
-    XL: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_XL.glb",
-    XXL: "/models/T_shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
+    S: "/models/T shirts/Female/Pink_M/female_pink_tshirt_S.glb",
+    M: "/models/T shirts/Female/Pink_M/female_pink_tshirt_M.glb",
+    L: "/models/T shirts/Female/Pink_M/female_pink_tshirt_L.glb",
+    XL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XL.glb",
+    XXL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
   },
 },
 

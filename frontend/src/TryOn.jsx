@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AvatarCanvas from "./components/AvatarCanvas";
 import DashboardSidebar from "./components/DashboardSidebar";
@@ -7,16 +7,122 @@ import TryOnJourneyBar from "./components/TryOnJourneyBar";
 import { useAppTheme } from "./theme";
 import API_URL from "./config";
 
-const fitData = [
-  { region: "Chest", status: "Tight", color: "#ff6b7a" },
-  { region: "Waist", status: "Perfect", color: "#5ad989" },
-  { region: "Hip", status: "Loose", color: "#67b7ff" },
-];
-
 export default function TryOn() {
+  const [calculatedFit, setCalculatedFit] = useState(null);
+
+  const classifyFit = (distance) => {
+    if (distance == null) {
+      return {
+        status: "Analyzing",
+        color: "#a7b0c0",
+      };
+    }
+
+    if (distance < 0.05) {
+      return {
+        status: "Tight",
+        color: "#ff6b7a",
+      };
+    }
+
+    if (distance <= 0.075) {
+      return {
+        status: "Well-fitted",
+        color: "#5ad989",
+      };
+    }
+
+    return {
+      status: "Loose",
+      color: "#67b7ff",
+    };
+  };
+
+  const displayFitData = [
+    {
+      region: "Chest",
+      ...classifyFit(
+        calculatedFit?.chest?.distance
+      ),
+    },
+    {
+      region: "Waist",
+      ...classifyFit(
+        calculatedFit?.waist?.distance
+      ),
+    },
+    {
+      region: "Hip",
+      ...classifyFit(
+        calculatedFit?.hip?.distance
+      ),
+    },
+  ];
+
+  const fitRecommendation = useMemo(() => {
+    if (!calculatedFit) {
+      return "Analyzing the garment fit against your digital twin...";
+    }
+
+    const chest = displayFitData.find(
+      (item) => item.region === "Chest"
+    )?.status;
+
+    const waist = displayFitData.find(
+      (item) => item.region === "Waist"
+    )?.status;
+
+    const hip = displayFitData.find(
+      (item) => item.region === "Hip"
+    )?.status;
+
+    const looseRegions = [];
+    const tightRegions = [];
+
+    if (chest === "Loose") looseRegions.push("chest");
+    if (waist === "Loose") looseRegions.push("waist");
+    if (hip === "Loose") looseRegions.push("hip");
+
+    if (chest === "Tight") tightRegions.push("chest");
+    if (waist === "Tight") tightRegions.push("waist");
+    if (hip === "Tight") tightRegions.push("hip");
+
+    if (
+      chest === "Well-fitted" &&
+      waist === "Well-fitted" &&
+      hip === "Well-fitted"
+    ) {
+      return "The selected size provides a well-fitted result across the chest, waist, and hip regions.";
+    }
+
+    if (tightRegions.length > 0) {
+      return `The selected size appears tight around the ${tightRegions.join(
+        " and "
+      )}. Consider trying a larger size for improved comfort.`;
+    }
+
+    if (looseRegions.length > 0) {
+      return `The selected size appears loose around the ${looseRegions.join(
+        " and "
+      )}. Consider trying a smaller size for a closer fit.`;
+    }
+
+    return "The selected size provides an acceptable overall fit based on the analyzed garment-to-body distances.";
+  }, [calculatedFit, displayFitData]);
+
+  console.log("CALCULATED FIT RECEIVED:", calculatedFit);
+
   const location = useLocation();
   const { isDark } = useAppTheme();
-  const { garment, selectedSize } = location.state || {};
+  const {
+    garment,
+    selectedSize,
+    garmentModelUrl,
+  } = location.state || {};
+
+  console.log("TRYON GARMENT:", garment);
+  console.log("SELECTED SIZE:", selectedSize);
+
   const navigate = useNavigate();
 
   const resolvedAvatarUrl = useMemo(() => {
@@ -365,26 +471,99 @@ export default function TryOn() {
   };
 
   const handleSave = async () => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    if (!calculatedFit) {
+      alert("Fit analysis is still being calculated. Please wait.");
+      return;
+    }
 
-    await fetch(`${API_URL}/save-fit`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: 1,
-        garmentName: garment?.title || garment?.name || "Unknown Garment",
-        size: selectedSize || "Not selected",
-        chest: "Tight",
-        waist: "Perfect",
-        hip: "Loose",
-        recommendation: "AI recommendation...",
-        avatarUrl: resolvedAvatarUrl,
-      }),
-    });
+    const chestResult = displayFitData.find(
+      (item) => item.region === "Chest"
+    );
 
-    alert("Saved successfully");
+    const waistResult = displayFitData.find(
+      (item) => item.region === "Waist"
+    );
+
+    const hipResult = displayFitData.find(
+      (item) => item.region === "Hip"
+    );
+
+    const API_URL =
+      import.meta.env.VITE_API_URL ||
+      "http://localhost:3000";
+
+    try {
+      const response = await fetch(
+        `${API_URL}/save-fit`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            userId: Number(localStorage.getItem("userId")),
+
+            garmentName:
+              garment?.title ||
+              garment?.name ||
+              "Unknown Garment",
+
+            size:
+              selectedSize ||
+              "Not selected",
+
+            chest:
+              chestResult?.status ||
+              "Unknown",
+
+            waist:
+              waistResult?.status ||
+              "Unknown",
+
+            hip:
+              hipResult?.status ||
+              "Unknown",
+
+            chestDistance:
+              calculatedFit.chest?.distance ??
+              null,
+
+            waistDistance:
+              calculatedFit.waist?.distance ??
+              null,
+
+            hipDistance:
+              calculatedFit.hip?.distance ??
+              null,
+
+            recommendation:
+              fitRecommendation,
+
+            avatarUrl:
+              resolvedAvatarUrl,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Save failed: ${response.status}`
+        );
+      }
+
+      alert("Fit analysis saved successfully");
+    } catch (error) {
+      console.error(
+        "SAVE FIT ERROR:",
+        error
+      );
+
+      alert(
+        "Could not save the fit analysis."
+      );
+    }
   };
 
   return (
@@ -433,7 +612,12 @@ export default function TryOn() {
              <div style={styles.avatarPanel}>
                <div style={styles.canvasHint}>360 Viewer</div>
 
-               <AvatarCanvas modelPath={resolvedAvatarUrl} backgroundMode={localStorage.getItem("viewer-background") || "dark"} />
+               <AvatarCanvas
+                 modelPath={resolvedAvatarUrl}
+                 garmentPath={garmentModelUrl}
+                 backgroundMode={localStorage.getItem("viewer-background") || "dark"}
+                 onFitAnalysis={setCalculatedFit}
+               />
              </div>
 
              <div style={styles.controlBar}>
@@ -451,7 +635,7 @@ export default function TryOn() {
              <p style={styles.fitSubtitle}>Simulation complete based on your digital twin measurements</p>
 
              <div style={styles.fitTable}>
-               {fitData.map(({ region, status, color }) => (
+               {displayFitData.map(({ region, status, color }) => (
                  <div key={region} style={styles.fitRow}>
                    <span style={styles.fitRegion}>{region}</span>
                    <span style={{ ...styles.fitStatus, color }}>{status}</span>
@@ -462,7 +646,7 @@ export default function TryOn() {
              <div style={styles.recommendation}>
                <p style={styles.recommendationLabel}>Recommendation</p>
                <p style={styles.recommendationText}>
-                 Based on the fit analysis, the selected size may be slightly tight in the chest region. A larger size or stretch-fit style may provide a more balanced overall fit.
+                 {fitRecommendation}
                </p>
              </div>
 

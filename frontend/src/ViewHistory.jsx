@@ -10,23 +10,105 @@ function ViewHistory() {
 
   const [historyItems, setHistoryItems] = useState([]);
 
-  // For now this loads from localStorage as demo data; replace with API call when available
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("viewHistory");
-      if (stored) {
-        setHistoryItems(JSON.parse(stored));
-      } else {
+    const loadFitHistory = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+
+        if (!userId) {
+          setHistoryItems([]);
+          return;
+        }
+
+        const API_URL =
+          import.meta.env.VITE_API_URL ||
+          "http://localhost:3000";
+
+        const response = await fetch(
+          `${API_URL}/fit-history/${userId}`
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load history: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+
+        console.log(
+          "FIT HISTORY RECEIVED:",
+          data.fitAnalyses
+        );
+
+        setHistoryItems(
+          data.fitAnalyses || []
+        );
+      } catch (error) {
+        console.error(
+          "LOAD FIT HISTORY ERROR:",
+          error
+        );
+
         setHistoryItems([]);
       }
-    } catch (e) {
-      setHistoryItems([]);
-    }
+    };
+
+    loadFitHistory();
   }, []);
 
-  const handleClear = () => {
-    localStorage.removeItem("viewHistory");
-    setHistoryItems([]);
+  const handleClear = async () => {
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      alert("User information not found.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to clear all saved fit analyses?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const API_URL =
+        import.meta.env.VITE_API_URL ||
+        "http://localhost:3000";
+
+      const response = await fetch(
+        `${API_URL}/fit-history/${userId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to clear history: ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      console.log(
+        "FIT HISTORY CLEARED:",
+        data
+      );
+
+      setHistoryItems([]);
+
+      alert("Fit history cleared successfully.");
+    } catch (error) {
+      console.error(
+        "CLEAR FIT HISTORY ERROR:",
+        error
+      );
+
+      alert("Could not clear fit history.");
+    }
   };
 
   const styles = {
@@ -122,13 +204,165 @@ function ViewHistory() {
                 <div style={styles.empty}>No history available yet.</div>
               ) : (
                 <div style={{ display: "grid", gap: 12 }}>
-                  {historyItems.map((it, idx) => (
-                    <div key={idx} style={styles.listItem}>
-                      <div>
-                        <div style={{ fontWeight: 800, color: "#fff" }}>{it.title || "Untitled"}</div>
-                        <div style={{ color: "#c3c6d0", fontSize: "0.86rem" }}>{it.subtitle || ""}</div>
+                  {historyItems.map((it) => (
+                    <div
+                      key={it.id}
+                      style={{
+                        ...styles.listItem,
+                        flexDirection: "column",
+                        gap: 14,
+                        padding: 18,
+                      }}
+                    >
+                      {/* Garment + saved date */}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          gap: 16,
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontWeight: 800,
+                              color: isDark ? "#ffffff" : "#152033",
+                              fontSize: "1rem",
+                            }}
+                          >
+                            {it.garment_name || "Unknown Garment"}
+                          </div>
+
+                          <div
+                            style={{
+                              color: isDark ? "#aeb8ca" : "#667085",
+                              fontSize: "0.84rem",
+                              marginTop: 4,
+                            }}
+                          >
+                            Selected Size: {it.garment_size || "Not selected"}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{
+                            color: isDark ? "#8d96a8" : "#778197",
+                            fontSize: "0.8rem",
+                            textAlign: "right",
+                          }}
+                        >
+                          {it.created_at
+                            ? new Date(it.created_at).toLocaleString()
+                            : "—"}
+                        </div>
                       </div>
-                      <div style={{ color: "#8d9199", fontSize: "0.82rem" }}>{it.when || "—"}</div>
+
+                      {/* Fit regions */}
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(3, minmax(0, 1fr))",
+                          gap: 10,
+                        }}
+                      >
+                        {[
+                          {
+                            name: "Chest",
+                            status: it.chest_status,
+                            distance: it.chest_distance,
+                          },
+                          {
+                            name: "Waist",
+                            status: it.waist_status,
+                            distance: it.waist_distance,
+                          },
+                          {
+                            name: "Hip",
+                            status: it.hip_status,
+                            distance: it.hip_distance,
+                          },
+                        ].map((region) => (
+                          <div
+                            key={region.name}
+                            style={{
+                              padding: "12px 14px",
+                              borderRadius: 12,
+                              background: isDark
+                                ? "rgba(255,255,255,0.035)"
+                                : "rgba(18,30,52,0.035)",
+                              border: isDark
+                                ? "1px solid rgba(255,255,255,0.06)"
+                                : "1px solid rgba(18,30,52,0.07)",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "0.76rem",
+                                color: isDark
+                                  ? "#8f9bad"
+                                  : "#667085",
+                                marginBottom: 5,
+                              }}
+                            >
+                              {region.name}
+                            </div>
+
+                            <div
+                              style={{
+                                fontWeight: 800,
+                                color:
+                                  region.status === "Tight"
+                                    ? "#ff6b7a"
+                                    : region.status === "Loose"
+                                    ? "#67b7ff"
+                                    : "#5ad989",
+                              }}
+                            >
+                              {region.status || "Unknown"}
+                            </div>
+
+                            {region.distance != null && (
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: "0.72rem",
+                                  color: isDark
+                                    ? "#7f899a"
+                                    : "#7a8497",
+                                }}
+                              >
+                                Distance: {Number(region.distance).toFixed(4)}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Recommendation */}
+                      {it.recommendation && (
+                        <div
+                          style={{
+                            paddingTop: 12,
+                            borderTop: isDark
+                              ? "1px solid rgba(255,255,255,0.06)"
+                              : "1px solid rgba(18,30,52,0.07)",
+                            color: isDark ? "#bac4d4" : "#536078",
+                            fontSize: "0.86rem",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          <strong
+                            style={{
+                              color: isDark ? "#ffffff" : "#152033",
+                            }}
+                          >
+                            Recommendation:
+                          </strong>{" "}
+                          {it.recommendation}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
