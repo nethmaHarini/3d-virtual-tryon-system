@@ -1513,7 +1513,12 @@ app.post(
       ===================================================== */
 
       const remoteCommand = [
-        `source ~/virtufit-env/bin/activate`,
+        `source ~/pare-env/bin/activate`,
+
+        `export PARE_ROOT=/home/ubuntu/PARE`,
+        `export PARE_CHECKPOINT=/home/ubuntu/PARE/data/pare/checkpoints/pare_checkpoint.ckpt`,
+        `export PARE_CONFIG=/home/ubuntu/PARE/data/pare/checkpoints/pare_config.yaml`,
+        `export SMPL_MODEL_DIR=/home/ubuntu/PARE/data/body_models/smpl`,
 
         `cd "${AWS_PARE_DIR}"`,
 
