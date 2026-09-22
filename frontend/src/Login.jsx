@@ -52,6 +52,13 @@ function Login() {
 
         if (data?.token) {
           localStorage.setItem("token", data.token);
+
+          if (data?.user) {
+            localStorage.setItem("userId", String(data.user.id));
+            localStorage.setItem("username", data.user.username);
+            localStorage.setItem("userEmail", data.user.email);
+          }
+
           if (data.user?.profile_image_url) {
             localStorage.setItem('profilePhoto', data.user.profile_image_url);
             window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: data.user.profile_image_url } }));
@@ -158,6 +165,7 @@ function Login() {
   }
 
   if (data?.user) {
+    localStorage.setItem("userId", String(data.user.id));
     localStorage.setItem("username", data.user.username);
     localStorage.setItem("userEmail", data.user.email);
     if (data.user.profile_image_url) {

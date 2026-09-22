@@ -343,75 +343,11 @@ function Catalog() {
   sizes: ["S", "M", "L", "XL", "XXL"],
 
   modelBySize: {
-    S: "/models/T_shirts/Female/pink_M/female_pink_tshirt_S.glb",
-    M: "/models/T_shirts/Female/pink_M/female_pink_tshirt_M.glb",
-    L: "/models/T_shirts/Female/pink_M/female_pink_tshirt_L.glb",
-    XL: "/models/T_shirts/Female/pink_M/female_pink_tshirt_XL.glb",
-    XXL: "/models/T_shirts/Female/pink_M/female_pink_tshirt_XXL.glb",
-  },
-},
-  {
-  id: "t2",
-  name: "Orange Female T-Shirt",
-  category: "T-Shirts",
-
-  image:
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
-
-  thumbnails: [
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
-  ],
-
-  images: [
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
-  ],
-
-  breadcrumb: "Shop / Apparel / T-Shirts",
-
-  sizes: ["S", "M", "L", "XL", "XXL"],
-
-  modelBySize: {
-    S: "/models/T_shirts/Female/orange_M/female_orange_tshirt_S.glb",
-    M: "/models/T_shirts/Female/orange_M/female_orange_tshirt_M.glb",
-    L: "/models/T_shirts/Female/orange_M/female_orange_tshirt_L.glb",
-    XL: "/models/T_shirts/Female/orange_M/female_orange_tshirt_XL.glb",
-    XXL: "/models/T_shirts/Female/orange_M/female_orange_tshirt_XXL.glb",
-  },
-},
-   {
-  id: "t2",
-  name: "black male T-Shirt",
-  category: "T-Shirts",
-
-  image:
-    "/images/T_shirts/male/blackIma/male_black_tshirt_orginal.png",
-
-  thumbnails: [
-    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
-  ],
-
-  images: [
-    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
-  ],
-
-  breadcrumb: "Shop / Apparel / T-Shirts",
-
-  sizes: ["S", "M", "L", "XL", "XXL"],
-
-  modelBySize: {
-    S: "/models/T shirts/male/black_M/male_black_tshirt_S.glb.",
-    M: "/models/T shirts/male/black_M/male_black_tshirt_M.glb",
-    L: "/models/T shirts/male/black_M/male_black_tshirt_L.glb",
-    XL: "/models/T shirts/male/black_M/male_black_tshirt_XL.glb",
-    XXL: "/models/T shirts/male/black_M/male_black_tshirt_XXL.glb",
+    S: "/models/T shirts/Female/Pink_M/female_pink_tshirt_S.glb",
+    M: "/models/T shirts/Female/Pink_M/female_pink_tshirt_M.glb",
+    L: "/models/T shirts/Female/Pink_M/female_pink_tshirt_L.glb",
+    XL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XL.glb",
+    XXL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
   },
 },
 

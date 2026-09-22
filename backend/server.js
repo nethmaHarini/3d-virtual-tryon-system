@@ -361,6 +361,46 @@ const createAuthToken = (user) => {
   }
 })();
 
+(async function ensureFitAnalysesTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS fit_analyses (
+        id SERIAL PRIMARY KEY,
+
+        user_id INTEGER NOT NULL
+          REFERENCES users(id)
+          ON DELETE CASCADE,
+
+        garment_name VARCHAR(255) NOT NULL,
+        garment_size VARCHAR(20),
+
+        chest_status VARCHAR(50),
+        chest_distance DOUBLE PRECISION,
+
+        waist_status VARCHAR(50),
+        waist_distance DOUBLE PRECISION,
+
+        hip_status VARCHAR(50),
+        hip_distance DOUBLE PRECISION,
+
+        recommendation TEXT,
+        avatar_url TEXT,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    console.log(
+      "fit_analyses table ready"
+    );
+  } catch (error) {
+    console.error(
+      "Could not create fit_analyses table:",
+      error.message || error
+    );
+  }
+})();
+
 // Middleware to authenticate requests using Bearer token
 const authenticate = (req, res, next) => {
   try {
@@ -1780,26 +1820,201 @@ app.post(
 app.post(
   "/save-fit",
   async (req, res) => {
-    const {
-      userId,
-      chest,
-      waist,
-      hip,
-      recommendation,
-    } = req.body;
+    try {
+      const {
+        userId,
+        garmentName,
+        size,
+        chest,
+        waist,
+        hip,
+        chestDistance,
+        waistDistance,
+        hipDistance,
+        recommendation,
+        avatarUrl,
+      } = req.body;
 
-    console.log({
-      userId,
-      chest,
-      waist,
-      hip,
-      recommendation,
-    });
+      const fitAnalysis = {
+        userId,
+        garmentName,
+        size,
 
-    return res.json({
-      message:
-        "Fit analysis saved",
-    });
+        fit: {
+          chest: {
+            status: chest,
+            distance: chestDistance,
+          },
+
+          waist: {
+            status: waist,
+            distance: waistDistance,
+          },
+
+          hip: {
+            status: hip,
+            distance: hipDistance,
+          },
+        },
+
+        recommendation,
+        avatarUrl,
+        savedAt: new Date().toISOString(),
+      };
+
+      const result = await pool.query(
+        `
+        INSERT INTO fit_analyses (
+          user_id,
+          garment_name,
+          garment_size,
+          chest_status,
+          chest_distance,
+          waist_status,
+          waist_distance,
+          hip_status,
+          hip_distance,
+          recommendation,
+          avatar_url
+        )
+        VALUES (
+          $1, $2, $3, $4, $5,
+          $6, $7, $8, $9, $10, $11
+        )
+        RETURNING *
+        `,
+        [
+          userId,
+          garmentName,
+          size,
+          chest,
+          chestDistance,
+          waist,
+          waistDistance,
+          hip,
+          hipDistance,
+          recommendation,
+          avatarUrl,
+        ]
+      );
+
+      console.log(
+        "========== FIT ANALYSIS SAVED TO DATABASE =========="
+      );
+
+      console.log(result.rows[0]);
+
+      return res.status(201).json({
+        message: "Fit analysis saved successfully",
+        fitAnalysis: result.rows[0],
+      });
+    } catch (error) {
+      console.error(
+        "SAVE FIT ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        message: "Failed to save fit analysis",
+      });
+    }
+  }
+);
+
+/* =========================================================
+   GET SAVED FIT ANALYSES
+========================================================= */
+
+app.get(
+  "/fit-history/:userId",
+  async (req, res) => {
+    try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        return res.status(400).json({
+          message: "Invalid user ID",
+        });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT
+          id,
+          user_id,
+          garment_name,
+          garment_size,
+          chest_status,
+          chest_distance,
+          waist_status,
+          waist_distance,
+          hip_status,
+          hip_distance,
+          recommendation,
+          avatar_url,
+          created_at
+        FROM fit_analyses
+        WHERE user_id = $1
+        ORDER BY created_at DESC
+        `,
+        [userId]
+      );
+
+      return res.status(200).json({
+        fitAnalyses: result.rows,
+      });
+    } catch (error) {
+      console.error(
+        "GET FIT HISTORY ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        message: "Failed to retrieve fit history",
+      });
+    }
+  }
+);
+
+/* =========================================================
+   CLEAR FIT HISTORY
+========================================================= */
+
+app.delete(
+  "/fit-history/:userId",
+  async (req, res) => {
+    try {
+      const userId = Number(req.params.userId);
+
+      if (!userId) {
+        return res.status(400).json({
+          message: "Invalid user ID",
+        });
+      }
+
+      const result = await pool.query(
+        `
+        DELETE FROM fit_analyses
+        WHERE user_id = $1
+        RETURNING id
+        `,
+        [userId]
+      );
+
+      return res.status(200).json({
+        message: "Fit history cleared successfully",
+        deletedCount: result.rowCount,
+      });
+    } catch (error) {
+      console.error(
+        "CLEAR FIT HISTORY ERROR:",
+        error
+      );
+
+      return res.status(500).json({
+        message: "Failed to clear fit history",
+      });
+    }
   }
 );
 
