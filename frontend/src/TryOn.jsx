@@ -126,35 +126,66 @@ export default function TryOn() {
   const navigate = useNavigate();
 
   const resolvedAvatarUrl = useMemo(() => {
-    const candidates = [
-      location.state?.avatarUrl,
-      location.state?.avatar_file,
-      location.state?.avatarFile,
-      localStorage.getItem("avatarUrl"),
-      localStorage.getItem("avatar_file"),
-      localStorage.getItem("generatedAvatar"),
-    ];
+  const candidates = [
+    location.state?.avatarUrl,
+    location.state?.avatar_file,
+    location.state?.avatarFile,
+    localStorage.getItem("avatarUrl"),
+    localStorage.getItem("avatar_file"),
+    localStorage.getItem("generatedAvatar"),
+  ];
 
-    const cleanApiUrl = API_URL.replace(/\/$/, "");
+  const cleanApiUrl =
+    API_URL.replace(/\/$/, "");
 
-    for (const value of candidates) {
-      if (typeof value !== "string" || !value.trim()) {
-        continue;
-      }
-
-      const trimmed = value.trim();
-
-      if (trimmed.startsWith(`${cleanApiUrl}/generated-avatars/`)) {
-        return trimmed;
-      }
-
-      if (trimmed.startsWith("/generated-avatars/")) {
-        return `${cleanApiUrl}${trimmed}`;
-      }
+  for (const value of candidates) {
+    if (
+      typeof value !== "string" ||
+      !value.trim()
+    ) {
+      continue;
     }
 
-    return "/models/final_avatar.obj";
-  }, [location.state]);
+    const trimmed =
+      value.trim();
+
+    // Existing backend OBJ
+    if (
+      trimmed.startsWith(
+        `${cleanApiUrl}/generated-avatars/`
+      )
+    ) {
+      return trimmed;
+    }
+
+    // Existing relative backend OBJ
+    if (
+      trimmed.startsWith(
+        "/generated-avatars/"
+      )
+    ) {
+      return `${cleanApiUrl}${trimmed}`;
+    }
+
+    // Private S3 signed OBJ URL
+    try {
+      const parsedUrl =
+        new URL(trimmed);
+
+      if (
+        parsedUrl.pathname
+          .toLowerCase()
+          .endsWith(".obj")
+      ) {
+        return trimmed;
+      }
+    } catch {
+      // Not an absolute URL
+    }
+  }
+
+  return "/models/final_avatar.obj";
+}, [location.state]);
 
   const colors = isDark
     ? {

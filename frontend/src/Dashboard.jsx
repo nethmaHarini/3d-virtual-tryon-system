@@ -164,72 +164,217 @@ function Dashboard() {
 };
 
   const handleGenerateAvatar = async () => {
-    if (!frontImage || !backImage || !sideImage) {
-      setError("Please upload all images");
-      return;
-    }
+  if (!frontImage || !backImage || !sideImage) {
+    setError("Please upload all images");
+    return;
+  }
 
-    if (!height || height < 100 || height > 230) {
-      setError("Please enter a valid height (100–230 cm)");
-      return;
-    }
+  if (!height || height < 100 || height > 250) {
+    setError("Please enter a valid height (100–250 cm)");
+    return;
+  }
 
-    setLoading(true);
-    setSuccess("");
-    setError("");
+  if (!gender) {
+    setError("Please select your gender");
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append("frontImage", frontImage);
-      formData.append("backImage", backImage);
-      formData.append("sideImage", sideImage);
-      formData.append("height", height);
-      formData.append("gender", gender);
+  const token = localStorage.getItem("token");
 
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/generate-avatar`, {
+  if (!token) {
+    setError("Your session has expired. Please log in again.");
+    navigate("/login");
+    return;
+  }
+
+  setLoading(true);
+  setSuccess("");
+  setError("");
+
+  try {
+    const formData = new FormData();
+
+    formData.append(
+      "frontImage",
+      frontImage
+    );
+
+    formData.append(
+      "backImage",
+      backImage
+    );
+
+    formData.append(
+      "sideImage",
+      sideImage
+    );
+
+    formData.append(
+      "height",
+      height
+    );
+
+    formData.append(
+      "gender",
+      gender
+    );
+
+    const response = await fetch(
+      `${API_URL}/generate-avatar`,
+      {
         method: "POST",
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+
         body: formData,
-        headers: { Authorization: token ? "Bearer " + token : undefined },
-      });
+      }
+    );
 
-      const data = await response.json();
+    const data =
+      await response.json();
 
-      if (response.ok) {
-        setSuccess(data.message);
-        console.log("Uploaded data:", data);
-        const avatarUrl =
-          data?.avatarUrl ||
-          data?.avatar?.avatarUrl ||
-          data?.avatar?.avatar_file ||
-          data?.avatar_file ||
-          "";
+    if (response.ok) {
+      setSuccess(
+        data.message ||
+          "Avatar generated successfully"
+      );
 
-        if (avatarUrl) {
-          localStorage.setItem("avatarUrl", avatarUrl);
-          localStorage.setItem("avatar_file", avatarUrl);
-          localStorage.setItem("generatedAvatar", avatarUrl);
-        }
+      console.log(
+        "Avatar generation response:",
+        data
+      );
 
-        navigate("/avatar-viewer", {
+      /*
+       * Existing local OBJ URL.
+       * Keep using this for the current
+       * Avatar Viewer for now.
+       */
+      const avatarUrl =
+        data?.avatarUrl ||
+        data?.avatar?.avatar_file ||
+        data?.avatar_file ||
+        "";
+
+      /*
+       * New private S3 GLB URL.
+       */
+      const s3AvatarUrl =
+        data?.s3AvatarUrl ||
+        data?.avatar?.s3_avatar_url ||
+        "";
+
+      /*
+       * Permanent S3 object key.
+       */
+      const s3Key =
+        data?.s3Key ||
+        data?.avatar?.s3_key ||
+        "";
+
+      if (avatarUrl) {
+        localStorage.setItem(
+          "avatarUrl",
+          avatarUrl
+        );
+
+        localStorage.setItem(
+          "avatar_file",
+          avatarUrl
+        );
+
+        localStorage.setItem(
+          "generatedAvatar",
+          avatarUrl
+        );
+      }
+
+      if (s3AvatarUrl) {
+        localStorage.setItem(
+          "s3AvatarUrl",
+          s3AvatarUrl
+        );
+      }
+
+      if (s3Key) {
+        localStorage.setItem(
+          "avatarS3Key",
+          s3Key
+        );
+      }
+
+      if (data?.measurements) {
+        localStorage.setItem(
+          "avatarMeasurements",
+          JSON.stringify(
+            data.measurements
+          )
+        );
+      }
+
+      navigate(
+        "/avatar-viewer",
+        {
           replace: true,
+
           state: {
             avatarUrl,
-            avatar: data.avatar,
-            avatar_file: avatarUrl,
-            avatarFile: avatarUrl,
+
+            avatar:
+              data.avatar,
+
+            avatar_file:
+              avatarUrl,
+
+            avatarFile:
+              avatarUrl,
+
+            s3AvatarUrl,
+
+            s3Key,
+
+            measurements:
+              data.measurements,
           },
-        });
-      } else {
-        setError(data.message);
+        }
+      );
+    } else {
+      if (
+        response.status === 401
+      ) {
+        localStorage.removeItem(
+          "token"
+        );
+
+        setError(
+          "Your session has expired. Please log in again."
+        );
+
+        navigate("/login");
+
+        return;
       }
-    } catch (fetchError) {
-      console.error(fetchError);
-      setError("Upload failed");
-    } finally {
-      setLoading(false);
+
+      setError(
+        data.message ||
+          "Avatar generation failed"
+      );
     }
-  };
+  } catch (fetchError) {
+    console.error(
+      "Avatar generation error:",
+      fetchError
+    );
+
+    setError(
+      "Avatar generation failed. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const styles = {
     page: {

@@ -10,7 +10,15 @@ const path = require("path");
 const { spawn } = require("child_process");
 const pool = require("./db");
 
+const {
+  uploadToS3,
+  getSignedFileUrl,
+  deleteFromS3,
+} = require("./s3");
+
 require("dotenv").config();
+
+
 
 const app = express();
 
@@ -360,7 +368,6 @@ const createAuthToken = (user) => {
     console.warn('Could not add profile_image column (it may already exist):', err.message || err);
   }
 })();
-
 (async function ensureFitAnalysesTable() {
   try {
     await pool.query(`
@@ -400,6 +407,7 @@ const createAuthToken = (user) => {
     );
   }
 })();
+   
 
 // Middleware to authenticate requests using Bearer token
 const authenticate = (req, res, next) => {
@@ -1341,17 +1349,17 @@ app.get(
 app.post(
   "/generate-avatar",
 
+  authenticate,
+
   upload.fields([
     {
       name: "frontImage",
       maxCount: 1,
     },
-
     {
       name: "backImage",
       maxCount: 1,
     },
-
     {
       name: "sideImage",
       maxCount: 1,
@@ -1363,10 +1371,12 @@ app.post(
     let backPath = null;
     let sidePath = null;
 
-    let localMeasurementsPath =
-      null;
+    let localMeasurementsPath = null;
+    let localGlbPath = null;
 
     try {
+      const userId = req.user.id;
+
       const {
         height,
         gender,
@@ -1378,6 +1388,11 @@ app.post(
 
       console.log(
         "Avatar generation request"
+      );
+
+      console.log(
+        "User ID:",
+        userId
       );
 
       console.log(
@@ -1395,16 +1410,13 @@ app.post(
       );
 
       const frontImage =
-        req.files
-          ?.frontImage?.[0];
+        req.files?.frontImage?.[0];
 
       const backImage =
-        req.files
-          ?.backImage?.[0];
+        req.files?.backImage?.[0];
 
       const sideImage =
-        req.files
-          ?.sideImage?.[0];
+        req.files?.sideImage?.[0];
 
       /* -------------------------------
          VALIDATE PHOTOS
@@ -1547,17 +1559,18 @@ app.post(
       );
 
       /* =====================================================
-         IMPORTANT:
-         Correct AWS command with && separators
-         and gender support
+         RUN AVATAR PIPELINE ON EC2
       ===================================================== */
 
       const remoteCommand = [
         `source ~/pare-env/bin/activate`,
 
         `export PARE_ROOT=/home/ubuntu/PARE`,
+
         `export PARE_CHECKPOINT=/home/ubuntu/PARE/data/pare/checkpoints/pare_checkpoint.ckpt`,
+
         `export PARE_CONFIG=/home/ubuntu/PARE/data/pare/checkpoints/pare_config.yaml`,
+
         `export SMPL_MODEL_DIR=/home/ubuntu/PARE/data/body_models/smpl`,
 
         `cd "${AWS_PARE_DIR}"`,
@@ -1619,15 +1632,19 @@ app.post(
       const remoteAvatarPath =
         `${AWS_PARE_DIR}/pipeline_final_output/avatar.obj`;
 
+      const remoteGlbPath =
+        `${AWS_PARE_DIR}/pipeline_final_output/avatar.glb`;
+
       const remoteMeasurementsPath =
         `${AWS_PARE_DIR}/pipeline_final_output/measurements.json`;
 
       /* -------------------------------
-         DOWNLOAD AVATAR
+         DOWNLOAD OBJ
+         Keep for current frontend
       -------------------------------- */
 
       console.log(
-        "Downloading generated avatar..."
+        "Downloading generated avatar OBJ..."
       );
 
       await runCommand(
@@ -1643,7 +1660,38 @@ app.post(
       );
 
       console.log(
-        "Avatar downloaded successfully"
+        "Avatar OBJ downloaded successfully"
+      );
+
+      /* -------------------------------
+         DOWNLOAD GLB
+         This will be stored in S3
+      -------------------------------- */
+
+      localGlbPath =
+        path.join(
+          TMP_UPLOAD_DIR,
+          `avatar_${timestamp}.glb`
+        );
+
+      console.log(
+        "Downloading avatar GLB..."
+      );
+
+      await runCommand(
+        "scp",
+        [
+          "-i",
+          AWS_AVATAR_KEY_PATH,
+
+          `${AWS_AVATAR_USER}@${AWS_AVATAR_HOST}:${remoteGlbPath}`,
+
+          localGlbPath,
+        ]
+      );
+
+      console.log(
+        "Avatar GLB downloaded successfully"
       );
 
       /* -------------------------------
@@ -1681,6 +1729,116 @@ app.post(
         measurements
       );
 
+      /* =====================================================
+         UPLOAD BASE AVATAR TO S3
+      ===================================================== */
+
+      const avatarS3Key =
+  `avatars/user-${userId}/avatar.obj`;
+
+const objBuffer =
+  fs.readFileSync(
+    outputPath
+  );
+
+console.log(
+  "Uploading avatar OBJ to S3..."
+);
+
+await uploadToS3(
+  objBuffer,
+  avatarS3Key,
+  "text/plain"
+);
+
+console.log(
+  "Avatar OBJ uploaded to S3:",
+  avatarS3Key
+);
+
+      /* =====================================================
+         SAVE AVATAR DETAILS TO NEON POSTGRESQL
+      ===================================================== */
+
+      await pool.query(
+        `
+          INSERT INTO avatars (
+            user_id,
+            s3_key,
+            gender,
+            height_cm,
+            chest_cm,
+            waist_cm,
+            hip_cm,
+            created_at,
+            updated_at
+          )
+
+          VALUES (
+            $1,
+            $2,
+            $3,
+            $4,
+            $5,
+            $6,
+            $7,
+            NOW(),
+            NOW()
+          )
+
+          ON CONFLICT (user_id)
+
+          DO UPDATE SET
+            s3_key =
+              EXCLUDED.s3_key,
+
+            gender =
+              EXCLUDED.gender,
+
+            height_cm =
+              EXCLUDED.height_cm,
+
+            chest_cm =
+              EXCLUDED.chest_cm,
+
+            waist_cm =
+              EXCLUDED.waist_cm,
+
+            hip_cm =
+              EXCLUDED.hip_cm,
+
+            updated_at =
+              NOW()
+        `,
+        [
+          userId,
+          avatarS3Key,
+          gender,
+          measurements.height_cm,
+          measurements.chest_cm,
+          measurements.waist_cm,
+          measurements.hip_cm,
+        ]
+      );
+
+      console.log(
+        "Avatar metadata saved to Neon"
+      );
+
+      /* =====================================================
+         CREATE TEMPORARY PRIVATE S3 URL
+      ===================================================== */
+
+      const s3AvatarUrl =
+        await getSignedFileUrl(
+          avatarS3Key,
+          3600
+        );
+
+      console.log(
+        "Signed S3 avatar URL generated"
+      );
+
       /* -------------------------------
          CLEAN TEMP LOCAL FILES
       -------------------------------- */
@@ -1690,6 +1848,13 @@ app.post(
       );
 
       localMeasurementsPath =
+        null;
+
+      removeFileIfExists(
+        localGlbPath
+      );
+
+      localGlbPath =
         null;
 
       removeFileIfExists(
@@ -1709,7 +1874,7 @@ app.post(
       sidePath = null;
 
       /* -------------------------------
-         BUILD AVATAR URL
+         BUILD CURRENT LOCAL OBJ URL
       -------------------------------- */
 
       const avatarBaseUrl =
@@ -1731,13 +1896,35 @@ app.post(
           message:
             "Avatar generated successfully",
 
+          /*
+           * Existing OBJ URL.
+           * Keep temporarily so your
+           * current AvatarViewer works.
+           */
           avatarUrl,
+
+          /*
+           * New temporary private S3 GLB URL.
+           */
+          s3AvatarUrl,
+
+          /*
+           * Permanent S3 location stored in DB.
+           */
+          s3Key:
+            avatarS3Key,
 
           measurements,
 
           avatar: {
             avatar_file:
               avatarUrl,
+
+            s3_avatar_url:
+              s3AvatarUrl,
+
+            s3_key:
+              avatarS3Key,
 
             generated_at:
               new Date().toISOString(),
@@ -1770,6 +1957,10 @@ app.post(
         localMeasurementsPath
       );
 
+      removeFileIfExists(
+        localGlbPath
+      );
+
       return res
         .status(500)
         .json({
@@ -1778,6 +1969,119 @@ app.post(
 
           error:
             error.message,
+        });
+    }
+  }
+);
+
+/* =========================================================
+   GET CURRENT USER AVATAR
+========================================================= */
+
+app.get(
+  "/avatar/current",
+  authenticate,
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const result = await pool.query(
+        `
+          SELECT
+            id,
+            user_id,
+            s3_key,
+            gender,
+            height_cm,
+            chest_cm,
+            waist_cm,
+            hip_cm,
+            created_at,
+            updated_at
+          FROM avatars
+          WHERE user_id = $1
+          LIMIT 1
+        `,
+        [userId]
+      );
+
+      if (result.rows.length === 0) {
+        return res
+          .status(404)
+          .json({
+            message:
+              "No generated avatar found",
+          });
+      }
+
+      const avatar =
+        result.rows[0];
+
+      if (!avatar.s3_key) {
+        return res
+          .status(404)
+          .json({
+            message:
+              "Avatar file is not available",
+          });
+      }
+
+      const signedUrl =
+        await getSignedFileUrl(
+          avatar.s3_key,
+          3600
+        );
+
+      return res.json({
+        message:
+          "Avatar retrieved successfully",
+
+        avatar: {
+          id:
+            avatar.id,
+
+          user_id:
+            avatar.user_id,
+
+          s3_key:
+            avatar.s3_key,
+
+          avatarUrl:
+            signedUrl,
+
+          gender:
+            avatar.gender,
+
+          height_cm:
+            avatar.height_cm,
+
+          chest_cm:
+            avatar.chest_cm,
+
+          waist_cm:
+            avatar.waist_cm,
+
+          hip_cm:
+            avatar.hip_cm,
+
+          created_at:
+            avatar.created_at,
+
+          updated_at:
+            avatar.updated_at,
+        },
+      });
+    } catch (error) {
+      console.error(
+        "Get current avatar error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+          message:
+            "Failed to load avatar",
         });
     }
   }

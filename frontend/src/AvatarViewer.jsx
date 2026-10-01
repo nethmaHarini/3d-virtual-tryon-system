@@ -1,50 +1,106 @@
 import AvatarCanvas from "./components/AvatarCanvas";
-import { useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
 import { useAppTheme } from "./theme";
 import API_URL from "./config";
 
+
 function AvatarViewer() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { isDark } = useAppTheme();
 
-  const avatarValue = useMemo(() => {
-    const candidates = [
-      location.state?.avatarUrl,
-      location.state?.avatar_file,
-      location.state?.avatarFile,
-      localStorage.getItem("avatarUrl"),
-      localStorage.getItem("avatar_file"),
-      localStorage.getItem("generatedAvatar"),
-    ];
+  // PASTE THE NEW BLOCK HERE
+  const [avatarValue, setAvatarValue] =
+    useState(null);
 
-    const cleanApiUrl = API_URL.replace(/\/$/, "");
+  const [avatarData, setAvatarData] =
+    useState(null);
 
-    for (const value of candidates) {
-      if (typeof value !== "string" || !value.trim()) {
-        continue;
+  const [avatarLoading, setAvatarLoading] =
+    useState(true);
+
+  const [avatarError, setAvatarError] =
+    useState("");
+
+  useEffect(() => {
+    const loadCurrentAvatar = async () => {
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) {
+        setAvatarError(
+          "Please log in to view your avatar."
+        );
+
+        setAvatarLoading(false);
+        navigate("/login");
+        return;
       }
 
-      const trimmed = value.trim();
+      try {
+        setAvatarLoading(true);
+        setAvatarError("");
 
-      // Accept only avatars served by the current backend
-      if (trimmed.startsWith(`${cleanApiUrl}/generated-avatars/`)) {
-        return trimmed;
+        const response = await fetch(
+          `${API_URL}/avatar/current`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message ||
+              "Failed to load avatar"
+          );
+        }
+
+        const signedUrl =
+          data?.avatar?.avatarUrl;
+
+        if (!signedUrl) {
+          throw new Error(
+            "Avatar file URL was not returned."
+          );
+        }
+
+        setAvatarValue(signedUrl);
+        setAvatarData(data.avatar);
+
+        console.log(
+          "S3 avatar loaded:",
+          data.avatar
+        );
+      } catch (error) {
+        console.error(
+          "Avatar loading error:",
+          error
+        );
+
+        setAvatarValue(null);
+
+        setAvatarError(
+          error.message ||
+            "Failed to load avatar."
+        );
+      } finally {
+        setAvatarLoading(false);
       }
+    };
 
-      // Accept relative generated-avatar URLs
-      if (trimmed.startsWith("/generated-avatars/")) {
-        return `${cleanApiUrl}${trimmed}`;
-      }
-    }
+    loadCurrentAvatar();
+  }, [navigate]);
 
-    return null;
-  }, [location.state]);
-
-  console.log("avatarValue =", avatarValue);
-
+  
   const handleDownloadAvatar = () => {
     if (!avatarValue) {
       alert("No generated avatar is available to download.");
