@@ -24,6 +24,10 @@ import {
 } from "three/examples/jsm/loaders/GLTFLoader";
 
 import * as THREE from "three";
+import {
+  extractWorldMesh,
+  analyzeFit,
+} from "./fitAnalysis";
 
 function AvatarModel({
   modelPath,
@@ -719,6 +723,7 @@ function GarmentModel({
   avatarTorsoData,
   avatarWaistData,
   garmentCategory,
+  onShoulderMeasurements,
 }) {
   const isUpperBodyGarment =
     garmentCategory === "T-Shirts";
@@ -1234,11 +1239,13 @@ function GarmentModel({
         rightSleeveRoot
       );
 
+    let shoulderLandmarkDistance = null;
+
     if (
       leftShoulderLandmark &&
       rightShoulderLandmark
     ) {
-      const shoulderLandmarkDistance =
+      shoulderLandmarkDistance =
         leftShoulderLandmark.distanceTo(
           rightShoulderLandmark
         );
@@ -1551,6 +1558,20 @@ function GarmentModel({
 
     clonedObject.updateMatrixWorld(true);
 
+    if (
+      isUpperBodyGarment &&
+      avatarShoulders?.distance > 0 &&
+      leftShoulderLandmark &&
+      rightShoulderLandmark
+    ) {
+      onShoulderMeasurements?.({
+        avatarWidth: avatarShoulders.distance,
+        garmentWidth:
+          shoulderLandmarkDistance *
+          clonedObject.scale.x,
+      });
+    }
+
     const finalGarmentBox =
       new THREE.Box3().setFromObject(
         clonedObject
@@ -1666,424 +1687,38 @@ export default function AvatarCanvas({
   const [avatarWaistData, setAvatarWaistData] =
     useState(null);
 
-  const calculateFitAnalysis = () => {
-    const avatar = avatarRef.current;
-    const garment = garmentRef.current;
+  const shoulderMeasurementsRef = useRef(null);
 
-    if (!avatar || !garment) {
+  const calculateFitAnalysis = () => {
+    if (!avatarRef.current || !garmentRef.current) {
       console.log("FIT: models not ready");
       return;
     }
 
-    try {
-      avatar.updateMatrixWorld(true);
-      garment.updateMatrixWorld(true);
-
-      // Collect all mesh vertices in WORLD coordinates.
-      const collectVertices = (object) => {
-        const vertices = [];
-        const point = new THREE.Vector3();
-
-        object.traverse((child) => {
-          if (!child.isMesh) return;
-
-          const position =
-            child.geometry?.attributes?.position;
-
-          if (!position) return;
-
-          for (let i = 0; i < position.count; i++) {
-            point.fromBufferAttribute(position, i);
-            point.applyMatrix4(child.matrixWorld);
-
-            vertices.push(point.clone());
-          }
-        });
-
-        return vertices;
-      };
-
-      const avatarVertices =
-        collectVertices(avatar);
-
-      const garmentVertices =
-        collectVertices(garment);
-
-      console.log(
-        "FIT VERTEX COUNTS:",
-        "avatar =",
-        avatarVertices.length,
-        "garment =",
-        garmentVertices.length
-      );
-
-      const sampleVertices = (
-        vertices,
-        maxSamples = 1500
-      ) => {
-        if (vertices.length <= maxSamples) {
-          return vertices;
-        }
-
-        const step =
-          Math.ceil(
-            vertices.length / maxSamples
-          );
-
-        const sampled = [];
-
-        for (
-          let i = 0;
-          i < vertices.length;
-          i += step
-        ) {
-          sampled.push(vertices[i]);
-        }
-
-        return sampled;
-      };
-
-      const sampledAvatar =
-        sampleVertices(
-          avatarVertices,
-          1500
-        );
-
-      const sampledGarment =
-        sampleVertices(
-          garmentVertices,
-          1500
-        );
-
-      console.log(
-        "FIT SAMPLED COUNTS:",
-        "avatar =",
-        sampledAvatar.length,
-        "garment =",
-        sampledGarment.length
-      );
-
-      const nearestDistance = (
-        point,
-        targetVertices
-      ) => {
-        let minDistanceSq = Infinity;
-
-        for (const target of targetVertices) {
-          const dx = point.x - target.x;
-          const dy = point.y - target.y;
-          const dz = point.z - target.z;
-
-          const distanceSq =
-            dx * dx +
-            dy * dy +
-            dz * dz;
-
-          if (distanceSq < minDistanceSq) {
-            minDistanceSq = distanceSq;
-          }
-        }
-
-        return Math.sqrt(minDistanceSq);
-      };
-
-      const calculateRegionDistance = (
-        regionName,
-        centerY,
-        regionBand
-      ) => {
-        // Keep points from the selected horizontal body region.
-        const regionGarment =
-          sampledGarment.filter(
-            (v) =>
-              Math.abs(v.y - centerY) <=
-              regionBand
-          );
-
-        const regionAvatar =
-          sampledAvatar.filter(
-            (v) =>
-              Math.abs(v.y - centerY) <=
-              regionBand * 1.5
-          );
-
-        if (
-          regionGarment.length === 0 ||
-          regionAvatar.length === 0
-        ) {
-          console.log(
-            `${regionName} DISTANCE: insufficient points`
-          );
-
-          return null;
-        }
-
-        const distances =
-          regionAvatar.map((point) =>
-            nearestDistance(
-              point,
-              regionGarment
-            )
-          );
-
-        // Sort distances from closest to farthest.
-        distances.sort((a, b) => a - b);
-
-        // Use 75th percentile instead of median.
-        // This better detects garment regions that visibly float
-        // away from the avatar while ignoring extreme outliers.
-        const percentileIndex = Math.min(
-          distances.length - 1,
-          Math.floor(distances.length * 0.75)
-        );
-
-        const fitDistance =
-          distances[percentileIndex];
-
-        console.log(
-          `${regionName} FIT DISTANCE:`,
-          fitDistance.toFixed(4),
-          "samples:",
-          distances.length
-        );
-
-        return fitDistance;
-      };
-
-      if (
-        avatarVertices.length === 0 ||
-        garmentVertices.length === 0
-      ) {
-        console.log("FIT: no mesh vertices found");
-        return;
-      }
-
-      // Garment vertical range determines the area
-      // of the avatar that the T-shirt actually covers.
-      const garmentYs =
-        garmentVertices.map((v) => v.y);
-
-      const garmentMinY =
-        Math.min(...garmentYs);
-
-      const garmentMaxY =
-        Math.max(...garmentYs);
-
-      const garmentHeight =
-        garmentMaxY - garmentMinY;
-
-      /*
-        Approximate anatomical levels within the shirt:
-        chest = upper-middle region
-        waist = lower-middle region
-        hip = lower region
-      */
-      const regions = [
-        {
-          name: "Chest",
-          y:
-            garmentMinY +
-            garmentHeight * 0.67,
-        },
-        {
-          name: "Waist",
-          y:
-            garmentMinY +
-            garmentHeight * 0.30,
-        },
-        {
-          name: "Hip",
-          y:
-            garmentMinY +
-            garmentHeight * 0.15,
-        },
-      ];
-
-      // Horizontal band around each level.
-      const band =
-        Math.max(
-          garmentHeight * 0.035,
-          0.015
-        );
-
-      const shoulderY =
-        garmentMaxY - garmentHeight * 0.12;
-
-      const shoulderDistance =
-        calculateRegionDistance(
-          "SHOULDER",
-          shoulderY,
-          band
-        );
-
-      const chestDistance =
-        calculateRegionDistance(
-          "CHEST",
-          regions[0].y,
-          band
-        );
-
-      const waistDistance =
-        calculateRegionDistance(
-          "WAIST",
-          regions[1].y,
-          band
-        );
-
-      const hipDistance =
-        calculateRegionDistance(
-          "HIP",
-          regions[2].y,
-          band
-        );
-
-      console.log(
-        "REGIONAL DISTANCES:",
-        {
-          chest: chestDistance,
-          waist: waistDistance,
-          hip: hipDistance,
-        }
-      );
-
-      const measureSlice = (
-        vertices,
-        targetY
-      ) => {
-        const slice = vertices.filter(
-          (v) =>
-            Math.abs(v.y - targetY) <=
-            band
-        );
-
-        if (slice.length < 5) {
-          return null;
-        }
-
-        const xs = slice.map((v) => v.x);
-        const zs = slice.map((v) => v.z);
-
-        return {
-          width:
-            Math.max(...xs) -
-            Math.min(...xs),
-
-          depth:
-            Math.max(...zs) -
-            Math.min(...zs),
-
-          count: slice.length,
-        };
-      };
-
-      console.log(
-        "========== REGIONAL FIT ANALYSIS =========="
-      );
-
-      const results = [];
-
-      regions.forEach((region) => {
-        const avatarSlice =
-          measureSlice(
-            avatarVertices,
-            region.y
-          );
-
-        const garmentSlice =
-          measureSlice(
-            garmentVertices,
-            region.y
-          );
-
-        if (!avatarSlice || !garmentSlice) {
-          console.log(
-            `${region.name}: insufficient vertices`
-          );
-
-          return;
-        }
-
-        const widthClearance =
-          garmentSlice.width -
-          avatarSlice.width;
-
-        const depthClearance =
-          garmentSlice.depth -
-          avatarSlice.depth;
-
-        console.log(
-          `${region.name} Y:`,
-          region.y.toFixed(4)
-        );
-
-        console.log(
-          `${region.name} avatar W/D:`,
-          avatarSlice.width.toFixed(4),
-          avatarSlice.depth.toFixed(4)
-        );
-
-        console.log(
-          `${region.name} garment W/D:`,
-          garmentSlice.width.toFixed(4),
-          garmentSlice.depth.toFixed(4)
-        );
-
-        console.log(
-          `${region.name} clearance W/D:`,
-          widthClearance.toFixed(4),
-          depthClearance.toFixed(4)
-        );
-
-        results.push({
-          region: region.name,
-          widthClearance,
-          depthClearance,
-        });
-      });
-
-      console.log(
-        "FIT RESULTS:",
-        results
-      );
-
-      console.log(
-        "CALLBACK EXISTS:",
-        typeof onFitAnalysis
-      );
-
-      if (onFitAnalysis) {
-        console.log(
-          "SENDING FIT TO TRYON:",
-          chestDistance,
-          waistDistance,
-          hipDistance
-        );
-
-        onFitAnalysis({
-          shoulder: {
-            distance: shoulderDistance,
-          },
-          chest: {
-            distance: chestDistance,
-          },
-          waist: {
-            distance: waistDistance,
-          },
-          hip: {
-            distance: hipDistance,
-          },
-        });
-      }
-
-      console.log(
-        "========== FIT COMPLETE =========="
-      );
-    } catch (error) {
-      console.error(
-        "FIT CALCULATION ERROR:",
-        error
-      );
-    }
+    avatarRef.current.updateMatrixWorld(true);
+    garmentRef.current.updateMatrixWorld(true);
+
+    const shoulder = shoulderMeasurementsRef.current;
+    const options =
+      garmentCategory === "T-Shirts" &&
+      shoulder?.avatarWidth > 0 &&
+      shoulder?.garmentWidth > 0
+        ? { shoulder }
+        : {};
+
+    const avatarMesh =
+      extractWorldMesh(avatarRef.current);
+    const garmentMesh =
+      extractWorldMesh(garmentRef.current);
+    const { regions, debug } = analyzeFit(
+      avatarMesh,
+      garmentMesh,
+      garmentCategory,
+      options
+    );
+
+    console.log("FIT REGIONS:", regions, debug);
+    onFitAnalysis(regions);
   };
 
   useEffect(() => {
@@ -2273,6 +1908,9 @@ export default function AvatarCanvas({
               avatarTorsoData={avatarTorsoData}
               avatarWaistData={avatarWaistData}
               garmentCategory={garmentCategory}
+              onShoulderMeasurements={(measurements) => {
+                shoulderMeasurementsRef.current = measurements;
+              }}
             />
           )}
         </Suspense>

@@ -18,56 +18,34 @@ export default function TryOn() {
     garmentModelUrl,
   } = location.state || {};
 
-  const classifyFit = (distance) => {
-    if (distance == null) {
-      return {
-        status: "Analyzing",
-        color: "#a7b0c0",
-      };
-    }
-
-    if (distance < 0.05) {
-      return {
-        status: "Tight",
-        color: "#ff6b7a",
-      };
-    }
-
-    if (distance <= 0.075) {
-      return {
-        status: "Well-fitted",
-        color: "#5ad989",
-      };
-    }
-
-    return {
-      status: "Loose",
-      color: "#67b7ff",
-    };
-  };
-
   const isTrouser =
     garment?.category?.toLowerCase() === "trousers";
+
+  const getFitRegion = (fit) =>
+    fit || {
+      status: "Analyzing",
+      color: "#a7b0c0",
+    };
 
   const displayFitData = isTrouser
     ? [
         {
           region: "Waist",
-          ...classifyFit(calculatedFit?.waist?.distance),
+          ...getFitRegion(calculatedFit?.waist),
         },
         {
           region: "Hip",
-          ...classifyFit(calculatedFit?.hip?.distance),
+          ...getFitRegion(calculatedFit?.hip),
         },
       ]
     : [
         {
           region: "Shoulder",
-          ...classifyFit(calculatedFit?.shoulder?.distance),
+          ...getFitRegion(calculatedFit?.shoulder),
         },
         {
           region: "Chest",
-          ...classifyFit(calculatedFit?.chest?.distance),
+          ...getFitRegion(calculatedFit?.chest),
         },
       ];
 
@@ -469,18 +447,6 @@ export default function TryOn() {
       return;
     }
 
-    const chestResult = displayFitData.find(
-      (item) => item.region === "Chest"
-    );
-
-    const waistResult = displayFitData.find(
-      (item) => item.region === "Waist"
-    );
-
-    const hipResult = displayFitData.find(
-      (item) => item.region === "Hip"
-    );
-
     const API_URL =
       import.meta.env.VITE_API_URL ||
       "http://localhost:3000";
@@ -508,27 +474,27 @@ export default function TryOn() {
               "Not selected",
 
             chest:
-              chestResult?.status ||
+              calculatedFit.chest?.status ||
               "Unknown",
 
             waist:
-              waistResult?.status ||
+              calculatedFit.waist?.status ||
               "Unknown",
 
             hip:
-              hipResult?.status ||
+              calculatedFit.hip?.status ||
               "Unknown",
 
             chestDistance:
-              calculatedFit.chest?.distance ??
+              calculatedFit.chest?.ease ??
               null,
 
             waistDistance:
-              calculatedFit.waist?.distance ??
+              calculatedFit.waist?.ease ??
               null,
 
             hipDistance:
-              calculatedFit.hip?.distance ??
+              calculatedFit.hip?.ease ??
               null,
 
             recommendation:
