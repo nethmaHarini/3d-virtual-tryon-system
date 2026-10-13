@@ -10,89 +10,64 @@ import API_URL from "./config";
 export default function TryOn() {
   const [calculatedFit, setCalculatedFit] = useState(null);
 
-  const classifyFit = (distance) => {
-    if (distance == null) {
-      return {
-        status: "Analyzing",
-        color: "#a7b0c0",
-      };
-    }
+  const location = useLocation();
 
-    if (distance < 0.05) {
-      return {
-        status: "Tight",
-        color: "#ff6b7a",
-      };
-    }
+  const {
+    garment,
+    selectedSize,
+    garmentModelUrl,
+  } = location.state || {};
 
-    if (distance <= 0.075) {
-      return {
-        status: "Well-fitted",
-        color: "#5ad989",
-      };
-    }
+  const isTrouser =
+    garment?.category?.toLowerCase() === "trousers";
 
-    return {
-      status: "Loose",
-      color: "#67b7ff",
+  const getFitRegion = (fit) =>
+    fit || {
+      status: "Analyzing",
+      color: "#a7b0c0",
     };
-  };
 
-  const displayFitData = [
-    {
-      region: "Chest",
-      ...classifyFit(
-        calculatedFit?.chest?.distance
-      ),
-    },
-    {
-      region: "Waist",
-      ...classifyFit(
-        calculatedFit?.waist?.distance
-      ),
-    },
-    {
-      region: "Hip",
-      ...classifyFit(
-        calculatedFit?.hip?.distance
-      ),
-    },
-  ];
+  const displayFitData = isTrouser
+    ? [
+        {
+          region: "Waist",
+          ...getFitRegion(calculatedFit?.waist),
+        },
+        {
+          region: "Hip",
+          ...getFitRegion(calculatedFit?.hip),
+        },
+      ]
+    : [
+        {
+          region: "Shoulder",
+          ...getFitRegion(calculatedFit?.shoulder),
+        },
+        {
+          region: "Chest",
+          ...getFitRegion(calculatedFit?.chest),
+        },
+      ];
 
   const fitRecommendation = useMemo(() => {
     if (!calculatedFit) {
       return "Analyzing the garment fit against your digital twin...";
     }
 
-    const chest = displayFitData.find(
-      (item) => item.region === "Chest"
-    )?.status;
+    const looseRegions = displayFitData
+      .filter((item) => item.status === "Loose")
+      .map((item) => item.region.toLowerCase());
 
-    const waist = displayFitData.find(
-      (item) => item.region === "Waist"
-    )?.status;
+    const tightRegions = displayFitData
+      .filter((item) => item.status === "Tight")
+      .map((item) => item.region.toLowerCase());
 
-    const hip = displayFitData.find(
-      (item) => item.region === "Hip"
-    )?.status;
+    const analyzingRegions = displayFitData.filter(
+      (item) => item.status === "Analyzing"
+    );
 
-    const looseRegions = [];
-    const tightRegions = [];
-
-    if (chest === "Loose") looseRegions.push("chest");
-    if (waist === "Loose") looseRegions.push("waist");
-    if (hip === "Loose") looseRegions.push("hip");
-
-    if (chest === "Tight") tightRegions.push("chest");
-    if (waist === "Tight") tightRegions.push("waist");
-    if (hip === "Tight") tightRegions.push("hip");
-
-    if (
-      chest === "Well-fitted" &&
-      waist === "Well-fitted" &&
-      hip === "Well-fitted"
-    ) {
-      return "The selected size provides a well-fitted result across the chest, waist, and hip regions.";
+    if (analyzingRegions.length > 0) {
+      return "Analyzing garment-to-body fit...";
     }
 
     if (tightRegions.length > 0) {
@@ -107,18 +82,14 @@ export default function TryOn() {
       )}. Consider trying a smaller size for a closer fit.`;
     }
 
-    return "The selected size provides an acceptable overall fit based on the analyzed garment-to-body distances.";
+    return `The selected size provides a well-fitted result across the ${displayFitData
+      .map((item) => item.region.toLowerCase())
+      .join(" and ")} regions.`;
   }, [calculatedFit, displayFitData]);
 
   console.log("CALCULATED FIT RECEIVED:", calculatedFit);
 
-  const location = useLocation();
   const { isDark } = useAppTheme();
-  const {
-    garment,
-    selectedSize,
-    garmentModelUrl,
-  } = location.state || {};
 
   console.log("TRYON GARMENT:", garment);
   console.log("SELECTED SIZE:", selectedSize);
@@ -507,18 +478,6 @@ export default function TryOn() {
       return;
     }
 
-    const chestResult = displayFitData.find(
-      (item) => item.region === "Chest"
-    );
-
-    const waistResult = displayFitData.find(
-      (item) => item.region === "Waist"
-    );
-
-    const hipResult = displayFitData.find(
-      (item) => item.region === "Hip"
-    );
-
     const API_URL =
       import.meta.env.VITE_API_URL ||
       "http://localhost:3000";
@@ -546,27 +505,27 @@ export default function TryOn() {
               "Not selected",
 
             chest:
-              chestResult?.status ||
+              calculatedFit.chest?.status ||
               "Unknown",
 
             waist:
-              waistResult?.status ||
+              calculatedFit.waist?.status ||
               "Unknown",
 
             hip:
-              hipResult?.status ||
+              calculatedFit.hip?.status ||
               "Unknown",
 
             chestDistance:
-              calculatedFit.chest?.distance ??
+              calculatedFit.chest?.ease ??
               null,
 
             waistDistance:
-              calculatedFit.waist?.distance ??
+              calculatedFit.waist?.ease ??
               null,
 
             hipDistance:
-              calculatedFit.hip?.distance ??
+              calculatedFit.hip?.ease ??
               null,
 
             recommendation:
@@ -643,9 +602,18 @@ export default function TryOn() {
              <div style={styles.avatarPanel}>
                <div style={styles.canvasHint}>360 Viewer</div>
 
+                 {console.log(
+                   "TRYON GARMENT CATEGORY:",
+                   garment?.category
+                 )}
+
+                 {console.log("TRYON SELECTED SIZE:", selectedSize)}
+                 {console.log("TRYON GARMENT MODEL:", garmentModelUrl)}
+
                <AvatarCanvas
                  modelPath={resolvedAvatarUrl}
                  garmentPath={garmentModelUrl}
+                 garmentCategory={garment?.category}
                  backgroundMode={localStorage.getItem("viewer-background") || "dark"}
                  onFitAnalysis={setCalculatedFit}
                />
