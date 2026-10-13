@@ -28,6 +28,9 @@ import {
   extractWorldMesh,
   analyzeFit,
 } from "./fitAnalysis";
+import {
+  conformGarmentObject3D,
+} from "./conformGarment";
 
 function AvatarModel({
   modelPath,
@@ -1669,6 +1672,8 @@ export default function AvatarCanvas({
 
   garmentPath = null,
 
+  selectedSize = null,
+
   garmentCategory = null,
 
   backgroundMode,
@@ -1693,6 +1698,20 @@ export default function AvatarCanvas({
     if (!avatarRef.current || !garmentRef.current) {
       console.log("FIT: models not ready");
       return;
+    }
+
+    const garmentObj = garmentRef.current;
+    const key = `${garmentPath}|${selectedSize}`;
+
+    if (garmentObj.userData.conformedKey !== key) {
+      const stats = conformGarmentObject3D(
+        garmentObj,
+        avatarRef.current,
+        selectedSize,
+        THREE
+      );
+      garmentObj.userData.conformedKey = key;
+      console.log("CONFORM STATS:", stats);
     }
 
     avatarRef.current.updateMatrixWorld(true);
@@ -1750,7 +1769,7 @@ export default function AvatarCanvas({
     }, 500);
 
     return () => clearInterval(timer);
-  }, [modelPath, garmentPath]);
+  }, [modelPath, garmentPath, selectedSize]);
 
   const storedBackground =
     localStorage.getItem(
