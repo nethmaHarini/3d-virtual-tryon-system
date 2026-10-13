@@ -1,0 +1,14 @@
+{
+  "watch": [
+    "server.js",
+    "db.js",
+    "s3.js"
+  ],
+  "ext": "js",
+  "ignore": [
+    "generated-avatars/**",
+    "tmp-uploads/**",
+    "profile-uploads/**",
+    "node_modules/**"
+  ]
+}
