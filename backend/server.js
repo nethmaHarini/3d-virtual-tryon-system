@@ -358,6 +358,54 @@ const createAuthToken = (user) => {
   );
 };
 
+const getProfileImageUrl = (profileImage) => {
+  if (!profileImage) {
+    return null;
+  }
+
+  if (profileImage.startsWith("http://") || profileImage.startsWith("https://")) {
+    return profileImage;
+  }
+
+  return `/profile-uploads/${profileImage}`;
+};
+
+const getAccountStatus = (loginCount) => {
+  return Number(loginCount || 0) <= 1 ? "New User" : "Returning User";
+};
+
+const mapUserSession = (user) => {
+  if (!user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    profile_image_url: getProfileImageUrl(user.profile_image),
+    account_status: getAccountStatus(user.login_count),
+    first_login_at: user.first_login_at,
+    last_login_at: user.last_login_at,
+  };
+};
+
+const recordSuccessfulLogin = async (userId) => {
+  const result = await pool.query(
+    `
+      UPDATE users
+      SET login_count = COALESCE(login_count, 0) + 1,
+          first_login_at = COALESCE(first_login_at, NOW()),
+          last_login_at = NOW()
+      WHERE id = $1
+      RETURNING id, username, email, profile_image, login_count, first_login_at, last_login_at
+    `,
+    [userId]
+  );
+
+  return result.rows[0] || null;
+};
+
 // Ensure users table has a profile_image column (safe to run on startup)
 (async function ensureProfileColumn() {
   try {
@@ -366,6 +414,57 @@ const createAuthToken = (user) => {
     );
   } catch (err) {
     console.warn('Could not add profile_image column (it may already exist):', err.message || err);
+  }
+})();
+(async function ensureLoginTrackingColumns() {
+  try {
+    await pool.query(
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS login_count INTEGER NOT NULL DEFAULT 0;`
+    );
+
+    await pool.query(
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS first_login_at TIMESTAMP;`
+    );
+
+    await pool.query(
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP;`
+    );
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    const migrationMarker = await pool.query(
+      `SELECT value FROM app_meta WHERE key = 'login_status_backfill_complete'`
+    );
+
+    if (migrationMarker.rows.length === 0) {
+      await pool.query(
+        `
+          UPDATE users
+          SET login_count = 1,
+              first_login_at = COALESCE(first_login_at, NOW()),
+              last_login_at = COALESCE(last_login_at, NOW())
+          WHERE login_count = 0 OR login_count IS NULL
+        `
+      );
+
+      await pool.query(
+        `
+          INSERT INTO app_meta (key, value)
+          VALUES ('login_status_backfill_complete', 'true')
+        `
+      );
+    }
+  } catch (error) {
+    console.error(
+      "Could not ensure login tracking columns:",
+      error.message || error
+    );
   }
 })();
 (async function ensureFitAnalysesTable() {
@@ -610,25 +709,16 @@ app.post(
           });
       }
 
-      // Build profile image URL if stored in DB
-      const profileImageUrl = user.profile_image
-        ? (user.profile_image.startsWith('http') ? user.profile_image : `/profile-uploads/${user.profile_image}`)
-        : null;
-
-      const token =
-        createAuthToken(user);
+      const updatedUser = await recordSuccessfulLogin(user.id);
+      const sessionUser = updatedUser || user;
+      const token = createAuthToken(sessionUser);
 
       return res.json({
         message: "Login successful",
 
         token,
 
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          profile_image_url: profileImageUrl,
-        },
+        user: mapUserSession(sessionUser),
       });
     } catch (error) {
       console.error(
@@ -726,13 +816,37 @@ app.put('/profile', authenticate, async (req, res) => {
     }
 
     const updated = result.rows[0];
-    const profileImageUrl = updated.profile_image
-      ? (updated.profile_image.startsWith('http') ? updated.profile_image : `/profile-uploads/${updated.profile_image}`)
-      : null;
 
-    return res.json({ user: { id: updated.id, username: updated.username, email: updated.email, profile_image_url: profileImageUrl } });
+    return res.json({ user: mapUserSession(updated) });
   } catch (err) {
     console.error('Profile update error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/profile/me', authenticate, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Invalid user' });
+    }
+
+    const result = await pool.query(
+      `
+        SELECT id, username, email, profile_image, login_count, first_login_at, last_login_at
+        FROM users
+        WHERE id = $1
+      `,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.json({ user: mapUserSession(result.rows[0]) });
+  } catch (error) {
+    console.error('Load profile error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 });
@@ -868,11 +982,9 @@ app.post(
       if (
         existingUser.rows.length > 0
       ) {
-        const user =
-          existingUser.rows[0];
-
-        const token =
-          createAuthToken(user);
+        const user = await recordSuccessfulLogin(existingUser.rows[0].id);
+        const sessionUser = user || existingUser.rows[0];
+        const token = createAuthToken(sessionUser);
 
         return res.json({
           message:
@@ -880,11 +992,7 @@ app.post(
 
           token,
 
-          user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-          },
+          user: mapUserSession(sessionUser),
         });
       }
 
@@ -909,9 +1017,9 @@ app.post(
         await pool.query(
           `
           INSERT INTO users
-          (username, email, password)
-          VALUES ($1, $2, $3)
-        RETURNING id, username, email, profile_image
+          (username, email, password, login_count, first_login_at, last_login_at)
+          VALUES ($1, $2, $3, 1, NOW(), NOW())
+        RETURNING id, username, email, profile_image, login_count, first_login_at, last_login_at
           `,
           [
             generatedUsername,
@@ -922,11 +1030,6 @@ app.post(
 
       const newUser =
         insertedUser.rows[0];
-
-      // Construct profile image url if present
-      const profileImageUrl = newUser.profile_image
-        ? (newUser.profile_image.startsWith('http') ? newUser.profile_image : `/profile-uploads/${newUser.profile_image}`)
-        : null;
 
       const token =
         createAuthToken(newUser);
@@ -939,12 +1042,7 @@ app.post(
 
           token,
 
-          user: {
-            id: newUser.id,
-            username: newUser.username,
-            email: newUser.email,
-            profile_image_url: profileImageUrl,
-          },
+          user: mapUserSession(newUser),
         });
     } catch (error) {
       console.error(

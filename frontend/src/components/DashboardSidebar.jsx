@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppTheme } from "../theme";
-import API_URL, { resolveProfilePhotoUrl } from "../config";
+import { resolveProfilePhotoUrl } from "../config";
+import { clearAuthenticatedSession, syncAuthenticatedSession } from "../authSession";
 
 function DashboardSidebar() {
   const navigate = useNavigate();
@@ -37,32 +38,74 @@ function DashboardSidebar() {
 
   const [username, setUsername] = useState(localStorage.getItem("username") || "");
   const displayName = (username || "").trim().split(/\s+/)[0] || "VirtuFit 3D";
-  const hasGeneratedAvatar = Boolean(
-    localStorage.getItem("avatar_file") ||
-      localStorage.getItem("avatarUrl") ||
-      localStorage.getItem("generatedAvatar")
-  );
-
+  const [accountStatus, setAccountStatus] = useState(localStorage.getItem("accountStatus") || "Returning User");
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('profilePhoto') || null);
 
   useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+
+    syncAuthenticatedSession({ signal: controller.signal })
+      .then((user) => {
+        if (!mounted || !user) {
+          return;
+        }
+
+        if (user.username) {
+          setUsername(user.username);
+        }
+
+        setProfilePhoto(user.profile_image_url || null);
+        setAccountStatus(user.account_status || "Returning User");
+      })
+      .catch((error) => {
+        if (error?.name !== "AbortError") {
+          console.warn("Could not sync authenticated session:", error);
+        }
+      });
+
     const onUpdate = (e) => {
-      const v = e?.detail?.profilePhoto;
-      if (v !== undefined) {
-        setProfilePhoto(v);
+      const detail = e?.detail || {};
+      const activeUserId = localStorage.getItem("userId");
+
+      if (detail.userId && activeUserId && String(detail.userId) !== String(activeUserId)) {
+        return;
       }
-      const uname = e?.detail?.username;
-      if (uname !== undefined) {
-        setUsername(uname);
+
+      if (detail.profilePhoto !== undefined) {
+        setProfilePhoto(detail.profilePhoto || null);
       }
-      const email = e?.detail?.email;
-      if (email !== undefined) {
-        // keep localStorage in sync if desired
-        try { localStorage.setItem('userEmail', email); } catch (err) {}
+
+      if (detail.username !== undefined) {
+        setUsername(detail.username || "");
+      }
+
+      if (detail.accountStatus !== undefined) {
+        setAccountStatus(detail.accountStatus || "Returning User");
+      }
+
+      if (detail.email !== undefined) {
+        try {
+          localStorage.setItem("userEmail", detail.email);
+        } catch (err) {}
       }
     };
+
+    const onSessionCleared = () => {
+      setProfilePhoto(null);
+      setUsername("");
+      setAccountStatus("Returning User");
+    };
+
     window.addEventListener('profile-updated', onUpdate);
-    return () => window.removeEventListener('profile-updated', onUpdate);
+    window.addEventListener("auth-session-cleared", onSessionCleared);
+
+    return () => {
+      mounted = false;
+      controller.abort();
+      window.removeEventListener('profile-updated', onUpdate);
+      window.removeEventListener("auth-session-cleared", onSessionCleared);
+    };
   }, []);
 
 
@@ -209,9 +252,8 @@ function DashboardSidebar() {
     return;
   }
 
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
-  localStorage.removeItem("userEmail");
+  clearAuthenticatedSession();
+  window.dispatchEvent(new CustomEvent("auth-session-cleared"));
 
   navigate("/");
 };
@@ -301,7 +343,7 @@ function DashboardSidebar() {
           )}
           <div>
             <p style={styles.profileTitle}>{displayName}</p>
-            <p style={styles.profileSubtitle}>{hasGeneratedAvatar ? "Existing User" : "New Artisan"}</p>
+            <p style={styles.profileSubtitle}>{accountStatus || "Returning User"}</p>
           </div>
         </div>
       </div>

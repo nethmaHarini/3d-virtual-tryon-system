@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import API_URL from "./config";
+import { storeAuthenticatedSession } from "./authSession";
 console.log("API_URL =", API_URL);
 
 function Login() {
@@ -51,18 +52,22 @@ function Login() {
         }
 
         if (data?.token) {
-          localStorage.setItem("token", data.token);
+          storeAuthenticatedSession({
+            token: data.token,
+            user: data.user,
+          });
 
-          if (data?.user) {
-            localStorage.setItem("userId", String(data.user.id));
-            localStorage.setItem("username", data.user.username);
-            localStorage.setItem("userEmail", data.user.email);
-          }
-
-          if (data.user?.profile_image_url) {
-            localStorage.setItem('profilePhoto', data.user.profile_image_url);
-            window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: data.user.profile_image_url } }));
-          }
+          window.dispatchEvent(
+            new CustomEvent("profile-updated", {
+              detail: {
+                userId: data.user?.id ? String(data.user.id) : undefined,
+                username: data.user?.username,
+                email: data.user?.email,
+                profilePhoto: data.user?.profile_image_url || null,
+                accountStatus: data.user?.account_status || null,
+              },
+            })
+          );
           alert("SUCCESS: " + (data.message || "Google login successful"));
           navigate("/dashboard");
           return;
@@ -146,38 +151,39 @@ function Login() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(
-        `${API_URL}/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`${API_URL}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
-  if (data?.token) {
-    localStorage.setItem("token", data.token);
-  }
+        if (data?.token) {
+          storeAuthenticatedSession({
+            token: data.token,
+            user: data.user,
+          });
 
-  if (data?.user) {
-    localStorage.setItem("userId", String(data.user.id));
-    localStorage.setItem("username", data.user.username);
-    localStorage.setItem("userEmail", data.user.email);
-    if (data.user.profile_image_url) {
-      localStorage.setItem('profilePhoto', data.user.profile_image_url);
-      // Notify sidebar/profile to update immediately
-      window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: data.user.profile_image_url } }));
-    }
-  }
+          window.dispatchEvent(
+            new CustomEvent("profile-updated", {
+              detail: {
+                userId: data.user?.id ? String(data.user.id) : undefined,
+                username: data.user?.username,
+                email: data.user?.email,
+                profilePhoto: data.user?.profile_image_url || null,
+                accountStatus: data.user?.account_status || null,
+              },
+            })
+          );
+        }
 
-  alert("SUCCESS: " + data.message);
-  navigate("/dashboard");
-} else {
+        alert("SUCCESS: " + data.message);
+        navigate("/dashboard");
+      } else {
         alert("ERROR: " + data.message);
       }
     } catch (error) {

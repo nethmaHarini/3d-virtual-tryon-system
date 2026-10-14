@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import DashboardSidebar from "./components/DashboardSidebar";
 import { useAppTheme } from "./theme";
 import API_URL, { resolveProfilePhotoUrl } from "./config";
+import { syncAuthenticatedSession } from "./authSession";
 
 function Profile() {
   const navigate = useNavigate();
@@ -21,16 +22,76 @@ function Profile() {
   const [avatarUpdated, setAvatarUpdated] = useState(null);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(localStorage.getItem('profilePhoto') || null);
+  const [accountStatus, setAccountStatus] = useState(localStorage.getItem("accountStatus") || "");
   const [saveProfileError, setSaveProfileError] = useState("");
   const location = useLocation();
 
   useEffect(() => {
     const onUpdate = (e) => {
-      const v = e?.detail?.profilePhoto;
-      if (v) setProfilePhoto(v);
+      const detail = e?.detail || {};
+      const activeUserId = localStorage.getItem("userId");
+
+      if (detail.userId && activeUserId && String(detail.userId) !== String(activeUserId)) {
+        return;
+      }
+
+      if (detail.profilePhoto !== undefined) {
+        setProfilePhoto(detail.profilePhoto || null);
+      }
+
+      if (detail.accountStatus !== undefined) {
+        setAccountStatus(detail.accountStatus || "");
+      }
+
+      if (detail.username !== undefined) {
+        setUsernameState(detail.username || "");
+      }
+
+      if (detail.email !== undefined) {
+        setEmailState(detail.email || "");
+      }
     };
+
+    const onSessionCleared = () => {
+      setProfilePhoto(null);
+      setAccountStatus("");
+      setUsernameState("");
+      setEmailState("");
+    };
+
     window.addEventListener('profile-updated', onUpdate);
-    return () => window.removeEventListener('profile-updated', onUpdate);
+    window.addEventListener("auth-session-cleared", onSessionCleared);
+    return () => {
+      window.removeEventListener('profile-updated', onUpdate);
+      window.removeEventListener("auth-session-cleared", onSessionCleared);
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const controller = new AbortController();
+
+    syncAuthenticatedSession({ signal: controller.signal })
+      .then((user) => {
+        if (!mounted || !user) {
+          return;
+        }
+
+        setUsernameState(user.username || "");
+        setEmailState(user.email || "");
+        setProfilePhoto(user.profile_image_url || null);
+        setAccountStatus(user.account_status || "");
+      })
+      .catch((error) => {
+        if (error?.name !== "AbortError") {
+          console.warn("Could not sync authenticated profile:", error);
+        }
+      });
+
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, []);
 
   const email = localStorage.getItem("userEmail");
@@ -148,6 +209,8 @@ function Profile() {
     const file = e.target.files && e.target.files[0];
     if (!file) return; // user cancelled file picker
 
+    const activeUserId = localStorage.getItem("userId");
+
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     const maxSize = 5 * 1024 * 1024; // 5 MB
 
@@ -181,6 +244,11 @@ function Profile() {
           return;
         }
 
+        if (activeUserId && localStorage.getItem("userId") !== activeUserId) {
+          e.target.value = '';
+          return;
+        }
+
         const photoUrl = data.profile_image_url;
         if (photoUrl) {
           // persist for client-side immediate use
@@ -194,7 +262,7 @@ function Profile() {
           setProfilePhoto(photoUrl);
 
           // notify other components (sidebar) that profile changed
-          window.dispatchEvent(new CustomEvent('profile-updated', { detail: { profilePhoto: photoUrl } }));
+          window.dispatchEvent(new CustomEvent('profile-updated', { detail: { userId: activeUserId, profilePhoto: photoUrl } }));
         }
 
         setPhotoError("");
@@ -635,6 +703,7 @@ function Profile() {
     setSaveProfileError('');
     const nameToSave = (editName || "").trim();
     const emailToSave = (editEmail || "").trim();
+    const activeUserId = localStorage.getItem("userId");
 
     if (!nameToSave || nameToSave.length < 3) {
       setSaveProfileError('Username must be at least 3 characters');
@@ -670,6 +739,10 @@ function Profile() {
 
       const updatedUser = data.user;
 
+      if (activeUserId && localStorage.getItem("userId") !== activeUserId) {
+        return;
+      }
+
       // persist locally after server confirms
       try { localStorage.setItem('username', updatedUser.username); } catch (e) {}
       try { localStorage.setItem('userEmail', updatedUser.email); } catch (e) {}
@@ -678,7 +751,7 @@ function Profile() {
       setEmailState(updatedUser.email);
 
       // notify other components (sidebar)
-      window.dispatchEvent(new CustomEvent('profile-updated', { detail: { username: updatedUser.username, email: updatedUser.email } }));
+      window.dispatchEvent(new CustomEvent('profile-updated', { detail: { userId: activeUserId, username: updatedUser.username, email: updatedUser.email } }));
 
       setShowEditModal(false);
     } catch (err) {
@@ -720,7 +793,7 @@ function Profile() {
             </div>
             <div style={styles.statusBadge}>
               <span style={styles.dot} />
-              <span>Account Synced</span>
+              <span>{accountStatus || "Account Synced"}</span>
             </div>
           </header>
 
