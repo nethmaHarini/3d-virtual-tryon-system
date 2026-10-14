@@ -613,6 +613,7 @@ export default function TryOn() {
                <AvatarCanvas
                  modelPath={resolvedAvatarUrl}
                  garmentPath={garmentModelUrl}
+                 selectedSize={selectedSize}
                  garmentCategory={garment?.category}
                  backgroundMode={localStorage.getItem("viewer-background") || "dark"}
                  onFitAnalysis={setCalculatedFit}
