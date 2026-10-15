@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AvatarCanvas from "./components/AvatarCanvas";
 import DashboardSidebar from "./components/DashboardSidebar";
@@ -9,14 +9,103 @@ import API_URL from "./config";
 
 export default function TryOn() {
   const [calculatedFit, setCalculatedFit] = useState(null);
+  const [garmentError, setGarmentError] = useState(null);
 
   const location = useLocation();
+
+  const selection = useMemo(() => {
+    const stateSelection = location.state || {};
+    let storedSelection = null;
+    const stored = sessionStorage.getItem("virtufit3d-selection");
+    if (stored) {
+      try {
+        storedSelection = JSON.parse(stored);
+      } catch (error) {
+        console.error("[VirtuFit3D] Invalid stored garment selection", error);
+      }
+    }
+
+    const params = new URLSearchParams(location.search);
+    const selectedSizeFromUrl = params.get("size");
+    const selection = {
+      ...storedSelection,
+      ...stateSelection,
+      selectedSize:
+        stateSelection.selectedSize ||
+        selectedSizeFromUrl ||
+        storedSelection?.selectedSize ||
+        null,
+    };
+
+    console.info("[VirtuFit3D] TryOn selection resolution", {
+      locationState: location.state,
+      query: location.search,
+      selectedGarment: selection.garment,
+      selectedSize: selection.selectedSize,
+      garmentModelUrl: selection.garmentModelUrl,
+    });
+    return selection;
+  }, [location.search, location.state]);
 
   const {
     garment,
     selectedSize,
     garmentModelUrl,
-  } = location.state || {};
+  } = selection;
+
+  useEffect(() => {
+    console.info("[VirtuFit3D] Selected garment", {
+      id: garment?.id,
+      name: garment?.name || garment?.title,
+      selectedSize,
+      garmentModelUrl,
+    });
+    setGarmentError(null);
+    setCalculatedFit(null);
+    sessionStorage.setItem(
+      "virtufit3d-selection",
+      JSON.stringify({
+        garmentId: garment?.id || garment?.name || "selected-garment",
+        garment,
+        selectedSize,
+        garmentModelUrl,
+        avatarUrl: location.state?.avatarUrl,
+      })
+    );
+    if (!garmentModelUrl) {
+      setGarmentError("No 3D model URL was provided for the selected garment size.");
+      return undefined;
+    }
+
+    if (!import.meta.env.DEV) return undefined;
+
+    let cancelled = false;
+    fetch(garmentModelUrl, { method: "HEAD" })
+      .then((response) => {
+        if (cancelled) return;
+        console.info("[VirtuFit3D] Garment URL check", {
+          url: garmentModelUrl,
+          status: response.status,
+          ok: response.ok,
+          contentType: response.headers.get("content-type"),
+        });
+        if (!response.ok) {
+          setGarmentError(
+            `Garment model request failed with HTTP ${response.status}.`
+          );
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error("[VirtuFit3D] Garment URL check failed", error);
+          setGarmentError("Garment model could not be requested.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [garment, selectedSize, garmentModelUrl, location.state]);
 
   const isTrouser =
     garment?.category?.toLowerCase() === "trousers";
@@ -50,12 +139,20 @@ export default function TryOn() {
       ];
 
   const fitRecommendation = useMemo(() => {
+    if (garmentError) {
+      return garmentError;
+    }
+
     if (!calculatedFit) {
       return "Analyzing the garment fit against your digital twin...";
     }
 
     const looseRegions = displayFitData
       .filter((item) => item.status === "Loose")
+      .map((item) => item.region.toLowerCase());
+
+    const penetratingRegions = displayFitData
+      .filter((item) => item.status === "Penetrating")
       .map((item) => item.region.toLowerCase());
 
     const tightRegions = displayFitData
@@ -68,6 +165,12 @@ export default function TryOn() {
 
     if (analyzingRegions.length > 0) {
       return "Analyzing garment-to-body fit...";
+    }
+
+    if (penetratingRegions.length > 0) {
+      return `The garment is penetrating the avatar around the ${penetratingRegions.join(
+        " and "
+      )}. Fit cannot be marked successful until the collision is resolved.`;
     }
 
     if (tightRegions.length > 0) {
@@ -586,6 +689,7 @@ export default function TryOn() {
                  garmentCategory={garment?.category}
                  backgroundMode={localStorage.getItem("viewer-background") || "dark"}
                  onFitAnalysis={setCalculatedFit}
+                 onGarmentError={setGarmentError}
                />
              </div>
 

@@ -12,6 +12,7 @@ import {
 } from "@react-three/fiber";
 
 import {
+  Html,
   OrbitControls,
 } from "@react-three/drei";
 
@@ -30,7 +31,75 @@ import {
 } from "./fitAnalysis";
 import {
   conformGarmentObject3D,
+  measureGarmentCollision,
 } from "./conformGarment";
+
+function getDiagnosticMode() {
+  if (!import.meta.env.DEV || typeof window === "undefined") return "C";
+  const mode = new URLSearchParams(window.location.search)
+    .get("virtufitMode")
+    ?.toUpperCase();
+  return ["A", "B", "C"].includes(mode) ? mode : "C";
+}
+
+class GarmentErrorBoundary extends React.Component {
+  state = { error: null };
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error) {
+    this.props.onError?.(error);
+    console.error("[VirtuFit3D] Garment render/load failure", error);
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <Html center>
+        <div style={{ color: "#ffb4a8", minWidth: 240, textAlign: "center" }}>
+          3D garment could not be loaded.
+        </div>
+      </Html>
+    );
+  }
+}
+
+function describeObject(object) {
+  object.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const mesh = extractWorldMesh(object);
+  let invalid = 0;
+  let min = [Infinity, Infinity, Infinity];
+  let max = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < mesh.positions.length; i += 3) {
+    const p = [mesh.positions[i], mesh.positions[i + 1], mesh.positions[i + 2]];
+    if (!p.every(Number.isFinite)) {
+      invalid++;
+      continue;
+    }
+
+    for (let axis = 0; axis < 3; axis++) {
+      min[axis] = Math.min(min[axis], p[axis]);
+      max[axis] = Math.max(max[axis], p[axis]);
+    }
+  }
+  return {
+    boundingBox: { min: box.min.toArray(), max: box.max.toArray() },
+    size: size.toArray(),
+    height: size.y,
+    worldScale: object.getWorldScale(new THREE.Vector3()).toArray(),
+    worldRotation: object.getWorldQuaternion(new THREE.Quaternion()).toArray(),
+    worldPosition: object.getWorldPosition(new THREE.Vector3()).toArray(),
+    vertices: mesh.positions.length / 3,
+    triangles: mesh.indices.length / 3,
+    min,
+    max,
+    invalidCoordinates: invalid,
+  };
+}
 
 function AvatarModel({
   modelPath,
@@ -149,6 +218,10 @@ function AvatarModel({
 
     boundingBox.getSize(finalAvatarSize);
     boundingBox.getCenter(finalAvatarCenter);
+    const landmarkMinY = boundingBox.min.y;
+    const landmarkHeight = Math.max(finalAvatarSize.y, 1e-6);
+    const landmarkCenterX = finalAvatarCenter.x;
+    const landmarkWidth = Math.max(finalAvatarSize.x, 1e-6);
 
     // =========================================
     // AVATAR LANDMARK DIAGNOSTICS
@@ -233,9 +306,9 @@ function AvatarModel({
         // Upper torso/chest area.
         // Exclude arms by limiting X.
         if (
-          vertex.y > 1.35 &&
-          vertex.y < 1.75 &&
-          Math.abs(vertex.x) < 0.55
+          vertex.y > landmarkMinY + landmarkHeight * 0.55 &&
+          vertex.y < landmarkMinY + landmarkHeight * 0.75 &&
+          Math.abs(vertex.x - landmarkCenterX) < landmarkWidth * 0.22
         ) {
           torsoPoints.push(
             vertex.clone()
@@ -318,9 +391,9 @@ function AvatarModel({
 
         // Waist / upper-hip band
         if (
-          vertex.y > 0.95 &&
-          vertex.y < 1.20 &&
-          Math.abs(vertex.x) < 0.55
+          vertex.y > landmarkMinY + landmarkHeight * 0.40 &&
+          vertex.y < landmarkMinY + landmarkHeight * 0.55 &&
+          Math.abs(vertex.x - landmarkCenterX) < landmarkWidth * 0.22
         ) {
           avatarWaistPoints.push(vertex.clone());
         }
@@ -387,9 +460,9 @@ function AvatarModel({
         // Upper torso / shoulder band.
         // X restriction removes most of the T-pose arms.
         if (
-          vertex.y > 1.70 &&
-          vertex.y < 1.90 &&
-          Math.abs(vertex.x) < 0.45
+          vertex.y > landmarkMinY + landmarkHeight * 0.72 &&
+          vertex.y < landmarkMinY + landmarkHeight * 0.86 &&
+          Math.abs(vertex.x - landmarkCenterX) < landmarkWidth * 0.18
         ) {
           shoulderPoints.push(
             vertex.clone()
@@ -471,26 +544,20 @@ function AvatarModel({
           child.matrixWorld
         );
 
-        // Shoulder-height band
+        // Keep the complete shoulder-height band. The landmark is selected
+        // from its outer distribution below; fixed inner x windows measure
+        // the neck rather than the shoulders on slim or scaled avatars.
         if (
-          vertex.y > 1.68 &&
-          vertex.y < 1.88
+          vertex.y > landmarkMinY + landmarkHeight * 0.70 &&
+          vertex.y < landmarkMinY + landmarkHeight * 0.86
         ) {
-          // LEFT shoulder region
-          if (
-            vertex.x < -0.16 &&
-            vertex.x > -0.42
-          ) {
+          if (vertex.x < landmarkCenterX) {
             avatarLeftShoulderPoints.push(
               vertex.clone()
             );
           }
 
-          // RIGHT shoulder region
-          if (
-            vertex.x > 0.16 &&
-            vertex.x < 0.42
-          ) {
+          if (vertex.x > landmarkCenterX) {
             avatarRightShoulderPoints.push(
               vertex.clone()
             );
@@ -518,15 +585,24 @@ function AvatarModel({
       return average;
     }
 
-    const avatarLeftShoulder =
-      averageAvatarPoints(
-        avatarLeftShoulderPoints
+    function averageOuterShoulder(points, side) {
+      if (points.length === 0) return null;
+      const sorted = [...points].sort((a, b) =>
+        side === "left" ? a.x - b.x : b.x - a.x
       );
+      const outerCount = Math.max(3, Math.ceil(sorted.length * 0.15));
+      return averageAvatarPoints(sorted.slice(0, outerCount));
+    }
 
-    const avatarRightShoulder =
-      averageAvatarPoints(
-        avatarRightShoulderPoints
-      );
+    const avatarLeftShoulder = averageOuterShoulder(
+      avatarLeftShoulderPoints,
+      "left"
+    );
+
+    const avatarRightShoulder = averageOuterShoulder(
+      avatarRightShoulderPoints,
+      "right"
+    );
 
     if (
       avatarLeftShoulder &&
@@ -721,12 +797,15 @@ function AvatarModel({
 
 function GarmentModel({
   garmentPath,
+  selectedSize,
+  diagnosticMode,
   objectRef,
   avatarShoulders,
   avatarTorsoData,
   avatarWaistData,
   garmentCategory,
   onShoulderMeasurements,
+  onGarmentLoaded,
 }) {
   const isUpperBodyGarment =
     garmentCategory === "T-Shirts";
@@ -750,9 +829,44 @@ function GarmentModel({
     garmentPath
   );
 
+  console.info("[VirtuFit3D] GLB load success", {
+    url: garmentPath,
+    mode: diagnosticMode,
+  });
+
   const garmentObject = useMemo(() => {
     const clonedObject =
       gltf.scene.clone(true);
+
+    clonedObject.traverse((child) => {
+      if (!child.isMesh) return;
+      child.visible = true;
+      child.geometry = child.geometry.clone();
+      child.material = Array.isArray(child.material)
+        ? child.material.map((material) => material.clone())
+        : child.material?.clone();
+      const materials = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
+      materials.forEach((material) => {
+        if (!material) return;
+        material.transparent = false;
+        material.opacity = 1;
+        material.depthWrite = true;
+        material.side = THREE.DoubleSide;
+      });
+    });
+
+    const meshCount = [];
+    clonedObject.traverse((child) => {
+      if (child.isMesh) meshCount.push(child);
+    });
+    console.info("[VirtuFit3D] Garment mesh loaded", {
+      url: garmentPath,
+      meshCount: meshCount.length,
+      visibleMeshes: meshCount.filter((mesh) => mesh.visible).length,
+      diagnosticMode,
+    });
 
     console.log("GARMENT ROOT TRANSFORM:", {
       position: clonedObject.position.toArray(),
@@ -791,6 +905,24 @@ function GarmentModel({
 
     garmentBox.getSize(garmentSize);
     garmentBox.getCenter(garmentCenter);
+
+    if (import.meta.env.DEV) {
+      console.groupCollapsed(
+        `[VirtuFit3D] Mode ${diagnosticMode} - original garment`
+      );
+      console.log(describeObject(clonedObject));
+      console.groupEnd();
+    }
+
+    if (diagnosticMode === "A") {
+      // Keep the authored GLB untouched by fitting, but place its original
+      // bounds beside the avatar within the camera frustum.
+      clonedObject.position.x += -0.9 - garmentCenter.x;
+      clonedObject.position.y -= garmentCenter.y;
+      clonedObject.position.z -= garmentCenter.z;
+      clonedObject.userData.diagnosticStage = "original";
+      return clonedObject;
+    }
 
     // =========================================
     // TROUSER WAISTBAND LANDMARK DETECTION
@@ -1362,12 +1494,26 @@ function GarmentModel({
     // -----------------------------------------
 
     // -----------------------------------------
-    // Automatic garment scale from shoulder landmarks
+    // Automatic garment scale from measured garment/avatar landmarks. The
+    // avatar is normalized only for camera presentation; garment fitting must
+    // use the geometry that is actually displayed.
     // -----------------------------------------
 
     let baseGarmentScale = 1;
+    const sizeEase = {
+      S: 0.01,
+      M: 0.018,
+      L: 0.028,
+      XL: 0.04,
+      XXL: 0.055,
+      30: 0.01,
+      32: 0.018,
+      34: 0.028,
+      36: 0.04,
+      38: 0.055,
+    };
+    const ease = sizeEase[selectedSize] ?? sizeEase.M;
 
-    // Lower-body garment scale from waistband width
     if (
       isLowerBodyGarment &&
       avatarWaistData &&
@@ -1375,32 +1521,28 @@ function GarmentModel({
       trouserWaistData &&
       trouserWaistData.width > 0
     ) {
-      const referenceAvatarHeight = 1.53;
-      const displayedAvatarHeight = 2.35;
-
       baseGarmentScale =
-        displayedAvatarHeight /
-        referenceAvatarHeight;
+        (avatarWaistData.width / trouserWaistData.width) *
+        (1 + ease);
 
       console.log(
-        "AUTOMATIC TROUSER SCALE:",
-        baseGarmentScale
+        "AUTOMATIC TROUSER SCALE FROM WAIST:",
+        { baseGarmentScale, avatarWaist: avatarWaistData.width, garmentWaist: trouserWaistData.width }
       );
     }
 
-    if (isUpperBodyGarment) {
-      // Keep the original authored garment size.
-      // S, M, L, XL and XXL must remain physically different.
-      const referenceAvatarHeight = 1.53;
-      const displayedAvatarHeight = 2.35;
-
+    if (
+      isUpperBodyGarment &&
+      avatarShoulders?.distance > 0 &&
+      shoulderLandmarkDistance > 0
+    ) {
       baseGarmentScale =
-        displayedAvatarHeight /
-        referenceAvatarHeight;
+        (avatarShoulders.distance / shoulderLandmarkDistance) *
+        (1 + ease);
 
       console.log(
-        "UPPER BODY AUTHORED SIZE SCALE:",
-        baseGarmentScale
+        "UPPER BODY SCALE FROM SHOULDERS:",
+        { baseGarmentScale, avatarShoulders: avatarShoulders.distance, garmentShoulders: shoulderLandmarkDistance }
       );
     }
 
@@ -1442,21 +1584,8 @@ function GarmentModel({
       );
     }
 
-    if (isLowerBodyGarment) {
-      // Preserve Blender proportions, with slight width clearance
-      clonedObject.scale.set(
-        baseGarmentScale * 1.05, // X: 5% wider
-        baseGarmentScale,        // Y: unchanged
-        baseGarmentScale * 1.12  // Z: 12% deeper
-      );
-    } else {
-      clonedObject.scale.setScalar(baseGarmentScale);
-    }
-
-    if (isLowerBodyGarment) {
-      clonedObject.position.y += 0.40;
-      clonedObject.position.z -= 0.025;
-    }
+    const garmentBaseMatrix = clonedObject.matrixWorld.clone();
+    clonedObject.scale.setScalar(baseGarmentScale);
 
     clonedObject.updateMatrixWorld(true);
 
@@ -1502,7 +1631,8 @@ function GarmentModel({
       const scaledGarmentShoulderCenter =
         garmentShoulderCenter
           .clone()
-          .multiplyScalar(baseGarmentScale);
+          .applyMatrix4(garmentBaseMatrix.clone().invert())
+          .applyMatrix4(clonedObject.matrixWorld);
 
       // Move garment shoulders onto avatar shoulders
       clonedObject.position.set(
@@ -1534,27 +1664,22 @@ function GarmentModel({
       const scaledTrouserWaistCenter =
         trouserWaistData.center
           .clone()
-          .multiplyScalar(baseGarmentScale);
+          .applyMatrix4(garmentBaseMatrix.clone().invert())
+          .applyMatrix4(clonedObject.matrixWorld);
 
-      // PRE-ALIGNED BLENDER GARMENT:
-      // preserve the position stored in the GLB
-
-      /*
       clonedObject.position.set(
         avatarWaistData.center.x -
           scaledTrouserWaistCenter.x,
 
         avatarWaistData.center.y -
-          scaledTrouserWaistCenter.y +
-          0.16,
+          scaledTrouserWaistCenter.y,
 
         avatarWaistData.center.z -
           scaledTrouserWaistCenter.z
       );
-      */
 
       console.log(
-        "AUTOMATIC TROUSER POSITION:",
+        "AUTOMATIC TROUSER WAIST POSITION:",
         clonedObject.position.toArray()
       );
     }
@@ -1620,14 +1745,36 @@ function GarmentModel({
       },
     });
 
+    if (import.meta.env.DEV) {
+      console.groupCollapsed(
+        `[VirtuFit3D] Mode ${diagnosticMode} - after initial alignment`
+      );
+      console.log(describeObject(clonedObject));
+      console.groupEnd();
+    }
+    clonedObject.userData.diagnosticStage = "initial-alignment";
+
     return clonedObject;
   }, [
     gltf,
+    selectedSize,
     avatarShoulders,
     avatarTorsoData,
     avatarWaistData,
     garmentCategory,
+    diagnosticMode,
   ]);
+
+  useEffect(() => {
+    if (!garmentObject) return;
+    console.info("[VirtuFit3D] Garment scene mounted", {
+      url: garmentPath,
+      mode: diagnosticMode,
+      visible: garmentObject.visible,
+      bounds: describeObject(garmentObject).boundingBox,
+    });
+    onGarmentLoaded?.(garmentObject);
+  }, [garmentObject, garmentPath, diagnosticMode, onGarmentLoaded]);
 
   return (
     <primitive
@@ -1679,9 +1826,11 @@ export default function AvatarCanvas({
   backgroundMode,
 
   onFitAnalysis,
+  onGarmentError,
 }) {
   const avatarRef = useRef(null);
   const garmentRef = useRef(null);
+  const diagnosticMode = getDiagnosticMode();
 
   const [avatarShoulders, setAvatarShoulders] =
     useState(null);
@@ -1693,17 +1842,23 @@ export default function AvatarCanvas({
     useState(null);
 
   const shoulderMeasurementsRef = useRef(null);
+  const garmentLoadedRef = useRef(false);
 
   const calculateFitAnalysis = () => {
     if (!avatarRef.current || !garmentRef.current) {
-      console.log("FIT: models not ready");
+      console.log("[VirtuFit3D] Analysis waiting for mounted objects", {
+        avatarMounted: !!avatarRef.current,
+        garmentMounted: !!garmentRef.current,
+        diagnosticMode,
+      });
       return;
     }
 
     const garmentObj = garmentRef.current;
     const key = `${garmentPath}|${selectedSize}`;
+    const shouldConform = diagnosticMode === "C";
 
-    if (garmentObj.userData.conformedKey !== key) {
+    if (shouldConform && garmentObj.userData.conformedKey !== key) {
       const stats = conformGarmentObject3D(
         garmentObj,
         avatarRef.current,
@@ -1711,6 +1866,7 @@ export default function AvatarCanvas({
         THREE
       );
       garmentObj.userData.conformedKey = key;
+      garmentObj.userData.conformStats = stats;
       console.log("CONFORM STATS:", stats);
     }
 
@@ -1724,18 +1880,90 @@ export default function AvatarCanvas({
       shoulder?.garmentWidth > 0
         ? { shoulder }
         : {};
+    const collisionStats = (garmentObj.userData.conformStats || []).reduce(
+      (total, stats) => ({
+        intersectingVertices:
+          total.intersectingVertices + (stats.intersectingVertices || 0),
+        maxPenetration: Math.max(
+          total.maxPenetration,
+          stats.maxPenetration || 0
+        ),
+        averageSurfaceGap: stats.averageSurfaceGap,
+        maxSurfaceGap: Math.max(total.maxSurfaceGap, stats.maxSurfaceGap || 0),
+      }),
+      {
+        intersectingVertices: 0,
+        maxPenetration: 0,
+        averageSurfaceGap: null,
+        maxSurfaceGap: 0,
+      }
+    );
 
     const avatarMesh =
       extractWorldMesh(avatarRef.current);
     const garmentMesh =
       extractWorldMesh(garmentRef.current);
-    const { regions, debug } = analyzeFit(
-      avatarMesh,
+    const avatarHeight = new THREE.Box3()
+      .setFromObject(avatarRef.current)
+      .getSize(new THREE.Vector3()).y;
+    const collisionMeasurement = measureGarmentCollision(
       garmentMesh,
-      garmentCategory,
-      options
+      avatarMesh,
+      avatarHeight
     );
+    console.groupCollapsed(
+      `[VirtuFit3D] Mode ${diagnosticMode} - final garment diagnostics`
+    );
+    console.log({
+      avatar: describeObject(avatarRef.current),
+      garment: describeObject(garmentRef.current),
+      collision: collisionMeasurement,
+      transforms: {
+        scale: garmentObj.scale.toArray(),
+        rotation: garmentObj.rotation.toArray(),
+        position: garmentObj.position.toArray(),
+      },
+    });
+    console.groupEnd();
+    if (diagnosticMode === "A") {
+      console.warn("Fit analysis skipped in Mode A: original garment is offset for inspection.");
+      return;
+    }
+    let result;
+    try {
+      result = analyzeFit(
+        avatarMesh,
+        garmentMesh,
+        garmentCategory,
+        {
+          ...options,
+          collision: {
+            ...collisionStats,
+            intersectingVertices: collisionMeasurement.insideBody,
+            maxPenetration: collisionMeasurement.maxPenetration,
+          },
+        }
+      );
+    } catch (error) {
+      onGarmentError?.("Fit analysis failed. Check the garment geometry and browser console.");
+      console.error("[VirtuFit3D] Fit analysis failure", error);
+      return;
+    }
+    const { regions, debug } = result;
 
+    if (import.meta.env.DEV) {
+      const avatarBox = new THREE.Box3().setFromObject(avatarRef.current);
+      const garmentBox = new THREE.Box3().setFromObject(garmentRef.current);
+      console.debug("VIRTUFIT GEOMETRY DIAGNOSTICS", {
+        avatarSize: avatarBox.getSize(new THREE.Vector3()).toArray(),
+        garmentSize: garmentBox.getSize(new THREE.Vector3()).toArray(),
+        garmentScale: garmentObj.scale.toArray(),
+        garmentPosition: garmentObj.position.toArray(),
+        garmentRotation: garmentObj.rotation.toArray(),
+        collision: collisionStats,
+        mode: diagnosticMode,
+      });
+    }
     console.log("FIT REGIONS:", regions, debug);
     onFitAnalysis(regions);
   };
@@ -1759,11 +1987,23 @@ export default function AvatarCanvas({
         avatarRef.current &&
         garmentRef.current
       ) {
-        calculateFitAnalysis();
+        try {
+          calculateFitAnalysis();
+        } catch (error) {
+          onGarmentError?.(
+            "3D garment processing failed. Check the browser console for details."
+          );
+          console.error("[VirtuFit3D] Garment pipeline failure", error);
+        }
         clearInterval(timer);
       }
 
       if (attempts >= 10) {
+        if (!garmentRef.current && !garmentLoadedRef.current) {
+          onGarmentError?.(
+            "The 3D garment did not finish loading. Check the garment URL and network request."
+          );
+        }
         clearInterval(timer);
       }
     }, 500);
@@ -1820,6 +2060,14 @@ export default function AvatarCanvas({
         shadows
         gl={{
           antialias: true,
+        }}
+        onCreated={({ camera }) => {
+          console.info("[VirtuFit3D] Camera", {
+            position: camera.position.toArray(),
+            near: camera.near,
+            far: camera.far,
+            diagnosticMode,
+          });
         }}
       >
         {/* General ambient light */}
@@ -1919,9 +2167,12 @@ export default function AvatarCanvas({
           />
 
           {garmentPath && (
-            <GarmentModel
+            <GarmentErrorBoundary onError={onGarmentError}>
+              <GarmentModel
               key={garmentPath}
               garmentPath={garmentPath}
+              selectedSize={selectedSize}
+              diagnosticMode={diagnosticMode}
               objectRef={garmentRef}
               avatarShoulders={avatarShoulders}
               avatarTorsoData={avatarTorsoData}
@@ -1930,7 +2181,16 @@ export default function AvatarCanvas({
               onShoulderMeasurements={(measurements) => {
                 shoulderMeasurementsRef.current = measurements;
               }}
-            />
+              onGarmentLoaded={(object) => {
+                garmentLoadedRef.current = true;
+                console.info("[VirtuFit3D] onGarmentLoaded callback", {
+                  mounted: !!object,
+                  visible: object.visible,
+                  mode: diagnosticMode,
+                });
+              }}
+              />
+            </GarmentErrorBoundary>
           )}
         </Suspense>
 

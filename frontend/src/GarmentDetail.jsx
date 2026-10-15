@@ -756,8 +756,20 @@ export default function GarmentDetail() {
                     return;
                   }
 
+                  sessionStorage.setItem(
+                    "virtufit3d-selection",
+                    JSON.stringify({
+                      garmentId: garment.id || garment.name || "selected-garment",
+                      garment,
+                      selectedSize,
+                      garmentModelUrl,
+                      avatarUrl,
+                    })
+                  );
                   navigate(
-                    "/try-on",
+                    `/try-on?garmentId=${encodeURIComponent(
+                      garment.id || garment.name || "selected-garment"
+                    )}&size=${encodeURIComponent(selectedSize)}`,
                     {
                       state: {
                         avatarUrl,

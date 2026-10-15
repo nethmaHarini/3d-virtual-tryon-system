@@ -100,6 +100,34 @@ function queryAvatar(ix, p, maxSearch) {
   return { d: sd, n: bn, q: bq };
 }
 
+export function measureGarmentCollision(garment, avatar, avatarHeight) {
+  const positions = garment.positions;
+  const index = buildAvatarIndex(avatar, 0.02 * avatarHeight);
+  let inside = 0;
+  let maxPenetration = 0;
+  let invalid = 0;
+
+  for (let i = 0; i < positions.length; i += 3) {
+    const p = [positions[i], positions[i + 1], positions[i + 2]];
+    if (!p.every(Number.isFinite)) {
+      invalid++;
+      continue;
+    }
+    const result = queryAvatar(index, p, 0.12 * avatarHeight);
+    if (result && result.d < 0) {
+      inside++;
+      maxPenetration = Math.max(maxPenetration, -result.d);
+    }
+  }
+
+  return {
+    vertices: positions.length / 3,
+    insideBody: inside,
+    maxPenetration,
+    invalidCoordinates: invalid,
+  };
+}
+
 function buildAdjacency(garment) {
   const P = garment.positions, I = garment.indices, nv = P.length / 3;
   const weld = new Map(), rep = new Int32Array(nv);
@@ -125,20 +153,32 @@ export function conformGarment(garment, avatar, opts) {
   const H = opts.avatarHeight;
   const minGap = opts.minGap ?? 0.004 * H;
   const maxGap = opts.maxGap ?? (SIZE_GAP[opts.size] ?? SIZE_GAP.M) * H;
-  const pull = opts.pull ?? 0.85;
-  const iters = opts.smoothIters ?? 4;
+  // Collision correction must not resize the authored garment. Floating cloth
+  // is a sizing/alignment problem, while penetration is a collision problem.
+  const pull = opts.pull ?? 0;
+  const iters = opts.smoothIters ?? 0;
+  const maxPush = opts.maxPush ?? 0.03 * H;
   const maxSearch = 0.12 * H;
   const ix = buildAvatarIndex(avatar, 0.02 * H);
   const P = garment.positions, nv = P.length / 3;
 
   const disp = new Float32Array(nv * 3), pushD = new Float32Array(nv * 3);
-  let pushed = 0, pulled = 0;
+  let pushed = 0, pulled = 0, intersecting = 0, maxPenetration = 0;
+  let gapSamples = 0, gapSum = 0, maxSurfaceGap = 0;
   for (let i = 0; i < nv; i++) {
     const p = [P[i * 3], P[i * 3 + 1], P[i * 3 + 2]];
     const r = queryAvatar(ix, p, maxSearch);
     if (!r) continue;
     let move = 0;
-    if (r.d < minGap) { move = minGap - r.d; pushed++; }
+    if (r.d < 0) {
+      intersecting++;
+      maxPenetration = Math.max(maxPenetration, -r.d);
+    } else {
+      gapSamples++;
+      gapSum += r.d;
+      maxSurfaceGap = Math.max(maxSurfaceGap, r.d);
+    }
+    if (r.d < minGap) { move = Math.min(minGap - r.d, maxPush); pushed++; }
     else if (r.d > maxGap) { move = -(r.d - maxGap) * pull; pulled++; }
     disp[i * 3] = r.n[0] * move; disp[i * 3 + 1] = r.n[1] * move; disp[i * 3 + 2] = r.n[2] * move;
     if (move > 0) { for (let k = 0; k < 3; k++) pushD[i * 3 + k] = disp[i * 3 + k]; disp[i * 3] = disp[i * 3 + 1] = disp[i * 3 + 2] = 0; }
@@ -161,13 +201,33 @@ export function conformGarment(garment, avatar, opts) {
   const out = new Float32Array(P.length);
   for (let i = 0; i < P.length; i++) out[i] = P[i] + cur[i] + pushD[i];
 
-  let stillInside = 0;
+  let stillInside = 0, invalidCoordinates = 0;
   for (let i = 0; i < nv; i++) {
     const p = [out[i * 3], out[i * 3 + 1], out[i * 3 + 2]];
+    if (!p.every(Number.isFinite)) {
+      invalidCoordinates++;
+      continue;
+    }
     const r = queryAvatar(ix, p, maxSearch);
     if (r && r.d < minGap) { const m = minGap - r.d; out[i * 3] += r.n[0] * m; out[i * 3 + 1] += r.n[1] * m; out[i * 3 + 2] += r.n[2] * m; stillInside++; }
   }
-  return { positions: out, stats: { vertices: nv, pushed, pulled, stillInsideAfterSmoothing: stillInside, minGap, maxGap } };
+  return {
+    positions: out,
+    stats: {
+      vertices: nv,
+      pushed,
+      pulled,
+      intersectingVertices: intersecting,
+      maxPenetration,
+      averageSurfaceGap: gapSamples ? gapSum / gapSamples : null,
+      maxSurfaceGap,
+      stillInsideAfterSmoothing: stillInside,
+      invalidCoordinates,
+      minGap,
+      maxGap,
+      pull,
+    },
+  };
 }
 
 export function conformGarmentObject3D(garmentObject, avatarObject, size, THREE) {
@@ -189,7 +249,11 @@ export function conformGarmentObject3D(garmentObject, avatarObject, size, THREE)
       world[i * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
     }
     const idx = child.geometry.index ? Uint32Array.from(child.geometry.index.array) : Uint32Array.from({ length: pos.count }, (_, i) => i);
-    const res = conformGarment({ positions: world, indices: idx }, avatar, { avatarHeight: ymax - ymin, size });
+    const res = conformGarment(
+      { positions: world, indices: idx },
+      avatar,
+      { avatarHeight: ymax - ymin, size, pull: 0, smoothIters: 0 }
+    );
     const inv = child.matrixWorld.clone().invert(), v = new THREE.Vector3();
     for (let i = 0; i < pos.count; i++) {
       v.set(res.positions[i * 3], res.positions[i * 3 + 1], res.positions[i * 3 + 2]).applyMatrix4(inv);

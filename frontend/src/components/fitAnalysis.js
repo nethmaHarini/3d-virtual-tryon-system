@@ -1,5 +1,5 @@
 /**
- * fitAnalysis.js - circumference-based garment fit analysis (no dependencies)
+ * fitAnalysis.js - geometric fit analysis (no dependencies)
  *
  * Replaces the "nearest vertex distance" method. For each body level
  * (shoulder, chest, waist, hip) it
@@ -171,7 +171,22 @@ export function analyzeFit(avatar, garment, category, options = {}) {
   };
 
   const regions = {};
-  const debug = { H, cx, levels: {} };
+  const collision = options.collision || null;
+  const penetrating =
+    collision && Number(collision.intersectingVertices) > 0;
+  const debug = {
+    H,
+    cx,
+    levels: {},
+    penetration: collision
+      ? {
+          vertices: collision.intersectingVertices,
+          maxDepth: collision.maxPenetration,
+          averageSurfaceGap: collision.averageSurfaceGap,
+          maxSurfaceGap: collision.maxSurfaceGap,
+        }
+      : null,
+  };
   const wanted = lower ? ["waist", "hip"] : ["chest", "waist", "hip"];
 
   for (const name of wanted) {
@@ -191,6 +206,17 @@ export function analyzeFit(avatar, garment, category, options = {}) {
       const ease = (sh.garmentWidth - sh.avatarWidth) / sh.avatarWidth;
       regions.shoulder = { ease, bodyCirc: sh.avatarWidth, garmentCirc: sh.garmentWidth, ...classifyEase(ease, "shoulder") };
     } else regions.shoulder = { ease: null, ...classifyEase(null) };
+  }
+
+  // Circumference describes ease, but cannot tell whether a cloth surface is
+  // inside the avatar. Penetration therefore takes precedence over "Loose".
+  if (penetrating) {
+    for (const region of Object.values(regions)) {
+      if (region.ease != null) {
+        region.status = "Penetrating";
+        region.color = "#ff8a4c";
+      }
+    }
   }
   return { regions, debug };
 }
