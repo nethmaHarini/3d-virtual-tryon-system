@@ -12,10 +12,12 @@ const {
 } = require("@aws-sdk/s3-request-presigner");
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION,
+  region: process.env.AWS_REGION || "ap-southeast-1",
 });
 
-const BUCKET = process.env.AWS_S3_BUCKET;
+const BUCKET =
+  process.env.AWS_S3_BUCKET ||
+  "virtufit3d-project-assets-2026";
 
 /**
  * Upload a Buffer to S3

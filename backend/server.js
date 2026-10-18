@@ -9,6 +9,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
 const pool = require("./db");
+const { queryWithRetry } = pool;
 
 const {
   uploadToS3,
@@ -270,6 +271,172 @@ app.get("/", (req, res) => {
   res.send(
     "Backend is running successfully 🚀"
   );
+});
+
+/* =========================================================
+   GARMENT CATALOG
+========================================================= */
+
+const getSignedGarmentAssetUrl = async (key) => {
+  if (!key) {
+    return null;
+  }
+
+  return getSignedFileUrl(key);
+};
+
+const mapGarmentRows = async (garmentRows, variantRows) => {
+  const variantsByGarmentId = new Map();
+
+  for (const variant of variantRows) {
+    const variants =
+      variantsByGarmentId.get(variant.garment_id) || [];
+
+    variants.push({
+      recordId: variant.record_id,
+      size: variant.size,
+      modelUrl: await getSignedGarmentAssetUrl(
+        variant.model_s3_key
+      ),
+    });
+
+    variantsByGarmentId.set(
+      variant.garment_id,
+      variants
+    );
+  }
+
+  return Promise.all(
+    garmentRows.map(async (garment) => {
+      const variants =
+        variantsByGarmentId.get(garment.garment_id) || [];
+
+      const imageUrls = await Promise.all([
+        getSignedGarmentAssetUrl(garment.image_front_s3_key),
+        getSignedGarmentAssetUrl(garment.image_side_s3_key),
+        getSignedGarmentAssetUrl(garment.image_back_s3_key),
+      ]);
+
+      const images = imageUrls.filter(Boolean);
+      const modelBySize = Object.fromEntries(
+        variants
+          .filter((variant) => variant.modelUrl)
+          .map((variant) => [
+            String(variant.size),
+            variant.modelUrl,
+          ])
+      );
+
+      return {
+        id: garment.garment_id,
+        garmentId: garment.garment_id,
+        name: garment.name,
+        title: garment.name,
+        category: garment.category,
+        gender: garment.gender,
+        description: garment.description,
+        price: garment.price,
+        image: images[0] || null,
+        images,
+        thumbnails: images,
+        sizes: variants.map((variant) =>
+          String(variant.size)
+        ),
+        variants,
+        modelBySize,
+        breadcrumb:
+          garment.category?.toLowerCase() === "trousers"
+            ? "Shop / Apparel / Trousers"
+            : "Shop / Apparel / T-Shirts",
+      };
+    })
+  );
+};
+
+const getActiveGarments = async (garmentId = null) => {
+  const garmentResult = await queryWithRetry(
+    `
+      SELECT
+        garment_id,
+        name,
+        category,
+        gender,
+        description,
+        price,
+        image_front_s3_key,
+        image_side_s3_key,
+        image_back_s3_key
+      FROM public.garments_new
+      WHERE is_active = TRUE
+        AND ($1::text IS NULL OR garment_id = $1)
+      ORDER BY garment_id
+    `,
+    [garmentId]
+  );
+
+  if (garmentResult.rows.length === 0) {
+    return [];
+  }
+
+  const variantResult = await queryWithRetry(
+    `
+      SELECT
+        record_id,
+        garment_id,
+        size,
+        model_s3_key
+      FROM public.garment_variants_new
+      WHERE is_active = TRUE
+        AND garment_id = ANY($1::text[])
+      ORDER BY garment_id, record_id
+    `,
+    [garmentResult.rows.map((garment) => garment.garment_id)]
+  );
+
+  return mapGarmentRows(
+    garmentResult.rows,
+    variantResult.rows
+  );
+};
+
+app.get("/garments", async (req, res) => {
+  try {
+    const garments = await getActiveGarments();
+
+    return res.status(200).json({
+      garments,
+    });
+  } catch (error) {
+    console.error("GET GARMENTS ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to load garment catalog",
+    });
+  }
+});
+
+app.get("/garments/:garmentId", async (req, res) => {
+  try {
+    const garments = await getActiveGarments(
+      req.params.garmentId
+    );
+
+    if (garments.length === 0) {
+      return res.status(404).json({
+        message: "Garment not found",
+      });
+    }
+
+    return res.status(200).json({
+      garment: garments[0],
+    });
+  } catch (error) {
+    console.error("GET GARMENT ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to load garment",
+    });
+  }
 });
 
 /* =========================================================
@@ -831,7 +998,7 @@ app.get('/profile/me', authenticate, async (req, res) => {
       return res.status(401).json({ message: 'Invalid user' });
     }
 
-    const result = await pool.query(
+    const result = await queryWithRetry(
       `
         SELECT id, username, email, profile_image, login_count, first_login_at, last_login_at
         FROM users

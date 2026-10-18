@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import DashboardSidebar from "./components/DashboardSidebar";
 import TryOnJourneyBar from "./components/TryOnJourneyBar";
 import { useAppTheme } from "./theme";
+import API_URL from "./config";
 
 function Catalog() {
   const navigate = useNavigate();
@@ -16,6 +17,52 @@ function Catalog() {
     "/models/final_avatar.obj";
 
   const [tab, setTab] = useState("tshirts");
+  const [garments, setGarments] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const loadGarments = async () => {
+      try {
+        setIsLoading(true);
+        setLoadError("");
+
+        const response = await fetch(
+          `${API_URL.replace(/\/$/, "")}/garments`,
+          { signal: controller.signal }
+        );
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            payload.message || "Failed to load garments"
+          );
+        }
+
+        setGarments(payload.garments || []);
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Catalog load failed:", error);
+        setLoadError(
+          error.message ||
+            "Unable to load the garment catalog."
+        );
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadGarments();
+
+    return () => controller.abort();
+  }, []);
 
   const styles = {
     page: {
@@ -313,220 +360,23 @@ function Catalog() {
   };
 
   // =========================================================
-  // T-SHIRTS
-  // =========================================================
+  const normalizeCategory = (category) =>
+    category?.toLowerCase() === "trousers"
+      ? "Trousers"
+      : "T-Shirts";
 
-  const tshirts = [
-   
-    {
-  id: "t1",
-  name: "Pink Female T-Shirt",
-  category: "T-Shirts",
+  const catalogGarments = garments.map((garment) => ({
+    ...garment,
+    category: normalizeCategory(garment.category),
+  }));
 
-  image:
-    "/images/T_shirts/Female/pink/female_pink_tshirt_front.png",
+  const tshirts = catalogGarments.filter(
+    (garment) => garment.category === "T-Shirts"
+  );
 
-  thumbnails: [
-    "/images/T_shirts/Female/pink/female_pink_tshirt_front.png",
-    "/images/T_shirts/Female/pink/female_pink_tshirt_side.png",
-    "/images/T_shirts/Female/pink/female_pink_tshirt_back.png",
-  ],
-
-  images: [
-    "/images/T_shirts/Female/pink/female_pink_tshirt_front.png",
-    "/images/T_shirts/Female/pink/female_pink_tshirt_side.png",
-    "/images/T_shirts/Female/pink/female_pink_tshirt_back.png",
-  ],
-
-  breadcrumb: "Shop / Apparel / T-Shirts",
-
-  sizes: ["S", "M", "L", "XL", "XXL"],
-
-  modelBySize: {
-    S: "/models/T shirts/Female/Pink_M/female_pink_tshirt_S.glb",
-    M: "/models/T shirts/Female/Pink_M/female_pink_tshirt_M.glb",
-    L: "/models/T shirts/Female/Pink_M/female_pink_tshirt_L.glb",
-    XL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XL.glb",
-    XXL: "/models/T shirts/Female/Pink_M/female_pink_tshirt_XXL.glb",
-  },
-},
-  {
-  id: "t2",
-  name: "black male T-Shirt",
-  category: "T-Shirts",
-
-  image:
-    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
-    
-
-  thumbnails: [
-    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
-  ],
-
-  images: [
-    "/images/T_shirts/male/blackIma/male_black_tshirt_front.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_side.png",
-    "/images/T_shirts/male/blackIma/male_black_tshirt_back.png",
-  ],
-
-  breadcrumb: "Shop / Apparel / T-Shirts",
-
-  sizes: ["S", "M", "L", "XL", "XXL"],
-
-  modelBySize: {
-    S: "/models/T shirts/male/black_M/male_black_tshirt_S.glb",
-    M: "/models/T shirts/male/black_M/male_black_tshirt_M.glb",
-    L: "/models/T shirts/male/black_M/male_black_tshirt_L.glb",
-    XL: "/models/T shirts/male/black_M/male_black_tshirt_XL.glb",
-    XXL: "/models/T shirts/male/black_M/male_black_tshirt_XXL.glb",
-  },
-},
-   {
-  id: "t3",
-  name: "Orange Female T-Shirt",
-  category: "T-Shirts",
-
-  image:
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
-
-  thumbnails: [
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
-  ],
-
-  images: [
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_front.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_side.png",
-    "/images/T_shirts/Female/OrangeIma/female_orange_tshirt_back.png",
-  ],
-
-  breadcrumb: "Shop / Apparel / T-Shirts",
-
-  sizes: ["S", "M", "L", "XL", "XXL"],
-
-  modelBySize: {
-    S: "/models/T shirts/Female/Orange_M/female_orange_tshirt_S.glb",
-    M: "/models/T shirts/Female/Orange_M/female_orange_tshirt_M.glb",
-    L: "/models/T shirts/Female/Orange_M/female_orange_tshirt_L.glb",
-    XL: "/models/T shirts/Female/Orange_M/female_orange_tshirt_XL.glb",
-    XXL: "/models/T shirts/Female/Orange_M/female_orange_tshirt_XXL.glb",
-  },
-},
-
-    /*
-    Keep your future catalog items here.
-
-    {
-      id: "t3",
-      name: "Grey T-Shirt",
-      ...
-    }
-    */
-  ];
-
-  // =========================================================
-  // TROUSERS
-  // =========================================================
-
-  const trousers = [
-    {
-      id: "tr1",
-      name: "purple female trouser",
-      category: "Trousers",
-
-      // Main image shown in the catalog card
-      image:
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_front.png",
-
-      // Front / side / back preview images
-      thumbnails: [
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_front.png",
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_side.png",
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_back.png",
-      ],
-
-      // GarmentDetail.jsx reads this array
-      images: [
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_front.png",
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_side.png",
-        "/images/Trousers/Female/purple_Ima/female_purple_trouser_back.png",
-      ],
-
-      breadcrumb: "Shop / Apparel / Trousers",
-
-      sizes: ["30", "32", "34", "36", "38"],
-
-      modelBySize: {
-        "30":
-          "/models/trousers/Female/purple_M/female_purple_trouser_30.glb",
-
-
-        "32":
-          "/models/trousers/Female/purple_M/female_purple_trouser_32.glb",
-
-        "34":
-          "/models/trousers/Female/purple_M/female_purple_trouser_34.glb",
-
-        "36":
-          "/models/trousers/Female/purple_M/female_purple_trouser_36.glb",
-
-        "38":
-          "/models/trousers/Female/purple_M/female_purple_trouser_38.glb",
-      },
-    },
-
-   
-
-    {
-      id: "tr2",
-      name: "White Male Trouser",
-      category: "Trousers",
-
-      // Main image shown in the catalog card
-      image:
-        "/images/Trousers/white_male_trouser_front.png",
-
-      // Front / side / back preview images
-      thumbnails: [
-        "/images/Trousers/white_male_trouser_front.png",
-        "/images/Trousers/white_male_trouser_side.png",
-        "/images/Trousers/white_male_trouser_back.png",
-      ],
-
-      // GarmentDetail.jsx reads this array
-      images: [
-        "/images/Trousers/white_male_trouser_front.png",
-        "/images/Trousers/white_male_trouser_side.png",
-        "/images/Trousers/white_male_trouser_back.png",
-      ],
-
-      breadcrumb: "Shop / Apparel / Trousers",
-
-      sizes: ["30", "32", "34", "36", "38"],
-
-      modelBySize: {
-        "30":
-          "/models/trousers/white/male_white_trouser_30.glb",
-
-        "32":
-          "/models/trousers/white/male_white_trouser_32.glb",
-
-        "34":
-          "/models/trousers/white/male_white_trouser_34.glb",
-
-        "36":
-          "/models/trousers/white/male_white_trouser_36.glb",
-
-        "38":
-          "/models/trousers/white/male_white_trouser_38.glb",
-      },
-    },
-  ];
-
-  // =========================================================
+  const trousers = catalogGarments.filter(
+    (garment) => garment.category === "Trousers"
+  );
   // OPEN GARMENT DETAIL PAGE
   // =========================================================
 
@@ -711,9 +561,21 @@ function Catalog() {
             </div>
           </section>
 
-          {/* Product Grid */}
-          <section style={styles.cardGrid}>
-            {products.map((item) => (
+          {isLoading && (
+            <div style={styles.emptyText}>
+              Loading garments...
+            </div>
+          )}
+
+          {!isLoading && loadError && (
+            <div style={styles.emptyText}>
+              {loadError}
+            </div>
+          )}
+
+          {!isLoading && !loadError && (
+            <section style={styles.cardGrid}>
+              {products.map((item) => (
               <article
                 key={item.id}
                 style={styles.card}
@@ -781,10 +643,13 @@ function Catalog() {
                   </button>
                 </div>
               </article>
-            ))}
-          </section>
+              ))}
+            </section>
+          )}
 
-          {tab === "trousers" &&
+          {!isLoading &&
+            !loadError &&
+            tab === "trousers" &&
             trousers.length === 0 && (
               <div style={styles.emptyText}>
                 No trousers available yet.
