@@ -432,6 +432,13 @@ export default function GarmentDetail() {
         ]
       : ["S", "M", "L", "XL", "XXL"]);
 
+  const displaySizes =
+    garment?.category === "T-Shirts"
+      ? ["S", "M", "L", "XL", "XXL"].filter(
+          (size) => sizes.includes(size)
+        )
+      : sizes;
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -651,7 +658,7 @@ export default function GarmentDetail() {
                   styles.sizeRow
                 }
               >
-                {sizes.map(
+                {displaySizes.map(
                   (size) => {
                     const selected =
                       selectedSize ===
