@@ -694,11 +694,10 @@ export default function TryOn() {
              </div>
 
              <div style={styles.controlBar}>
-               <p style={styles.controlInfo}>Drag to rotate 360°. Scroll to zoom. Right-click drag to orbit view.</p>
+               <p style={styles.controlInfo}>Drag to rotate 360°. Scroll to zoom.</p>
                <div style={styles.controlPills}>
                  <span style={styles.controlPill}>Rotate</span>
                  <span style={styles.controlPill}>Zoom</span>
-                 <span style={styles.controlPill}>Orbit</span>
                </div>
              </div>
            </section>
