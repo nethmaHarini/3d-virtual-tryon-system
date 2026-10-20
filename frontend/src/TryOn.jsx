@@ -615,6 +615,7 @@ export default function TryOn() {
                  garmentPath={garmentModelUrl}
                  selectedSize={selectedSize}
                  garmentCategory={garment?.category}
+                 garmentName={garment?.name || garment?.title}
                  backgroundMode={localStorage.getItem("viewer-background") || "dark"}
                  onFitAnalysis={setCalculatedFit}
                />

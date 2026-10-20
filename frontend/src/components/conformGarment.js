@@ -130,23 +130,28 @@ export function conformGarment(garment, avatar, opts) {
   const maxSearch = 0.12 * H;
   const ix = buildAvatarIndex(avatar, 0.02 * H);
   const P = garment.positions, nv = P.length / 3;
+  let waistbandVertices = 0;
+  let waistbandCorrected = 0;
+  const applyGenericConformation = !opts.waistbandOnly;
 
   const disp = new Float32Array(nv * 3), pushD = new Float32Array(nv * 3);
   let pushed = 0, pulled = 0;
-  for (let i = 0; i < nv; i++) {
-    const p = [P[i * 3], P[i * 3 + 1], P[i * 3 + 2]];
-    const r = queryAvatar(ix, p, maxSearch);
-    if (!r) continue;
-    let move = 0;
-    if (r.d < minGap) { move = minGap - r.d; pushed++; }
-    else if (r.d > maxGap) { move = -(r.d - maxGap) * pull; pulled++; }
-    disp[i * 3] = r.n[0] * move; disp[i * 3 + 1] = r.n[1] * move; disp[i * 3 + 2] = r.n[2] * move;
-    if (move > 0) { for (let k = 0; k < 3; k++) pushD[i * 3 + k] = disp[i * 3 + k]; disp[i * 3] = disp[i * 3 + 1] = disp[i * 3 + 2] = 0; }
+  if (applyGenericConformation) {
+    for (let i = 0; i < nv; i++) {
+      const p = [P[i * 3], P[i * 3 + 1], P[i * 3 + 2]];
+      const r = queryAvatar(ix, p, maxSearch);
+      if (!r) continue;
+      let move = 0;
+      if (r.d < minGap) { move = minGap - r.d; pushed++; }
+      else if (r.d > maxGap) { move = -(r.d - maxGap) * pull; pulled++; }
+      disp[i * 3] = r.n[0] * move; disp[i * 3 + 1] = r.n[1] * move; disp[i * 3 + 2] = r.n[2] * move;
+      if (move > 0) { for (let k = 0; k < 3; k++) pushD[i * 3 + k] = disp[i * 3 + k]; disp[i * 3] = disp[i * 3 + 1] = disp[i * 3 + 2] = 0; }
+    }
   }
 
   const { rep, nbr } = buildAdjacency(garment);
   let cur = disp;
-  for (let it = 0; it < iters; it++) {
+  for (let it = 0; applyGenericConformation && it < iters; it++) {
     const nxt = new Float32Array(cur);
     for (let i = 0; i < nv; i++) {
       const r = rep[i], ns = nbr[r];
@@ -161,16 +166,104 @@ export function conformGarment(garment, avatar, opts) {
   const out = new Float32Array(P.length);
   for (let i = 0; i < P.length; i++) out[i] = P[i] + cur[i] + pushD[i];
 
-  let stillInside = 0;
-  for (let i = 0; i < nv; i++) {
-    const p = [out[i * 3], out[i * 3 + 1], out[i * 3 + 2]];
-    const r = queryAvatar(ix, p, maxSearch);
-    if (r && r.d < minGap) { const m = minGap - r.d; out[i * 3] += r.n[0] * m; out[i * 3 + 1] += r.n[1] * m; out[i * 3 + 2] += r.n[2] * m; stillInside++; }
+  if (opts.isTrousers) {
+    let garmentMinY = Infinity;
+    let garmentMaxY = -Infinity;
+    for (let i = 1; i < P.length; i += 3) {
+      garmentMinY = Math.min(garmentMinY, P[i]);
+      garmentMaxY = Math.max(garmentMaxY, P[i]);
+    }
+    const garmentHeight = garmentMaxY - garmentMinY;
+    const waistbandStart = garmentMaxY - garmentHeight * 0.12;
+    const waistbandSearch = Math.max(maxSearch, 0.25 * H);
+    const waistbandDisplacements = [];
+
+    for (let i = 0; i < nv; i++) {
+      const y = P[i * 3 + 1];
+      if (!Number.isFinite(garmentHeight) || garmentHeight <= 0 || y < waistbandStart) {
+        continue;
+      }
+
+      waistbandVertices++;
+      const p = [out[i * 3], out[i * 3 + 1], out[i * 3 + 2]];
+      const r = queryAvatar(ix, p, waistbandSearch);
+      if (!r) continue;
+
+      const targetGap = Math.max(minGap, maxGap);
+      waistbandDisplacements.push([
+        r.q[0] + r.n[0] * targetGap - p[0],
+        r.q[1] + r.n[1] * targetGap - p[1],
+        r.q[2] + r.n[2] * targetGap - p[2],
+      ]);
+    }
+
+    if (waistbandDisplacements.length > 0) {
+      const waistbandShift =
+        waistbandDisplacements.reduce(
+          (sum, displacement) => [
+            sum[0] + displacement[0],
+            sum[1] + displacement[1],
+            sum[2] + displacement[2],
+          ],
+          [0, 0, 0]
+        ).map(
+          (value) =>
+            value / waistbandDisplacements.length
+        );
+
+      for (let i = 0; i < nv; i++) {
+        const y = P[i * 3 + 1];
+        if (
+          !Number.isFinite(garmentHeight) ||
+          garmentHeight <= 0 ||
+          y < waistbandStart
+        ) {
+          continue;
+        }
+
+      const heightWeight = Math.max(
+        0,
+        Math.min(1, (y - waistbandStart) / (garmentMaxY - waistbandStart))
+      );
+      const smoothWeight = heightWeight * heightWeight * (3 - 2 * heightWeight);
+        out[i * 3] += waistbandShift[0] * smoothWeight;
+        out[i * 3 + 1] += waistbandShift[1] * smoothWeight;
+        out[i * 3 + 2] += waistbandShift[2] * smoothWeight;
+        waistbandCorrected++;
+      }
+    }
   }
-  return { positions: out, stats: { vertices: nv, pushed, pulled, stillInsideAfterSmoothing: stillInside, minGap, maxGap } };
+
+  let stillInside = 0;
+  if (applyGenericConformation) {
+    for (let i = 0; i < nv; i++) {
+      const p = [out[i * 3], out[i * 3 + 1], out[i * 3 + 2]];
+      const r = queryAvatar(ix, p, maxSearch);
+      if (r && r.d < minGap) { const m = minGap - r.d; out[i * 3] += r.n[0] * m; out[i * 3 + 1] += r.n[1] * m; out[i * 3 + 2] += r.n[2] * m; stillInside++; }
+    }
+  }
+  return {
+    positions: out,
+    stats: {
+      vertices: nv,
+      pushed,
+      pulled,
+      waistbandVertices,
+      waistbandCorrected,
+      stillInsideAfterSmoothing: stillInside,
+      minGap,
+      maxGap,
+    },
+  };
 }
 
-export function conformGarmentObject3D(garmentObject, avatarObject, size, THREE) {
+export function conformGarmentObject3D(
+  garmentObject,
+  avatarObject,
+  size,
+  THREE,
+  options = {}
+) {
   garmentObject.updateMatrixWorld(true);
   avatarObject.updateMatrixWorld(true);
   const avatar = extractWorld(avatarObject);
@@ -189,7 +282,16 @@ export function conformGarmentObject3D(garmentObject, avatarObject, size, THREE)
       world[i * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
     }
     const idx = child.geometry.index ? Uint32Array.from(child.geometry.index.array) : Uint32Array.from({ length: pos.count }, (_, i) => i);
-    const res = conformGarment({ positions: world, indices: idx }, avatar, { avatarHeight: ymax - ymin, size });
+    const res = conformGarment(
+      { positions: world, indices: idx },
+      avatar,
+      {
+        avatarHeight: ymax - ymin,
+        size,
+        isTrousers: options.isTrousers === true,
+        waistbandOnly: options.waistbandOnly === true,
+      }
+    );
     const inv = child.matrixWorld.clone().invert(), v = new THREE.Vector3();
     for (let i = 0; i < pos.count; i++) {
       v.set(res.positions[i * 3], res.positions[i * 3 + 1], res.positions[i * 3 + 2]).applyMatrix4(inv);

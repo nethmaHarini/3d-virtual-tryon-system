@@ -122,7 +122,12 @@ function garmentTorso(garment, level, torso, margin) {
   const keep = pts.filter((p) => Math.abs(p[0] - cx) <= half);
   if (keep.length < 6) return null;
   const xs = keep.map((p) => p[0]);
-  return { circ: hullPerimeter(keep), width: Math.max(...xs) - Math.min(...xs) };
+  return {
+    circ: hullPerimeter(keep),
+    width: Math.max(...xs) - Math.min(...xs),
+    slicePointCount: pts.length,
+    keptPointCount: keep.length,
+  };
 }
 
 /* ---------- 4. classification (ease = (garment-body)/body) ---------- */
@@ -164,25 +169,190 @@ export function analyzeFit(avatar, garment, category, options = {}) {
     }
     return best;
   };
+  const waistScanDiagnostics = {
+    attempts: 0,
+    avatarCandidates: 0,
+    garmentIntersections: 0,
+    selected: null,
+    lastTested: null,
+  };
+  const scanSharedWaist = (lo, hi) => {
+    let best = null;
+    for (let f = lo; f <= hi; f += 0.01) {
+      const level = y0 + f * H;
+      const t = avatarTorso(avatar, level, H, cx);
+      waistScanDiagnostics.attempts++;
+      if (!t) continue;
+      waistScanDiagnostics.avatarCandidates++;
+      const garmentPoints = slicePoints(garment, level);
+      const garmentCenterX = (t.minX + t.maxX) / 2;
+      const garmentHalfWidth = ((t.maxX - t.minX) / 2) * 1.8;
+      const keptGarmentPoints = garmentPoints.filter(
+        (point) =>
+          Math.abs(point[0] - garmentCenterX) <=
+          garmentHalfWidth
+      );
+      waistScanDiagnostics.lastTested = {
+        level,
+        avatarCircumference: t.circ,
+        garmentSlicePointCount: garmentPoints.length,
+        garmentKeptPointCount: keptGarmentPoints.length,
+      };
+      const g = garmentTorso(garment, level, t, 1.8);
+      if (!g) continue;
+      waistScanDiagnostics.garmentIntersections++;
+      if (!best || t.circ < best.t.circ) {
+        best = { level, t, g };
+      }
+    }
+    if (best) {
+      waistScanDiagnostics.selected = {
+        level: best.level,
+        avatarCircumference: best.t.circ,
+        garmentCircumference: best.g.circ,
+        garmentSlicePointCount: best.g.slicePointCount,
+        garmentKeptPointCount: best.g.keptPointCount,
+      };
+    }
+    return best;
+  };
   const levels = {
     chest: scan(0.68, 0.77, (a, b) => a > b),
-    waist: scan(0.58, 0.68, (a, b) => a < b),
+    waist: lower
+      ? scanSharedWaist(0.58, 0.68)
+      : scan(0.58, 0.68, (a, b) => a < b),
     hip: scan(0.48, 0.57, (a, b) => a > b),
   };
 
   const regions = {};
-  const debug = { H, cx, levels: {} };
+  const debug = {
+    H,
+    cx,
+    garmentYRange: meshYRange(garment),
+    levels: {},
+    worldLevels: {},
+    measurements: {},
+    unavailable: {},
+    waistScan: lower ? waistScanDiagnostics : null,
+  };
   const wanted = lower ? ["waist", "hip"] : ["chest", "waist", "hip"];
 
   for (const name of wanted) {
     const lv = levels[name];
-    if (!lv) { regions[name] = { ease: null, ...classifyEase(null) }; continue; }
-    const g = garmentTorso(garment, lv.level, lv.t, 1.8);
-    if (!g) { regions[name] = { ease: null, ...classifyEase(null) }; continue; }
+    if (!lv) {
+      const reason = name === "waist" && lower
+        ? "No shared avatar/trouser waist slice in the configured scan range"
+        : `No valid avatar ${name} slice in the configured scan range`;
+      debug.unavailable[name] = reason;
+      debug.measurements[name] = {
+        worldY: null,
+        avatarCircumference: null,
+        garmentCircumference: null,
+        avatarIntersectionPoints: 0,
+        garmentIntersectionPoints: 0,
+        garmentKeptPoints: 0,
+        contourClosed: false,
+        contourValid: false,
+        reason,
+      };
+      console.warn(`FIT ${name.toUpperCase()} UNAVAILABLE:`, {
+        reason,
+        scanRange: name === "waist" ? [0.58, 0.68] : [0.48, 0.57],
+        avatarYRange: { min: y0, max: y0 + H, height: H },
+        waistScan: name === "waist" ? waistScanDiagnostics : undefined,
+      });
+      regions[name] = {
+        ease: null,
+        status: name === "waist" ? "Unavailable" : "Analyzing",
+        color: "#a7b0c0",
+      };
+      continue;
+    }
+    const g = lv.g || garmentTorso(garment, lv.level, lv.t, 1.8);
+    if (!g) {
+      const reason = `No valid garment slice at avatar-selected ${name} level`;
+      debug.unavailable[name] = reason;
+      const avatarIntersectionPoints = lv.t.pts.length;
+      const garmentIntersectionPoints =
+        slicePoints(garment, lv.level).length;
+      debug.measurements[name] = {
+        worldY: lv.level,
+        avatarCircumference: lv.t.circ,
+        garmentCircumference: null,
+        avatarIntersectionPoints,
+        garmentIntersectionPoints,
+        garmentKeptPoints: 0,
+        contourClosed: false,
+        contourValid: false,
+        reason,
+      };
+      console.warn(`FIT ${name.toUpperCase()} UNAVAILABLE:`, {
+        reason,
+        level: lv.level,
+        avatarCircumference: lv.t.circ,
+        garmentPointCount: slicePoints(garment, lv.level).length,
+        waistScan: name === "waist" ? waistScanDiagnostics : undefined,
+      });
+      regions[name] = {
+        ease: null,
+        status: name === "waist" ? "Unavailable" : "Analyzing",
+        color: "#a7b0c0",
+      };
+      continue;
+    }
+    if (
+      !Number.isFinite(lv.t.circ) ||
+      lv.t.circ <= 0 ||
+      !Number.isFinite(g.circ) ||
+      g.circ <= 0
+    ) {
+      const reason = "Invalid avatar or garment circumference";
+      debug.unavailable[name] = reason;
+      debug.measurements[name] = {
+        worldY: lv.level,
+        avatarCircumference: lv.t.circ,
+        garmentCircumference: g.circ,
+        avatarIntersectionPoints: lv.t.pts.length,
+        garmentIntersectionPoints: g.slicePointCount,
+        garmentKeptPoints: g.keptPointCount,
+        contourClosed: false,
+        contourValid: false,
+        reason,
+      };
+      console.warn(`FIT ${name.toUpperCase()} UNAVAILABLE:`, {
+        reason,
+        level: lv.level,
+        avatarCircumference: lv.t.circ,
+        garmentCircumference: g.circ,
+      });
+      regions[name] = {
+        ease: null,
+        status: name === "waist" ? "Unavailable" : "Analyzing",
+        color: "#a7b0c0",
+      };
+      continue;
+    }
     const ease = (g.circ - lv.t.circ) / lv.t.circ;
     const key = lower ? `${name}_lower` : name === "chest" ? "chest" : `${name}_upper`;
     regions[name] = { ease, bodyCirc: lv.t.circ, garmentCirc: g.circ, ...classifyEase(ease, key) };
     debug.levels[name] = (lv.level - y0) / H;
+    debug.worldLevels[name] = lv.level;
+    debug.measurements[name] = {
+      worldY: lv.level,
+      avatarCircumference: lv.t.circ,
+      garmentCircumference: g.circ,
+      avatarIntersectionPoints: lv.t.pts.length,
+      garmentIntersectionPoints: g.slicePointCount,
+      garmentKeptPoints: g.keptPointCount,
+      contourClosed: false,
+      contourValid:
+        Number.isFinite(lv.t.circ) &&
+        lv.t.circ > 0 &&
+        Number.isFinite(g.circ) &&
+        g.circ > 0,
+      reason:
+        "Slice intersections are unordered segments; convex-hull circumference is closed and valid.",
+    };
   }
 
   if (!lower) {

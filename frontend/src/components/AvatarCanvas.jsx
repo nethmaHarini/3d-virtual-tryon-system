@@ -27,6 +27,7 @@ import * as THREE from "three";
 import {
   extractWorldMesh,
   analyzeFit,
+  meshYRange,
 } from "./fitAnalysis";
 import {
   conformGarmentObject3D,
@@ -1676,6 +1677,8 @@ export default function AvatarCanvas({
 
   garmentCategory = null,
 
+  garmentName = null,
+
   backgroundMode,
 
   onFitAnalysis,
@@ -1708,10 +1711,13 @@ export default function AvatarCanvas({
         garmentObj,
         avatarRef.current,
         selectedSize,
-        THREE
+        THREE,
+        { isTrousers: false }
       );
-      garmentObj.userData.conformedKey = key;
       console.log("CONFORM STATS:", stats);
+      if (garmentCategory !== "Trousers") {
+        garmentObj.userData.conformedKey = key;
+      }
     }
 
     avatarRef.current.updateMatrixWorld(true);
@@ -1737,6 +1743,190 @@ export default function AvatarCanvas({
     );
 
     console.log("FIT REGIONS:", regions, debug);
+    if (garmentCategory === "Trousers") {
+      const measurementRows = ["waist", "hip"].map(
+        (regionName) => {
+          const measurement =
+            debug.measurements?.[regionName] || {};
+          const region = regions[regionName] || {};
+          const avatarCircumference =
+            measurement.avatarCircumference;
+          const garmentCircumference =
+            measurement.garmentCircumference;
+          const gap =
+            Number.isFinite(avatarCircumference) &&
+            Number.isFinite(garmentCircumference)
+              ? garmentCircumference -
+                avatarCircumference
+              : null;
+
+          return {
+            Region:
+              regionName[0].toUpperCase() +
+              regionName.slice(1),
+            "World Y": measurement.worldY ?? "N/A",
+            "Avatar Circumference (cm)":
+              Number.isFinite(avatarCircumference)
+                ? Number(
+                    (avatarCircumference * 100).toFixed(2)
+                  )
+                : "N/A",
+            "Garment Circumference (cm)":
+              Number.isFinite(garmentCircumference)
+                ? Number(
+                    (garmentCircumference * 100).toFixed(2)
+                  )
+                : "N/A",
+            "Gap (cm)":
+              Number.isFinite(gap)
+                ? Number((gap * 100).toFixed(2))
+                : "N/A",
+            "Relative Ease (%)":
+              Number.isFinite(region.ease)
+                ? Number((region.ease * 100).toFixed(2))
+                : "N/A",
+            "Fit Classification":
+              region.status || "Unavailable",
+            "Avatar Intersections":
+              measurement.avatarIntersectionPoints ?? 0,
+            "Garment Intersections":
+              measurement.garmentIntersectionPoints ?? 0,
+            "Garment Kept Points":
+              measurement.garmentKeptPoints ?? 0,
+            "Contour Closed":
+              measurement.contourClosed ?? false,
+            "Contour Valid":
+              measurement.contourValid ?? false,
+            "Invalid Reason":
+              measurement.reason || "N/A",
+          };
+        }
+      );
+
+      console.log(
+        "TROUSER WAIST/HIP RAW GEOMETRY DIAGNOSTICS:",
+        {
+          selectedSize: selectedSize || "N/A",
+          garmentPath: garmentPath || "N/A",
+          note:
+            "World Y is shared by avatar and final aligned garment. Slice intersections are not assumed closed; circumference uses the existing convex-hull method.",
+          garmentYRange: debug.garmentYRange,
+          waistScan: debug.waistScan,
+        }
+      );
+      console.table(measurementRows);
+    }
+    if (garmentCategory === "Trousers") {
+      console.log("TROUSER WAIST DIAGNOSTIC:", {
+        status: regions.waist?.status,
+        ease: regions.waist?.ease,
+        measurementLevel: debug.worldLevels?.waist
+          ?? "Unavailable",
+        relativeMeasurementLevel: debug.levels.waist
+          ? `${debug.levels.waist} of avatar height`
+          : "Unavailable",
+        avatarCircumference: regions.waist?.bodyCirc ?? null,
+        garmentCircumference: regions.waist?.garmentCirc ?? null,
+        intersectionCount:
+          debug.waistScan?.selected
+            ?.garmentKeptPointCount || 0,
+        scanAttempts: debug.waistScan?.attempts || 0,
+        avatarCandidates:
+          debug.waistScan?.avatarCandidates || 0,
+        garmentIntersections:
+          debug.waistScan?.garmentIntersections || 0,
+        garmentYRange: debug.garmentYRange,
+        lastTestedIntersection:
+          debug.waistScan?.lastTested || null,
+        reason:
+          debug.unavailable?.waist || "Waist circumference assigned",
+      });
+    }
+
+    const toCentimeters = (value) =>
+      Number.isFinite(value)
+        ? Number((value * 100).toFixed(2))
+        : "N/A";
+
+    const diagnosticRegions = [
+      ["Chest", "chest"],
+      ["Waist", "waist"],
+      ["Hip", "hip"],
+      ["Shoulder (width)", "shoulder"],
+    ];
+
+    const { height: avatarHeight } =
+      meshYRange(avatarMesh);
+    const measurementRows = [
+      {
+        Region: "Height",
+        "Avatar (cm)": toCentimeters(avatarHeight),
+        "Garment (cm)": "N/A",
+        "Gap (cm)": "N/A",
+        "Fit Status": "N/A",
+      },
+      ...diagnosticRegions.map(
+        ([label, regionName]) => {
+          const region = regions[regionName];
+          const avatarMeasurement =
+            region?.bodyCirc;
+          const garmentMeasurement =
+            region?.garmentCirc;
+          const gap =
+            Number.isFinite(avatarMeasurement) &&
+            Number.isFinite(garmentMeasurement)
+              ? garmentMeasurement - avatarMeasurement
+              : null;
+
+          return {
+            Region: label,
+            "Avatar (cm)": toCentimeters(
+              avatarMeasurement
+            ),
+            "Garment (cm)": toCentimeters(
+              garmentMeasurement
+            ),
+            "Gap (cm)": toCentimeters(gap),
+            "Fit Status": region?.status || "N/A",
+          };
+        }
+      ),
+    ];
+
+    console.log(
+      "FIT MEASUREMENT DIAGNOSTICS (final aligned geometry; circumference gaps are not surface clearance):",
+      {
+        garmentName: garmentName || "N/A",
+        selectedSize: selectedSize || "N/A",
+        garmentPath: garmentPath || "N/A",
+        note:
+          "Chest, waist, and hip use fit-analysis circumferences. Shoulder uses the existing width metric. Unavailable regions are N/A.",
+      }
+    );
+    console.table(measurementRows);
+
+    if (
+      garmentCategory === "Trousers" &&
+      garmentObj.userData.conformedKey !== key
+    ) {
+      const waistbandStats = conformGarmentObject3D(
+        garmentObj,
+        avatarRef.current,
+        selectedSize,
+        THREE,
+        {
+          isTrousers: true,
+          waistbandOnly: true,
+        }
+      );
+      garmentObj.userData.conformedKey = key;
+      console.log("TROUSER WAISTBAND VISUAL CORRECTION:", waistbandStats);
+      console.log(
+        "FIT/VISUAL GEOMETRY ORDER:",
+        "Fit analysis used the final generic-conformation mesh; the rendered trousers then received a waistband-only, topology-preserving visual shift."
+      );
+    }
+
     onFitAnalysis(regions);
   };
 
