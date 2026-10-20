@@ -532,7 +532,6 @@ function AvatarViewer() {
                   <div style={styles.controlBar}>
                     <p style={styles.controlInfo}>
                       Drag to rotate 360°. Scroll to zoom.
-                      Right-click drag to orbit view.
                     </p>
 
                     <div style={styles.controlPills}>
@@ -544,9 +543,6 @@ function AvatarViewer() {
                         Zoom
                       </span>
 
-                      <span style={styles.controlPill}>
-                        Orbit
-                      </span>
                     </div>
                   </div>
                 )}
