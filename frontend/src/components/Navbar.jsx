@@ -2,12 +2,14 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import { useState } from "react";
 
 function Navbar({ theme, setTheme }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isDark = theme === "dark";
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isLandingPage =
     location.pathname === "/";
@@ -220,9 +222,10 @@ function Navbar({ theme, setTheme }) {
       >
         <span
           style={styles.navLink}
-          onClick={() =>
-            scrollToSection("home")
-          }
+          onClick={() => {
+            setIsMenuOpen(false);
+            scrollToSection("home");
+          }}
           onMouseEnter={(event) =>
             handleLinkHover(
               event,
@@ -241,9 +244,10 @@ function Navbar({ theme, setTheme }) {
 
         <span
           style={styles.navLink}
-          onClick={() =>
-            scrollToSection("features")
-          }
+          onClick={() => {
+            setIsMenuOpen(false);
+            scrollToSection("features");
+          }}
           onMouseEnter={(event) =>
             handleLinkHover(
               event,
@@ -262,11 +266,10 @@ function Navbar({ theme, setTheme }) {
 
         <span
           style={styles.navLink}
-          onClick={() =>
-            scrollToSection(
-              "how-it-works"
-            )
-          }
+          onClick={() => {
+            setIsMenuOpen(false);
+            scrollToSection("how-it-works");
+          }}
           onMouseEnter={(event) =>
             handleLinkHover(
               event,
@@ -285,9 +288,10 @@ function Navbar({ theme, setTheme }) {
 
         <span
           style={styles.navLink}
-          onClick={() =>
-            scrollToSection("faq")
-          }
+          onClick={() => {
+            setIsMenuOpen(false);
+            scrollToSection("faq");
+          }}
           onMouseEnter={(event) =>
             handleLinkHover(
               event,
@@ -306,9 +310,10 @@ function Navbar({ theme, setTheme }) {
 
         <span
           style={styles.navLink}
-          onClick={() =>
-            scrollToSection("contact")
-          }
+          onClick={() => {
+            setIsMenuOpen(false);
+            scrollToSection("contact");
+          }}
           onMouseEnter={(event) =>
             handleLinkHover(
               event,
@@ -328,6 +333,15 @@ function Navbar({ theme, setTheme }) {
 
       {/* RIGHT */}
       <div style={styles.actionGroup}>
+        <button
+          type="button"
+          className="mobile-nav-toggle"
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          {isMenuOpen ? "×" : "☰"}
+        </button>
         <button
           type="button"
           style={styles.themeToggleBtn}
@@ -366,6 +380,29 @@ function Navbar({ theme, setTheme }) {
           {isDark ? "☀" : "🌙"}
         </button>
       </div>
+
+      {isMenuOpen && (
+        <div className={`mobile-nav-menu${isDark ? " mobile-nav-menu-dark" : ""}`}>
+          {[
+            ["Home", "home"],
+            ["Features", "features"],
+            ["How it Works", "how-it-works"],
+            ["FAQ", "faq"],
+            ["Contact Us", "contact"],
+          ].map(([label, sectionId]) => (
+            <button
+              type="button"
+              key={sectionId}
+              onClick={() => {
+                setIsMenuOpen(false);
+                scrollToSection(sectionId);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 950px) {

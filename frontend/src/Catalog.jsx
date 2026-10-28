@@ -458,11 +458,6 @@ function Catalog() {
           }
 
           @media (max-width: 1220px) {
-            .catalog-main {
-              margin-left: 18px !important;
-              margin-right: 18px !important;
-              padding-top: 4px !important;
-            }
           }
         `}
       </style>

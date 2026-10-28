@@ -505,6 +505,7 @@ export default function GarmentDetail() {
             style={
               styles.detailCard
             }
+            className="garment-detail-card"
           >
             {/* IMAGE SECTION */}
 

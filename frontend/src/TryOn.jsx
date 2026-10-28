@@ -567,7 +567,6 @@ export default function TryOn() {
         }
 
         @media (max-width: 1220px) {
-         .tryon-main { margin-left: 18px !important; margin-right: 18px !important; }
         }
 
         @media (max-width: 980px) {

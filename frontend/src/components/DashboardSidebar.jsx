@@ -9,6 +9,7 @@ function DashboardSidebar() {
   const location = useLocation();
   const { isDark } = useAppTheme();
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const loadNotificationCount = () => {
     try {
@@ -245,6 +246,21 @@ function DashboardSidebar() {
 
   const isActive = (path) => location.pathname === path;
 
+  useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setIsDrawerOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const handleLogout = () => {
   const confirmed = window.confirm("Are you sure you want to log out? Click on OK to confirm.");
 
@@ -259,7 +275,31 @@ function DashboardSidebar() {
 };
 
   return (
-    <aside style={styles.sidebar} className="dashboard-sidebar">
+    <>
+      <div className="mobile-sidebar-brand" aria-label="VirtuFit 3D">
+        VirtuFit 3D
+      </div>
+      <button
+        type="button"
+        className="sidebar-menu-toggle"
+        aria-label={isDrawerOpen ? "Close navigation menu" : "Open navigation menu"}
+        aria-expanded={isDrawerOpen}
+        onClick={() => setIsDrawerOpen((open) => !open)}
+      >
+        <span aria-hidden="true">{isDrawerOpen ? "×" : "☰"}</span>
+      </button>
+      {isDrawerOpen && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Close navigation menu"
+          onClick={() => setIsDrawerOpen(false)}
+        />
+      )}
+      <aside
+        style={styles.sidebar}
+        className={`dashboard-sidebar${isDrawerOpen ? " dashboard-sidebar-open" : ""}`}
+      >
       <div>
         <h1 style={styles.sidebarBrand}>VirtuFit 3D</h1>
         <p style={styles.sidebarTag}>VirtuFit 3D</p>
@@ -347,7 +387,8 @@ function DashboardSidebar() {
           </div>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 

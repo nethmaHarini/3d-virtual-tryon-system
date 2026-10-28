@@ -328,7 +328,7 @@ function Notifications() {
     <div style={styles.page}>
       <DashboardSidebar />
 
-      <main style={styles.main}>
+      <main style={styles.main} className="notifications-main">
         <div style={styles.mainInner}>
           <header style={styles.header}>
             <h1 style={styles.headerTitle}>Notifications</h1>

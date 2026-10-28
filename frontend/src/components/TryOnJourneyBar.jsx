@@ -83,7 +83,7 @@ export default function TryOnJourneyBar({ currentStep = 1 }) {
   };
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} className="tryon-journey-bar">
       {steps.map((step, index) => {
         const stepNumber = index + 1;
         const isComplete = stepNumber < resolvedStep;
@@ -151,7 +151,9 @@ export default function TryOnJourneyBar({ currentStep = 1 }) {
               </div>
             </div>
 
-            {index < steps.length - 1 && <div style={styles.connector}>→</div>}
+            {index < steps.length - 1 && (
+              <div style={styles.connector} className="journey-connector">→</div>
+            )}
           </React.Fragment>
         );
       })}

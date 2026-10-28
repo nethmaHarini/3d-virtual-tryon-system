@@ -8,6 +8,7 @@ import React, {
 
 import {
   Canvas,
+  useThree,
   useLoader,
 } from "@react-three/fiber";
 
@@ -32,6 +33,40 @@ import {
 import {
   conformGarmentObject3D,
 } from "./conformGarment";
+
+function ResponsiveCanvasSize({ containerRef }) {
+  const { gl, camera } = useThree();
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return undefined;
+    }
+
+    const resize = () => {
+      const { width, height } = container.getBoundingClientRect();
+      if (!width || !height) {
+        return;
+      }
+
+      gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      gl.setSize(width, height, false);
+
+      if (camera.isPerspectiveCamera) {
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+      }
+    };
+
+    const observer = new ResizeObserver(resize);
+    observer.observe(container);
+    resize();
+
+    return () => observer.disconnect();
+  }, [camera, containerRef, gl]);
+
+  return null;
+}
 
 function AvatarModel({
   modelPath,
@@ -1683,6 +1718,7 @@ export default function AvatarCanvas({
 
   onFitAnalysis,
 }) {
+  const canvasContainerRef = useRef(null);
   const avatarRef = useRef(null);
   const garmentRef = useRef(null);
 
@@ -1982,11 +2018,13 @@ export default function AvatarCanvas({
 
   return (
     <div
+      ref={canvasContainerRef}
+      className="avatar-canvas-shell"
       style={{
         width: "100%",
         maxWidth: "100%",
-        height: "70vh",
-        minHeight: "560px",
+        height: "clamp(360px, 70vh, 760px)",
+        minHeight: "0",
         background,
         borderRadius: "18px",
         overflow: "hidden",
@@ -2012,6 +2050,7 @@ export default function AvatarCanvas({
           antialias: true,
         }}
       >
+        <ResponsiveCanvasSize containerRef={canvasContainerRef} />
         {/* General ambient light */}
         <ambientLight
           intensity={

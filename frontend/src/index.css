@@ -118,3 +118,268 @@ button, input, select, textarea {
     overflow-x: hidden;
   }
 }
+
+/* Shared fluid layout rules for authenticated screens. The drawer opens only
+   when the available width cannot support the persistent navigation rail. */
+.sidebar-menu-toggle,
+.sidebar-backdrop,
+.mobile-sidebar-brand,
+.mobile-nav-toggle,
+.mobile-nav-menu {
+  display: none;
+}
+
+@media (max-width: 1220px) {
+  .dashboard-sidebar {
+    left: 16px !important;
+    top: 16px !important;
+    bottom: 16px !important;
+    width: min(300px, calc(100vw - 32px)) !important;
+    z-index: 106 !important;
+    transform: translateX(calc(-100% - 32px));
+    transition: transform 220ms ease;
+  }
+
+  .dashboard-sidebar.dashboard-sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-menu-toggle {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 110;
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 12px;
+    background: var(--surface-raised);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+  }
+
+  .mobile-sidebar-brand {
+    position: fixed;
+    top: 16px;
+    left: 72px;
+    z-index: 110;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--text-primary);
+    font-size: clamp(1rem, 4vw, 1.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    pointer-events: none;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 105;
+    display: block;
+    border: 0;
+    background: rgba(2, 6, 23, 0.58);
+    cursor: pointer;
+  }
+
+  aside.dashboard-sidebar ~ main,
+  aside.dashboard-sidebar ~ .settings-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-top: 76px !important;
+    padding-left: clamp(16px, 4vw, 40px);
+    padding-right: clamp(16px, 4vw, 40px);
+  }
+
+  aside.dashboard-sidebar ~ .settings-content {
+    max-width: none;
+  }
+
+  .settings-content {
+    padding-top: 84px !important;
+  }
+}
+
+@media (max-width: 950px) {
+  .dashboard-sidebar {
+    padding: 16px !important;
+  }
+
+  .dashboard-main-inner,
+  .catalog-main > div,
+  .avatar-main > div,
+  .tryon-main > div {
+    gap: 18px !important;
+  }
+
+  .catalog-main,
+  .avatar-main,
+  .tryon-main,
+  .history-main {
+    padding-top: 76px !important;
+  }
+
+  .mobile-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .mobile-nav-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 16px;
+    right: 16px;
+    display: grid;
+    gap: 4px;
+    padding: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 16px;
+    background: rgba(15, 23, 42, 0.98);
+    box-shadow: var(--shadow-strong);
+  }
+
+  .mobile-nav-menu button {
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #dbe4f3;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mobile-nav-menu button:hover,
+  .mobile-nav-menu button:focus-visible {
+    background: rgba(124, 58, 237, 0.22);
+  }
+}
+
+@media (min-width: 951px) {
+  .mobile-nav-toggle,
+  .mobile-nav-menu {
+    display: none !important;
+  }
+}
+
+/* Content-driven reflow for the authenticated page surfaces. */
+.catalog-main > div,
+.avatar-main > div,
+.tryon-main > div,
+.history-main > div {
+  min-width: 0;
+}
+
+@container (max-width: 980px) {
+  .tryon-grid,
+  .garment-detail-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+.catalog-main,
+.avatar-main,
+.tryon-main,
+.history-main {
+  container-type: inline-size;
+}
+
+@media (max-width: 900px) {
+  .tryon-grid,
+  .avatar-stage-grid,
+  .garment-detail-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .tryon-journey-bar {
+    flex-direction: column;
+    gap: 6px !important;
+    padding: 10px !important;
+  }
+
+  .tryon-journey-bar .journey-connector {
+    width: auto !important;
+    height: 12px;
+    transform: rotate(90deg);
+  }
+
+  .tryon-journey-bar > div:not(.journey-connector) {
+    width: 100%;
+  }
+
+  .profile-two-col {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .profile-main [style*="grid-template-columns: auto 1fr"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .profile-main [style*="text-align: right"] {
+    text-align: left !important;
+  }
+
+  .profile-main [style*="min-width: 320px"] {
+    min-width: 0 !important;
+  }
+
+  .notifications-main [style*="min-width: 220px"] {
+    min-width: 0 !important;
+  }
+
+  .notifications-main [style*="justify-content: space-between"] {
+    align-items: flex-start !important;
+  }
+
+  .catalog-main [style*="min-width: 250px"] {
+    min-width: 0 !important;
+  }
+
+  .garment-detail-card {
+    padding: 14px !important;
+    gap: 16px !important;
+  }
+
+  .garment-detail-card [style*="height: 560px"] {
+    height: clamp(300px, 85vw, 460px) !important;
+  }
+
+  .tryon-main [style*="padding: 24px"],
+  .avatar-main [style*="padding: 24px"] {
+    padding: 14px !important;
+  }
+
+  .avatar-canvas-shell {
+    height: clamp(360px, 82vw, 620px) !important;
+  }
+
+  .catalog-main h2,
+  .avatar-main h2,
+  .tryon-main h2,
+  .history-main h2,
+  .settings-page-header h2 {
+    font-size: clamp(1.55rem, 8vw, 2rem) !important;
+  }
+
+  .catalog-main button,
+  .avatar-main button,
+  .tryon-main button,
+  .history-main button,
+  .settings-page button {
+    max-width: 100%;
+  }
+}

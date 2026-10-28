@@ -1500,16 +1500,6 @@ function Dashboard() {
           50% { opacity: 1; }
         }
         @media (max-width: 1220px) {
-          .dashboard-sidebar {
-            position: static !important;
-            width: auto !important;
-            margin: 18px;
-          }
-          .dashboard-main {
-            margin-left: 18px !important;
-            margin-right: 18px !important;
-            padding-top: 4px !important;
-          }
           .dashboard-main-inner {
             max-width: none !important;
           }

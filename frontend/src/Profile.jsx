@@ -782,7 +782,7 @@ function Profile() {
     <div style={styles.page}>
       <DashboardSidebar />
 
-      <main style={styles.main}>
+      <main style={styles.main} className="profile-main">
         <div style={styles.mainInner}>
           <header style={styles.pageHeader}>
             <div>
@@ -876,7 +876,7 @@ function Profile() {
           )}
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/jpg,image/png,image/webp" style={{ display: 'none' }} onChange={handleAvatarFileChange} />
 
-          <div style={styles.twoCol}>
+          <div style={styles.twoCol} className="profile-two-col">
             <div style={styles.infoCard}>
                 <div style={styles.infoCardHeader}>
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
